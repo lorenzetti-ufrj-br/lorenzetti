@@ -21,7 +21,7 @@ fi
 
 # stage 3
 if [ ! -f "stage_3.done" ]; then
-    gen_minbias.py --nov 1 --pileupAvg 1 -o mb.EVT.root
+    gen_minbias.py --nov 1 --pileup-per-bunch-crossing 0 -o mb.EVT.root
     touch stage_3.done
 fi
 
@@ -39,7 +39,7 @@ fi
 
 # stage 6
 if [ ! -f "stage_6.done" ]; then
-    merge_trf.py -i Zee.HIT.root -p mb.HIT.root -o Zee.merged.HIT.root
+    merge_trf.py -i Zee.HIT.root --low-pileup-files mb.HIT.root --high-pileup-files mb.HIT.root -o Zee.merged.HIT.root --pileup-avg 0 --pileup-sigma 0
     touch stage_6.done
 fi
 
