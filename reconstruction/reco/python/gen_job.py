@@ -57,6 +57,10 @@ def merge_args( parser ):
     parser.add_argument('--overwrite', action='store_true',
                         dest='overwrite', required=False,
                         help='Rerun all jobs.')
+    
+    parser.add_argument('--dry-run', action='store_true',
+                        dest='dry_run', required=False,
+                        help='Perform a dry run without executing jobs.')
    
     return merge_args_from_file(parser)
 
@@ -77,6 +81,7 @@ class Parallel:
                  merge             : bool=False,
                  ntuple_name       : str="particles",
                  overwrite         : bool = False,
+                 dry_run           : bool = False,
                 ):
         
         self.event_numbers     = event_numbers
@@ -88,6 +93,7 @@ class Parallel:
         self.output_file       = output_file
         self.overwrite=True#overwrite
         self.seed=seed
+        self.dry_run=dry_run
 
 
     def __call__(self, function : Callable, **args ):
@@ -98,18 +104,19 @@ class Parallel:
         for output_file, config in plan.items():
             if not check_file_exists( output_file, self.ntuple_name ) or self.overwrite:
                 jobs.append( (output_file, config['evt'], config['seed']) )
-        pprint(jobs)
-        pool = joblib.Parallel(n_jobs=self.number_of_threads)
-        pool(joblib.delayed(function)(
-            events=events,
-            output_file=output_file,
-            seed=seed,
-            **args
-        )
-            for output_file, events, seed in jobs)
-        files = list(plan.keys())
-        if self.merge_files or len(files)==1:
-            merge(self.output_file, files)
+        pprint(args)
+        if not self.dry_run:
+            pool = joblib.Parallel(n_jobs=self.number_of_threads)
+            pool(joblib.delayed(function)(
+                events=events,
+                output_file=output_file,
+                seed=seed,
+                **args
+            )
+                for output_file, events, seed in jobs)
+            files = list(plan.keys())
+            if self.merge_files or len(files)==1:
+                merge(self.output_file, files)
 
 
     def get_events_per_job(self):
@@ -149,4 +156,5 @@ def create_parallel_job( args ):
                 merge             = args.merge,
                 overwrite         = args.overwrite,
                 seed              = args.seed,
+                dry_run           = args.dry_run
             )

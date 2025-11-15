@@ -142,6 +142,7 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
     args = parser.parse_args()
+    args = update_args(args)
     pool = create_parallel_job(args)
     pool(main,
         logging_level=args.output_level,

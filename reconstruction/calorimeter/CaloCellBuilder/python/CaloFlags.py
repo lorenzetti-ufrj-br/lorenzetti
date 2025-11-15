@@ -1,5 +1,5 @@
 
-__all__ = ["CaloFlags"]
+__all__ = ["CaloFlags", "CrossTalkFlags"]
 
 
 from GaugiKernel import EnumStringification
@@ -11,9 +11,17 @@ class CaloFlags(EnumStringification):
     SamplingnoiseStd    = 0.0 
     # crosstalk flags
     DoCrossTalk         = False
-    XTMinEnergy         = 1*GeV
-    XTAmpCapacitive     = 4.2
-    XTAmpInductive      = 2.3
-    XTAmpResistive      = 1.0
     # energy estimation flags
-    HadEnergyEstimationCOF = False
+    DoCOF               = False
+    
+    DoDefects           = False
+    
+    
+class CrossTalkFlags(EnumStringification):
+    MinEnergy         = 1*GeV
+    AmpCapacitive     = 4.2
+    AmpInductive      = 2.3
+    AmpResistive      = 1.0
+    
+class AnomalyFlags(EnumStringification):
+    DeadModules    = True

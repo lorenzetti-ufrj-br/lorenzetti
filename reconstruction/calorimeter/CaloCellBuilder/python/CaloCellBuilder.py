@@ -9,8 +9,9 @@ from CaloCellBuilder    import CaloCellMaker
 from CaloCellBuilder    import CaloCellMerge
 from CaloCellBuilder    import CrossTalkMaker
 from CaloCellBuilder    import PulseGenerator
+from CaloCellBuilder    import AnomalyGenerator
 from CaloCellBuilder    import OptimalFilter, ConstrainedOptimalFilter
-from CaloCellBuilder    import CaloFlags
+from CaloCellBuilder    import CaloFlags, CrossTalkFlags, AnomalyFlags
 
 #
 # Calo cell builder
@@ -67,7 +68,7 @@ class CaloCellBuilder( Logger ):
                               noiseFactor     = self.noiseFactor,
                               )
      
-      if CaloFlags.HadEnergyEstimationCOF and samp.Detector == Detector.TILE: 
+      if CaloFlags.DoCOF and samp.Detector == Detector.TILE: 
         of = ConstrainedOptimalFilter("ConstrainedOptimalFiler",
                                       NSamples  = samp.Samples,
                                       PulsePath = samp.Shaper,
@@ -93,7 +94,18 @@ class CaloCellBuilder( Logger ):
                             )
   
       alg.PulseGenerator = pulse # for all cell
-      alg.Tools = [of] # for each cel
+      
+      if CaloFlags.DoDefects:
+          anomaly = AnomalyGenerator( "AnomalyGenerator_" + samp.CollectionKey,
+                                     DeadModules = AnomalyFlags.DeadModules,
+                                     NoiseMean = pulse.NoiseMean,
+                                     NoiseStd = pulse.NoiseStd,
+                                     BadRunListFile = AnomalyFlags.BadRunListFile)
+          alg.Tools.append(anomaly) # for each cel
+      
+      alg.Tools.append( of )  # for each cell
+      
+      
       self.__recoAlgs.append( alg )
 
 
@@ -101,10 +113,10 @@ class CaloCellBuilder( Logger ):
           cx = CrossTalkMaker( "CrossTalkMaker_" + samp.CollectionKey,
                                 InputCollectionKey    = samp.CollectionKey + "_Aux",
                                 OutputCollectionKey   = samp.CollectionKey,
-                                MinEnergy             = CaloFlags.XTMinEnergy,
-                                XTAmpCapacitive       = CaloFlags.XTAmpCapacitive,
-                                XTAmpInductive        = CaloFlags.XTAmpInductive,
-                                XTAmpResistive        = CaloFlags.XTAmpResistive,
+                                MinEnergy             = CrossTalkFlags.MinEnergy,
+                                AmpCapacitive         = CaloFlags.AmpCapacitive,
+                                AmpInductive          = CaloFlags.AmpInductive,
+                                AmpResistive          = CaloFlags.AmpResistive,
                                 HistogramPath         = self.HistogramPath + '/CrossTalk',
                                 OutputLevel           = self.OutputLevel
                              )

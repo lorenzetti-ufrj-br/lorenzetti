@@ -53,7 +53,7 @@ def update_args_from_file( args  ):
             with open(str(args.job_file), 'r') as f:
                 d = json.load(f)
                 for argname, argvalue in args._get_kwargs():
-                    print(argname)
+                    #print(argname)
                     if argname in d.keys():
                         setattr(args, argname, d[argname])
                         print(f"overwritting {argname} with value {argvalue} to new value {d[argname]}")

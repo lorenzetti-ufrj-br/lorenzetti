@@ -45,7 +45,6 @@ class ComponentAccumulator(Cpp):
         del self._core
         gc.collect()
         time.sleep(2)
-        self.merge()
 
     def run(self, evt: int = -1):
         """
@@ -61,6 +60,7 @@ class ComponentAccumulator(Cpp):
         if (evt > self.__numberOfEvents):
             evt = self.__numberOfEvents
         self._core.run(evt)
+        self.merge()
 
     def __add__(self, algs):
         if type(algs) is not list:

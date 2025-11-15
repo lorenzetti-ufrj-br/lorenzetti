@@ -96,7 +96,6 @@ def main(events: List[int],
 
 if __name__ == "__main__":
     parser=parse_args()
-    args = parser.parse_args()
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)

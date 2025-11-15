@@ -35,10 +35,7 @@ RootStreamHITMaker::RootStreamHITMaker( std::string name ) :
   declareProperty( "OnlyRoI"                 , m_onlyRoI=false                         );
   declareProperty( "EtaWindow"               , m_etaWindow=0.6                         );
   declareProperty( "PhiWindow"               , m_phiWindow=0.6                         );
-  
-  // new for including cell defects
-  declareProperty( "doDefects"               , m_doDefects=false                       );
-  declareProperty( "cellHash"                , m_cellHash={}                           );                 
+  declareProperty( "KeepCells"               , m_cellHashes={}                         );                 
 }
 
 //!=====================================================================
@@ -52,6 +49,20 @@ StatusCode RootStreamHITMaker::initialize()
 {
   CHECK_INIT();
   setMsgLevel(m_outputLevel);
+  MSG_INFO("Input Event Key: " << m_inputEventKey);
+  MSG_INFO("Input Truth Key: " << m_inputTruthKey);
+  MSG_INFO("Input Hits Key: " << m_inputHitsKey);
+  MSG_INFO("Input Seeds Key: " << m_inputSeedsKey);
+  MSG_INFO("Output Event Key: " << m_outputEventKey);
+  MSG_INFO("Output Truth Key: " << m_outputTruthKey);
+  MSG_INFO("Output Hits Key: " << m_outputHitsKey);
+  MSG_INFO("Output Seeds Key: " << m_outputSeedsKey);
+  MSG_INFO("Output Level: " << m_outputLevel);
+  MSG_INFO("Ntuple Name: " << m_ntupleName);
+  MSG_INFO("Only RoI: " << (m_onlyRoI ? "true" : "false"));
+  MSG_INFO("Eta Window: " << m_etaWindow);
+  MSG_INFO("Phi Window: " << m_phiWindow);
+  MSG_INFO("Keep Cells: " << (m_cellHashes.empty() ? "false" : "true"));
   return StatusCode::SUCCESS;
 }
 
@@ -202,6 +213,9 @@ StatusCode RootStreamHITMaker::serialize( EventContext &ctx ) const
   {
     MSG_DEBUG("Serialize CaloHits...");
 
+    bool keepCells = !m_cellHashes.empty();
+    MSG_INFO("Keep Cells? " << (keepCells ? "Yes" : "No") );
+
     SG::ReadHandle<xAOD::TruthParticleContainer> particles( m_inputTruthKey, ctx );
 
     SG::ReadHandle<xAOD::CaloHitContainer> container(m_inputHitsKey, ctx);
@@ -223,21 +237,19 @@ StatusCode RootStreamHITMaker::serialize( EventContext &ctx ) const
           {
             match=true;
             // break;
-            }
-          else if (m_doDefects) 
+          }
+          else if (keepCells) 
           {
             // Check if hit->hash() is in any of the vectors inside m_cellHash
-            for (const auto& defectList : m_cellHash) {
-              if (std::find(defectList.begin(), defectList.end(), hit->hash()) != defectList.end()) {
-                match = true; // if hash is on list of defect cell, then we keep the hit
-                MSG_INFO("Hit with hash " << hit->hash() << " is in the defect list, keeping it.");
-                // break;
-              }
-            }  
+            if (std::find(m_cellHashes.begin(), m_cellHashes.end(), hit->hash()) != m_cellHashes.end()) {
+              match = true; // if hash is on list of defect cell, then we keep the hit
+              MSG_INFO("Hit with hash " << hit->hash() << " is marked by the user and will be kept.");
+              // break;
+            }
           }
           if (match) break;   // break if we found a match after checking the 2 conditions
           
-        } 
+        } // end loop over particles
 
         if(!match) continue; // skip this hit
 

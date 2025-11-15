@@ -1,0 +1,67 @@
+#ifndef AnomalyGenerator_h
+#define AnomalyGenerator_h
+
+#include "GaugiKernel/StatusCode.h"
+#include "GaugiKernel/AlgTool.h"
+#include "GaugiKernel/EDM.h"
+#include "TRandom3.h"
+
+
+class AnomalyGenerator : public Gaugi::AlgTool
+{
+
+  public:
+    /** Constructor **/
+    AnomalyGenerator( std::string name );
+    virtual ~AnomalyGenerator();
+    
+    virtual StatusCode initialize() override;
+    virtual StatusCode finalize() override;
+
+    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM * ) const override;
+
+    
+
+
+  private:
+
+    void ReadShaper( std::string );
+    void GenerateDeterministicPulse(  std::vector<float> &pulse,  float amplitude, float phase, float lag) const;
+    void AddGaussianNoise( std::vector<float> &pulse, float noiseMean, float noiseStddev) const;
+
+
+    /*! Number of samples to be generated */
+    int m_nsamples;
+    int m_startSamplingBC;
+    int m_shaperZeroIndex;
+    float m_pedestal;
+    float m_deformationMean;
+    float m_deformationStd;
+    float m_samplingRate;
+    float m_shaperResolution;
+    float m_noiseMean;    
+    float m_noiseStd;    
+
+    // new for including cell defects
+    bool m_doDefects; 
+    bool m_deadModules;
+    std::vector<std::vector<int>> m_cellHash;
+    std::vector<float> m_noiseFactor;
+    std::vector<std::vector<int>> m_noisyEvents;
+    
+    std::vector<float> m_shaper;
+    std::vector<float> m_timeSeries;
+    
+    /*! The shaper configuration path */
+    std::string m_shaperFile;
+    /*! Output level message */
+    int m_outputLevel;
+    /*! Random generator */
+    mutable TRandom3 m_rng;
+};
+
+#endif
+
+
+
+

@@ -24,9 +24,9 @@ CrossTalkMaker::CrossTalkMaker( std::string name ) :
   declareProperty( "MinEnergy"              , m_minEnergy=1*GeV                     );
   declareProperty( "HistogramPath"          , m_histPath="/CrossTalkMakerSimulator"      );
   declareProperty( "OutputLevel"            , m_outputLevel=1                       );
-  declareProperty( "XTAmpCapacitive"        , m_AmpXt_C=4.2                         );
-  declareProperty( "XTAmpInductive"         , m_AmpXt_L=2.3                         );
-  declareProperty( "XTAmpResistive"         , m_AmpXt_R=1.0                         );
+  declareProperty( "AmpCapacitive"          , m_AmpXt_C=4.2                         );
+  declareProperty( "AmpInductive"           , m_AmpXt_L=2.3                         );
+  declareProperty( "AmpResistive"           , m_AmpXt_R=1.0                         );
 }\
 
 //!=====================================================================

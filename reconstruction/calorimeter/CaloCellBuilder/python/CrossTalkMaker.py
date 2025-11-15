@@ -2,7 +2,7 @@ __all__ = ["CrossTalkMaker"]
 
 from GaugiKernel import Cpp, LoggingLevel
 from GaugiKernel.macros import *
-from CaloCellBuilder import CaloFlags as flags
+from CaloCellBuilder import CrossTalkFlags as flags
 import ROOT
 
 class CrossTalkMaker( Cpp ):
@@ -10,10 +10,10 @@ class CrossTalkMaker( Cpp ):
   def __init__( self, name          : str, 
                 InputCollectionKey  : str="Cells",
                 OutputCollectionKey : str="XTCells",
-                MinEnergy           : float=flags.XTMinEnergy,
-                XTAmpCapacitive     : float=flags.XTAmpCapacitive,
-                XTAmpInductive      : float=flags.XTAmpInductive,
-                XTAmpResistive      : float=flags.XTAmpResistive,
+                MinEnergy           : float=flags.MinEnergy,
+                AmpCapacitive       : float=flags.AmpCapacitive,
+                AmpInductive        : float=flags.AmpInductive,
+                AmpResistive        : float=flags.AmpResistive,
                 HistogramPath       : str="/CrossTalkMaker",
                 OutputLevel         : int=LoggingLevel.toC('INFO'),
                 ):
@@ -24,9 +24,9 @@ class CrossTalkMaker( Cpp ):
     self.setProperty( "InputCollectionKey"    , InputCollectionKey  )
     self.setProperty( "OutputCollectionKey"   , OutputCollectionKey )
     self.setProperty( "MinEnergy"             , MinEnergy           )
-    self.setProperty( "XTAmpCapacitive"       , XTAmpCapacitive     )
-    self.setProperty( "XTAmpInductive"        , XTAmpInductive      )
-    self.setProperty( "XTAmpResistive"        , XTAmpResistive      )
+    self.setProperty( "AmpCapacitive"         , AmpCapacitive       )
+    self.setProperty( "AmpInductive"          , AmpInductive        )
+    self.setProperty( "AmpResistive"          , AmpResistive        )
     self.setProperty( "HistogramPath"         , HistogramPath       )
 
  

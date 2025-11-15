@@ -27,10 +27,20 @@ def parse_args():
                         dest='output_level', required=False,
                         type=str, default='INFO',
                         help="The output level messenger.")
-    parser.add_argument('-c', '--command', action='store',
-                        dest='command', required=False, default="''",
-                        help="The preexec command")
+    
+    parser.add_argument('--pre-init', action='store',
+                        dest='pre_exec', required=False, default="''",
+                        help="The preinit command")
 
+    parser.add_argument('--pre-exec', action='store',
+                        dest='pre_exec', required=False, default="''",
+                        help="The preexec command")
+    
+    parser.add_argument('--post-exec', action='store',
+                        dest='post_exec', required=False, default="''",
+                        help="The postexec command")
+
+   
     parser = merge_args(parser)
 
     return parser
@@ -40,7 +50,9 @@ def main(events : List[int],
          logging_level: str,
          input_file: str | Path,
          output_file: str | Path,
-         command: str,
+         pre_init: str,
+         pre_exec: str,
+         post_exec: str,
         ):
 
     if isinstance(input_file, Path):
@@ -49,7 +61,8 @@ def main(events : List[int],
         output_file = str(output_file)
 
     outputLevel = LoggingLevel.toC(logging_level)
-    exec(command)
+
+    exec(pre_init)
 
     acc = ComponentAccumulator("ComponentAccumulator", output_file)
 
@@ -86,9 +99,10 @@ def main(events : List[int],
                              InputSeedsKey=recordable("Seeds"),
                              OutputLevel=outputLevel)
     acc += ESD
-
+    
+    exec(pre_exec)
     acc.run(events)
-
+    exec(post_exec)
 
 
     
@@ -104,5 +118,7 @@ if __name__ == "__main__":
     pool  = create_parallel_job(args)
     pool( main, 
          logging_level    = args.output_level,
-         command          = args.command
+         pre_init         = args.pre_init,
+         pre_exec         = args.pre_exec,
+         post_exec        = args.post_exec,
          )

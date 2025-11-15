@@ -13,6 +13,10 @@ from . import PulseGenerator
 __all__.extend(PulseGenerator.__all__)
 from .PulseGenerator import *
 
+from . import AnomalyGenerator 
+__all__.extend(AnomalyGenerator.__all__)
+from .AnomalyGenerator import *
+
 from . import CrossTalkMaker
 __all__.extend(CrossTalkMaker.__all__)
 from .CrossTalkMaker import *

@@ -1,10 +1,14 @@
 
 __all__ = ["PulseGenerator"]
 
+
+import ROOT, json
+from typing import List
 from GaugiKernel import Cpp, LoggingLevel
 from GaugiKernel.macros import *
-import ROOT
 from RootStreamBuilder import RootStreamESDFlags as flags
+
+
 
 
 class PulseGenerator( Cpp ):
@@ -21,11 +25,11 @@ class PulseGenerator( Cpp ):
                 NoiseStd        : float=0,
                 SamplingRate    : float=0,
                 StartSamplingBC : float=0,
-                doDefects       : bool=False,  # argument passed through digit_trf
-                deadModules     : bool=flags.deadModules,
-                cellHash        : list=flags.cellHash,
-                noiseFactor     : list=[1],  # argument passed through digit_trf
-                noisyEvents     : list=flags.noisyEvents,
+                DoDefects       : bool=False,  # argument passed through digit_trf
+                DeadModules     : bool=False,
+                CellHashes      : List[int]=[],
+                NoiseFactor     : float=0,  # argument passed through digit_trf
+                NoisyEvents     : List[int]=[],
               ):
                 
     Cpp.__init__(self, ROOT.PulseGenerator(name) )
@@ -41,11 +45,11 @@ class PulseGenerator( Cpp ):
     self.setProperty( "StartSamplingBC" , StartSamplingBC   )
 
     # new properties for including cell defects
-    self.setProperty( "doDefects"       , doDefects       )
-    self.setProperty( "deadModules"     , deadModules     )
-    self.setProperty( "cellHash"        , cellHash        )
-    self.setProperty( "noiseFactor"     , noiseFactor     )
-    self.setProperty( "noisyEvents"     , noisyEvents     )
+    #self.setProperty( "DoDefects"       , doDefects       )
+    #self.setProperty( "DeadModules"     , deadModules     )
+    #self.setProperty( "cellHash"        , cellHash        )
+    #self.setProperty( "noiseFactor"     , noiseFactor     )
+    #self.setProperty( "noisyEvents"     , noisyEvents     )
 
  
      
