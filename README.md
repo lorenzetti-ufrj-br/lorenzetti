@@ -38,8 +38,9 @@ Details are given in [Reconstruction](docs/Reconstruction.md).
 ## Manual:
 
 - [Installation](docs/installation.md)
-- [Event geneation](docs/generation.ipynb)
+- [Event geneation](docs/generation.html)
 - [Simulation](docs/simulation.html)
+- [Digitization](docs/digitization.html)
 - [Visualization (Extra)](docs/Visualization.md)
 
 
