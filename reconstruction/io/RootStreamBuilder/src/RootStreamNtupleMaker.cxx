@@ -379,6 +379,13 @@ StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
   for (auto el : **electron_container.ptr() )
   
   {
+    cl_rings->clear();
+    mc_pdgid->clear();
+    mc_eta->clear();
+    mc_phi->clear();
+    mc_e->clear();
+    mc_et->clear();
+
     auto clus = el->caloCluster();
 
 
