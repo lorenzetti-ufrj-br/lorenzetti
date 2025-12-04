@@ -40,6 +40,7 @@ Details are given in [Reconstruction](docs/Reconstruction.md).
 - [Installation](docs/installation.md)
 - [Usage](docs/usage.html)
 - [Particle Generators](docs/generation.html)
+- [Anomaly Injection Tutorial](docs/anomaly.html)
 
 
 
