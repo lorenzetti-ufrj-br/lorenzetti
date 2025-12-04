@@ -29,8 +29,7 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          cd .github/workflows/tests
-          source test_generation.sh
+          gen_zee.py --nov 5 -o Zee.EVT.root
           
 
   simulation:
@@ -43,8 +42,7 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          cd .github/workflows/tests
-          source test_simu_trf.sh
+          simu_trf.py -i Zee.EVT.root -o Zee.HIT.root -nt 5
 
   merge:
     runs-on: self-hosted
@@ -101,8 +99,7 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          cd .github/workflows/tests
-          source test_gen_zee.sh
+          gen_zee.py --nov 5 -o Zee.EVT.root
 
   gen_jets:
     runs-on: self-hosted
@@ -114,8 +111,7 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          cd .github/workflows/tests
-          source test_gen_jets.sh
+          gen_jets.py --nov 2 -o JF17.EVT.root
 
   gen_minbias:
     runs-on: self-hosted
@@ -127,8 +123,7 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          cd .github/workflows/tests
-          source test_gen_minbias.sh
+          gen_minbias.py --nov 1 --pileup-per-bunch-crossing 2 -o mb.EVT.root --eta-max 2.5
 
 
   gen_single_particle:
@@ -141,8 +136,7 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          cd .github/workflows/tests
-          source test_gen_single.sh
+          gen_single.py -p Electron --eta-min 0 --eta-max 1.8 --nov 10 -o Electron.EVT.root
 
   gen_overlapped_zee:
     runs-on: self-hosted
@@ -154,5 +148,4 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          cd .github/workflows/tests
-          source test_gen_overlapped_zee.sh
+          gen_overlapped_zee.py --nov 5 -o OverlappedZee.EVT.root
