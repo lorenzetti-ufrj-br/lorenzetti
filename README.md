@@ -20,6 +20,15 @@ Please cite [![DOI](https://zenodo.org/badge/370090835.svg)](https://zenodo.org/
 [//]: # (and/or the applicable papers.)
 
 
+## Manual:
+
+- [Installation](docs/installation.md)
+- [Usage](docs/usage.html)
+- [Particle Generators](docs/generation.html)
+- [Anomaly Injection Tutorial](docs/anomaly.html)
+
+
+
 ## Detector Construction:
 
 The standard detector in the Lorenzetti framework consist in a eletromagnetic calorimeter and a hadronic calorimeter using a cylinder shape. Each one has 3 layers with different granularities to capture the shower develop by the particles. Also, between regions, there is a small slice of dead material.
@@ -29,18 +38,6 @@ The standard detector in the Lorenzetti framework consist in a eletromagnetic ca
 
 It is possible, by using Geant4 modules to change the geometry, the layers and the cell granularity, allowing a high level of customization of the full detector.
 
-
-## Anomalies
-
-This branch contains an implementation to add anomalies in the digitization step, corresponding to potential detector defects.
-Details are given in [Reconstruction](docs/Reconstruction.md).
-
-## Manual:
-
-- [Installation](docs/installation.md)
-- [Usage](docs/usage.html)
-- [Particle Generators](docs/generation.html)
-- [Anomaly Injection Tutorial](docs/anomaly.html)
 
 
 
