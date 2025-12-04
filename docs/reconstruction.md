@@ -143,6 +143,10 @@ reco_trf.py -i ESD.root -o AOD.root
 A set of examples files for each step can be found at the ```project drive``` folder [here](https://drive.google.com/drive/folders/1z3h6kP0VTVNml4sIQ8sB6eZtwXnrAdtG?usp=share_link). These small examples are for `Zee` decay.
 
 
+Here, let's run the digitalization step applying a set of anomalous behavior in cells. The configuration of the `AnomalyGenerator` should be applied using the `--pre-init` parameter.
+
+
+Here, let's run the digitalization step applying a set of anomalous behavier in cells. The configuration of the `AnomalyGenerator` should be apply using the `--pre-init` parameter.
 
 
 It is possible to configure some algorithms inside of the simulation using the pre-exec parameter. Here let's configure the `KeepCells` parameter from `NtupleHitMaker` algorithm to hold a list of cells by hash number. This strategy can be used in the anamalyes simulation.

@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Simulation</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>Usage</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7510,7 +7510,402 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=32fd6900-554d-421a-8c45-e7a912a2beca">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=55dbcbd8-98cc-4c67-b587-bd34d22bad28">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Tutorial-101:">Tutorial 101:<a class="anchor-link" href="#Tutorial-101:">¶</a></h1><p>This <code>notebook</code> is a tutorial about how to simulate and reconstruct events end-to-end in lorenzetti framework.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=51a0adec-047b-486f-8086-f735b4b1fbf8">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="How-to-generate-events?">How to generate events?<a class="anchor-link" href="#How-to-generate-events?">¶</a></h2><p>The event generation process is a critical first step in our simulation pipeline. It involves creating simulated particle interactions that mimic real-world physics events. This process is typically carried out using specialized scripts, such as <code>gen_zee.py</code>, which are designed to generate events based on specific parameters and configurations.</p>
+<p>During event generation, we define various parameters, including the number of events to generate, the output file format, and the characteristics of the particles involved. The script utilizes a random number generator to simulate the inherent uncertainties in particle interactions, ensuring that the generated events are representative of actual experimental conditions.</p>
+<p>The generated events can then be used for further analysis, including shower propagation, digitalization, and event reconstruction. This allows researchers to study the properties of particles and their interactions in a controlled environment, facilitating a deeper understanding of high-energy physics phenomena.</p>
+<h3 id="How-to-create-$Z%5Crightarrow-ee$-events?">How to create $Z\rightarrow ee$ events?<a class="anchor-link" href="#How-to-create-$Z%5Crightarrow-ee$-events?">¶</a></h3><p>Let's create a Z boson decay into an electron-positron pair using the <code>gen_zee.py</code> command. 🎉 This process is crucial for simulating the interactions that occur in high-energy physics experiments. By generating these events, we can study the properties of the Z boson and its decay channels in detail.</p>
+<p>To initiate the event generation, we specify parameters such as the average pileup, event number, and output file name. This allows us to customize the simulation according to our experimental needs.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ea2367f0-32e7-45d4-96bc-c38b7f124346">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>gen_zee.py
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Module libc not found.
+<span class="ansi-green-intense-fg ansi-bold">Usage:</span> <span class="ansi-bold" style="color: rgb(128,128,128)">gen_zee.py</span> [<span class="ansi-green-fg">--run-number</span> <span class="ansi-blue-fg">RUN_NUMBER</span>] [<span class="ansi-green-fg">--output-level</span> <span class="ansi-blue-fg">OUTPUT_LEVEL</span>]
+                  [<span class="ansi-green-fg">--eta-max</span> <span class="ansi-blue-fg">ETA_MAX</span>] [<span class="ansi-green-fg">--force-forward-electron</span>]
+                  [<span class="ansi-green-fg">--zero-vertex-particles</span>] [<span class="ansi-green-fg">--zee-file</span> <span class="ansi-blue-fg">ZEE_FILE</span>]
+                  [<span class="ansi-green-fg">-e</span> <span class="ansi-blue-fg">EVENT_NUMBERS</span>] <span class="ansi-green-fg">-o</span> <span class="ansi-blue-fg">OUTPUT_FILE</span> [<span class="ansi-green-fg">-s</span> <span class="ansi-blue-fg">SEED</span>]
+                  [<span class="ansi-green-fg">--nov</span> <span class="ansi-blue-fg">NUMBER_OF_EVENTS</span>] [<span class="ansi-green-fg">--events-per-job</span> <span class="ansi-blue-fg">EVENTS_PER_JOB</span>]
+                  [<span class="ansi-green-fg">-nt</span> <span class="ansi-blue-fg">NUMBER_OF_THREADS</span>] [<span class="ansi-green-fg">-m</span>] [<span class="ansi-green-fg">--overwrite</span>] [<span class="ansi-green-fg">--dry-run</span>]
+                  [<span class="ansi-green-fg">--job-file</span> <span class="ansi-blue-fg">JOB_FILE</span>]
+
+<span class="ansi-green-intense-fg ansi-bold">Options:</span>
+  <span class="ansi-green-fg">--run-number</span> <span class="ansi-blue-fg">RUN_NUMBER</span>
+                        <span style="color: rgb(128,128,128)">The run number.</span>
+  <span class="ansi-green-fg">--output-level</span> <span class="ansi-blue-fg">OUTPUT_LEVEL</span>
+                        <span style="color: rgb(128,128,128)">The output level messenger.</span>
+  <span class="ansi-green-fg">--eta-max</span> <span class="ansi-blue-fg">ETA_MAX</span>     <span style="color: rgb(128,128,128)">The eta max used in generator.</span>
+  <span class="ansi-green-fg">--force-forward-electron</span>
+                        <span style="color: rgb(128,128,128)">Force at least one electron into forward region.</span>
+  <span class="ansi-green-fg">--zero-vertex-particles</span>
+                        <span style="color: rgb(128,128,128)">Fix the z vertex position in simulation to zero for</span>
+                        <span style="color: rgb(128,128,128)">all selected particles. It is applied only at G4 step,</span>
+                        <span style="color: rgb(128,128,128)">not in generation.</span>
+  <span class="ansi-green-fg">--zee-file</span> <span class="ansi-blue-fg">ZEE_FILE</span>   <span style="color: rgb(128,128,128)">The pythia zee file configuration.</span>
+  <span class="ansi-green-fg">-e</span>, <span class="ansi-green-fg">--event-numbers</span> <span class="ansi-blue-fg">EVENT_NUMBERS</span>
+                        <span style="color: rgb(128,128,128)">The event number list separated by ','. e.g.</span>
+                        <span class="ansi-green-fg">--event-numbers</span><span style="color: rgb(128,128,128)"> '0,1,2,3'</span>
+  <span class="ansi-green-fg">-o</span>, <span class="ansi-green-fg">--output-file</span> <span class="ansi-blue-fg">OUTPUT_FILE</span>
+                        <span style="color: rgb(128,128,128)">The output file.</span>
+  <span class="ansi-green-fg">-s</span>, <span class="ansi-green-fg">--seed</span> <span class="ansi-blue-fg">SEED</span>       <span style="color: rgb(128,128,128)">The pythia seed (zero is the clock system)</span>
+  <span class="ansi-green-fg">--nov</span>, <span class="ansi-green-fg">--number-of-events</span> <span class="ansi-blue-fg">NUMBER_OF_EVENTS</span>
+                        <span style="color: rgb(128,128,128)">The total number of events to run.</span>
+  <span class="ansi-green-fg">--events-per-job</span> <span class="ansi-blue-fg">EVENTS_PER_JOB</span>
+                        <span style="color: rgb(128,128,128)">The number of events per job</span>
+  <span class="ansi-green-fg">-nt</span>, <span class="ansi-green-fg">--number-of-threads</span> <span class="ansi-blue-fg">NUMBER_OF_THREADS</span>
+                        <span style="color: rgb(128,128,128)">The number of threads</span>
+  <span class="ansi-green-fg">-m</span>, <span class="ansi-green-fg">--merge</span>           <span style="color: rgb(128,128,128)">Merge all files.</span>
+  <span class="ansi-green-fg">--overwrite</span>           <span style="color: rgb(128,128,128)">Rerun all jobs.</span>
+  <span class="ansi-green-fg">--dry-run</span>             <span style="color: rgb(128,128,128)">Perform a dry run without executing jobs.</span>
+  <span class="ansi-green-fg">--job-file</span> <span class="ansi-blue-fg">JOB_FILE</span>   <span style="color: rgb(128,128,128)">The JSON file used to configure this job automatically</span>
+                        <span style="color: rgb(128,128,128)">by overwritting some arguments.</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=09f2a819-5336-4bee-9caa-05b84cc7a1c3">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>gen_zee.py<span class="w"> </span>-o<span class="w"> </span>Zee.EVT.root<span class="w"> </span>--nov<span class="w"> </span><span class="m">5</span><span class="w"> </span>--events-per-job<span class="w"> </span><span class="m">5</span><span class="w"> </span>-nt<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Module libc not found.
+{'Zee.EVT.0.root': {'evt': [0, 1, 2, 3, 4], 'seed': 413654000}}
+{'eta_max': 3.2,
+ 'force_forward_electron': False,
+ 'logging_level': 'INFO',
+ 'run_number': 0,
+ 'zee_file': '/home/joao.pinto/git_repos/lorenzetti/build/data/evtgen/zee_config.cmnd',
+ 'zero_vertex_particles': False}
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.313      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 10 Jan 2025  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 04 Dec 2025 at 13:26:17    |  | 
+ |  |                                                                              |  | 
+ |  |   Program documentation and an archive of historic versions is found on:     |  | 
+ |  |                                                                              |  | 
+ |  |                               https://pythia.org/                            |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is authored by a collaboration consisting of:                       |  | 
+ |  |                                                                              |  | 
+ |  |   Javira Altmann, Christian Bierlich, Naomi Cooke, Nishita Desai,            |  | 
+ |  |   Ilkka Helenius, Philip Ilten, Leif Lonnblad, Stephen Mrenna,               |  | 
+ |  |   Christian Preuss, Torbjorn Sjostrand, and Peter Skands.                    |  | 
+ |  |                                                                              |  | 
+ |  |   The complete list of authors, including contact information and            |  | 
+ |  |   affiliations, can be found on https://pythia.org/.                         |  | 
+ |  |   Problems or bugs should be reported on email at authors@pythia.org.        |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is C. Bierlich et al,                           |  | 
+ |  |   'A comprehensive guide to the physics and usage of Pythia 8.3',            |  | 
+ |  |   SciPost Phys. Codebases 8-r8.3 (2022) [arXiv:2203.11601 [hep-ph]]          |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is released under the GNU General Public Licence version 2          |  | 
+ |  |   or later. Please respect the MCnet Guidelines for Generator Authors        |  | 
+ |  |   and Users.                                                                 |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2025 Torbjorn Sjostrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+Cxx.EventTape                            INFO Initialize generator...
+Cxx.Pythia8                              INFO Initialize Pythia8 generator with seed 413654000...
+Cxx.Pythia8                              INFO Reading configuration from: /home/joao.pinto/git_repos/lorenzetti/build/data/evtgen/zee_config.cmnd
+
+ *-------  PYTHIA Process Initialization  --------------------------*
+ |                                                                  |
+ | We collide p+ with p+ at a CM energy of 1.400e+04 GeV            |
+ |                                                                  |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | Subprocess                                    Code |   Estimated |
+ |                                                    |    max (mb) |
+ |                                                    |             |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | q qbar -&gt; gamma*/Z0 g                          241 |   6.339e-06 |
+ | q g-&gt; gamma*/Z0 q                              242 |   2.956e-06 |
+ |                                                                  |
+ *-------  End PYTHIA Process Initialization -----------------------*
+
+ *-------  PYTHIA Multiparton Interactions Initialization  ---------* 
+ |                                                                  | 
+ |                   sigmaNonDiffractive =    57.17 mb              | 
+ |                                                                  | 
+ |    pT0 =  2.65 gives sigmaInteraction =   327.46 mb: accepted    | 
+ |                                                                  | 
+ *-------  End PYTHIA Multiparton Interactions Initialization  -----* 
+
+ *-------  PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec + WVec Settings (changes only)  ------------------* 
+ |                                                                                                                 | 
+ | Name                                          |                      Now |      Default         Min         Max | 
+ |                                               |                          |                                      | 
+ | Main:numberOfEvents                           |                      100 |         1000           0             | 
+ | Main:timesAllowErrors                         |                        3 |           10           0             | 
+ | Next:numberCount                              |                       10 |         1000           0             | 
+ | Next:numberShowEvent                          |                        0 |            1           0             | 
+ | Next:numberShowProcess                        |                        0 |            1           0             | 
+ | PhaseSpace:mHatMax                            |                120.00000 |     -1.00000                         | 
+ | PhaseSpace:mHatMin                            |                 75.00000 |      4.00000         0.0             | 
+ | Random:seed                                   |                413654000 |           -1               900000000 | 
+ | Random:setSeed                                |                       on |          off                         | 
+ | WeakBosonAndParton:qg2gmZq                    |                       on |          off                         | 
+ | WeakBosonAndParton:qqbar2gmZg                 |                       on |          off                         | 
+ | WeakZ0:gmZmode                                |                        2 |            0           0           2 | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec + WVec Settings  -----------------------------* 
+
+ --------  PYTHIA Particle Data Table (changed only)  ------------------------------------------------------------------------------
+ 
+      id   name            antiName         spn chg col      m0        mWidth      mMin       mMax       tau0    res dec ext vis wid
+             no onMode   bRatio   meMode     products 
+
+      23  Z0                                  3   0   0   91.18760    2.50419   10.00000    0.00000  7.87987e-14   1   1   0   0   0
+              0     0   0.1540492    0        1       -1 
+              1     0   0.1194935    0        2       -2 
+              2     0   0.1540386    0        3       -3 
+              3     0   0.1193325    0        4       -4 
+              4     0   0.1523269    0        5       -5 
+              5     1   0.0335480    0       11      -11 
+              6     0   0.0667305    0       12      -12 
+              7     0   0.0335477    0       13      -13 
+              8     0   0.0667305    0       14      -14 
+              9     0   0.0334720    0       15      -15 
+             10     0   0.0667305    0       16      -16 
+
+ --------  End PYTHIA Particle Data Table  -----------------------------------------------------------------------------------------
+
+Cxx.EventTape                            INFO Running event 0 with eventNumber 0
+Cxx.Pythia8                              INFO Pythia8::next()...
+
+ --------  PYTHIA Info Listing  ---------------------------------------- 
+ 
+ Beam A: id =   2212, pz =  7.000e+03, e =  7.000e+03, m =  9.383e-01.
+ Beam B: id =   2212, pz = -7.000e+03, e =  7.000e+03, m =  9.383e-01.
+
+ In 1: id =   -1, x =  4.076e-02, pdf =  2.085e-01 at Q2 =  2.841e+01.
+ In 2: id =    1, x =  1.712e-03, pdf =  6.799e-01 at same Q2.
+
+ Subprocess q qbar -&gt; gamma*/Z0 g with code 241 is 2 -&gt; 2.
+ It has sHat =  1.368e+04,    tHat = -5.976e+01,    uHat = -6.502e+03,
+       pTHat =  5.330e+00,   m3Hat =  8.436e+01,   m4Hat =  0.000e+00,
+    thetaHat =  1.912e-01,  phiHat =  3.378e+00.
+     alphaEM =  7.690e-03,  alphaS =  1.691e-01    at Q2 =  4.505e+02.
+
+ Impact parameter b =  2.422e-01 gives enhancement factor =  3.659e+00.
+ Max pT scale for MPI =  1.400e+04, ISR =  5.330e+00, FSR =  5.330e+00.
+ Number of MPI =    14, ISR =    32, FSRproc =   114, FSRreson =     1.
+
+ --------  End PYTHIA Info Listing  ------------------------------------
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 0 with eventNumber 0
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 0 with eventNumber 0
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 0 with eventNumber 0
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 0 with eventNumber 0
+Cxx.Pythia8                              INFO Pythia8::next()...
+Cxx.Zee                                  INFO Filling Zee events into the context...
+Cxx.Zee                                  INFO Add particle with PDGID 11 and vertex x=8.63014e-15, y=-5.52783e-16, z=-37.3808, t=29.81 into the context.
+Cxx.Zee                                  INFO Add particle with PDGID -11 and vertex x=8.63014e-15, y=-5.52783e-16, z=-37.3808, t=29.81 into the context.
+Cxx.EventTape                            INFO Running event 1 with eventNumber 1
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 1 with eventNumber 1
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 1 with eventNumber 1
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 1 with eventNumber 1
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 1 with eventNumber 1
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 1 with eventNumber 1
+Cxx.Pythia8                              INFO Pythia8::next()...
+
+ Pythia::next(): 10 events have been generated 
+Cxx.Zee                                  INFO Filling Zee events into the context...
+Cxx.Zee                                  INFO Add particle with PDGID 11 and vertex x=5.9603e-18, y=3.57963e-16, z=-2.49135, t=8.43229 into the context.
+Cxx.Zee                                  INFO Add particle with PDGID -11 and vertex x=5.9603e-18, y=3.57963e-16, z=-2.49135, t=8.43229 into the context.
+Cxx.EventTape                            INFO Running event 2 with eventNumber 2
+Cxx.Pythia8                              INFO Pythia8::next()...
+Cxx.Zee                                  INFO Filling Zee events into the context...
+Cxx.Zee                                  INFO Add particle with PDGID 11 and vertex x=-1.13226e-15, y=-6.45423e-15, z=35.4857, t=-6.42398 into the context.
+Cxx.Zee                                  INFO Add particle with PDGID -11 and vertex x=-1.13226e-15, y=-6.45423e-15, z=35.4857, t=-6.42398 into the context.
+Cxx.EventTape                            INFO Running event 3 with eventNumber 3
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 3 with eventNumber 3
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 3 with eventNumber 3
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 3 with eventNumber 3
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 3 with eventNumber 3
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 3 with eventNumber 3
+Cxx.Pythia8                              INFO Pythia8::next()...
+Cxx.Zee                                  INFO Filling Zee events into the context...
+Cxx.Zee                                  INFO Add particle with PDGID -11 and vertex x=1.62411e-16, y=-5.22831e-16, z=6.08098, t=-8.51029 into the context.
+Cxx.EventTape                            INFO Running event 4 with eventNumber 4
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 4 with eventNumber 4
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 4 with eventNumber 4
+Cxx.Pythia8                              INFO Pythia8::next()...
+
+ Pythia::next(): 20 events have been generated 
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 4 with eventNumber 4
+Cxx.Pythia8                              INFO Pythia8::next()...
+<span class="ansi-cyan-fg">Cxx.Zee                                DEBUG There is not Zee event inside of this event</span>
+<span class="ansi-yellow-fg">Cxx.EventTape                        WARNING Ignoring non interesting event, regenerating...</span>
+Cxx.EventTape                            INFO Running event 4 with eventNumber 4
+Cxx.Pythia8                              INFO Pythia8::next()...
+Cxx.Zee                                  INFO Filling Zee events into the context...
+Cxx.Zee                                  INFO Add particle with PDGID 11 and vertex x=5.57947e-17, y=4.64033e-16, z=25.8027, t=-26.9281 into the context.
+Cxx.Zee                                  INFO Add particle with PDGID -11 and vertex x=5.57947e-17, y=4.64033e-16, z=25.8027, t=-26.9281 into the context.
+Cxx.EventTape                            INFO Finalize the Event generator.
+Cxx.Zee                                  INFO Finalize the Zee Event.
+Cxx.Pythia8                              INFO Finalize the Pythia8 Event.
+
+ *-------  PYTHIA Event and Cross Section Statistics  -------------------------------------------------------------*
+ |                                                                                                                 |
+ | Subprocess                                    Code |            Number of events       |      sigma +- delta    |
+ |                                                    |       Tried   Selected   Accepted |     (estimated) (mb)   |
+ |                                                    |                                   |                        |
+ |-----------------------------------------------------------------------------------------------------------------|
+ |                                                    |                                   |                        |
+ | q qbar -&gt; gamma*/Z0 g                          241 |         142         19         19 |   7.878e-07  8.608e-08 |
+ | q g-&gt; gamma*/Z0 q                              242 |          52          4          4 |   3.723e-07  7.260e-08 |
+ |                                                    |                                   |                        |
+ | sum                                                |         194         23         23 |   1.160e-06  1.126e-07 |
+ |                                                                                                                 |
+ *-------  End PYTHIA Event and Cross Section Statistics ----------------------------------------------------------*
+
+ *-------  PYTHIA Error and Warning Messages Statistics  ----------------------------------------------------------* 
+ |                                                                                                                 | 
+ |  times   message                                                                                                | 
+ |                                                                                                                 | 
+ |      0   no errors or warnings to report                                                                        | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Error and Warning Messages Statistics  ------------------------------------------------------* 
+Cxx.StoreGate                            INFO Saving StoreGate...
+Cxx.StoreGate                            INFO Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO Decorators will no be saved into the root file.
+hadd -f Zee.EVT.root Zee.EVT.0.root
+Module libc not found.
+hadd Target file: Zee.EVT.root
+hadd compression setting for all output: 101
+hadd Source file 1: Zee.EVT.0.root
+hadd Target path: Zee.EVT.root:/
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;: Unchecked status codes encountered during the job
+Warning in &lt;StatusCode&gt;: Number of unchecked successes: 3
+Warning in &lt;StatusCode&gt;: To fail on an unchecked code, call StatusCode::enableFailure() at the job's start
+Warning in &lt;StatusCode&gt;:
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c67d52a9-5a6e-49fb-822d-8ba0ac9bf785">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7521,12 +7916,12 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=6c32acfb-0c72-476e-bb51-7115c609262b">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9ca62211-a735-451f-a404-e119a5e0dd8c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>simu_trf.py
@@ -7577,189 +7972,18 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=df27a358-b39c-49fc-bb23-58f5a2f29988">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>simu_trf.py<span class="w"> </span>-i<span class="w"> </span>Zee.EVT.root<span class="w"> </span>-o<span class="w"> </span>Zee.HIT.root<span class="w"> </span>--nov<span class="w"> </span><span class="m">10</span><span class="w"> </span>-nt<span class="w"> </span><span class="m">10</span><span class="w"> </span>--dry-run
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Module libc not found.
-input file: Zee.EVT.root
-output file: Zee.HIT.root
-number of threads: 10
-Cxx.ComponentAccumulator                 INFO Run manager was created.
-Compiling...: 100%|█████████████████| 34/34 [00:00&lt;00:00, 3267.04it/s]
-Py.CaloHitBuilder                       INFO Configure CaloHitBuilder.
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_PSB collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMB1 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMB2 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMB3 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileCal1 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileCal2 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileCal3 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt1_A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt2_A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt3_A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_PSE_A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_2A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_3A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC2_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC2_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC3_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC3_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC1_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC1_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC2_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC2_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC3_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC3_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt1_B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt2_B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt3_B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_PSE_B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_2B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_3B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC2_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC2_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC3_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC3_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC1_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC1_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC2_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC2_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC3_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC3_1B collection
-Py.CaloHitBuilder                       INFO Create CaloHitMerge and dump all hit collections into Hits container
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=fe8d07fb-1837-4783-88e7-cf961ca6e05c">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=99985ca1-4f1d-4394-bf21-55f1fcc872b1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Pre-execution-adaptation:">Pre-execution adaptation:<a class="anchor-link" href="#Pre-execution-adaptation:">¶</a></h2><p>It's possible to configure certain algorithms within the simulation using the <code>pre-exec</code> parameter. Usually this stage can be used when all algorithms are setted. This will be executed before the execution (<code>run</code>) event loop.</p>
-<h3 id="Save-all-hits:">Save all hits:<a class="anchor-link" href="#Save-all-hits:">¶</a></h3><p>Here is hot can set the simulator to keep all hits.</p>
+<h2 id="How-to-run-simulation?">How to run simulation?<a class="anchor-link" href="#How-to-run-simulation?">¶</a></h2>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=708535a9-02c7-461d-a7d2-979b55b43cf7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>simu_trf.py<span class="w"> </span>-i<span class="w"> </span>Zee.EVT.root<span class="w"> </span>-o<span class="w"> </span>Zee.HIT.root<span class="w"> </span>--nov<span class="w"> </span><span class="m">10</span><span class="w"> </span>-nt<span class="w"> </span><span class="m">10</span><span class="w"> </span>--dry-run<span class="w"> </span>--pre-exec<span class="w"> </span><span class="s2">"HIT.setProperty('OnlyRoI',False)"</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Module libc not found.
-input file: Zee.EVT.root
-output file: Zee.HIT.root
-number of threads: 10
-Cxx.ComponentAccumulator                 INFO Run manager was created.
-Compiling...: 100%|█████████████████| 34/34 [00:00&lt;00:00, 3428.94it/s]
-Py.CaloHitBuilder                       INFO Configure CaloHitBuilder.
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_PSB collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMB1 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMB2 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMB3 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileCal1 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileCal2 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileCal3 collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt1_A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt2_A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt3_A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_PSE_A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_2A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_3A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC2_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC2_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC3_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC3_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC1_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC1_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC2_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC2_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC3_0A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC3_1A collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt1_B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt2_B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_TileExt3_B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_PSE_B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_2B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC1_3B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC2_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC2_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC3_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMEC3_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC1_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC1_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC2_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC2_1B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC3_0B collection
-Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_HEC3_1B collection
-Py.CaloHitBuilder                       INFO Create CaloHitMerge and dump all hit collections into Hits container
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5376778e-0074-46b7-8c0d-00be8bfb0313">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Anomaly-simulation:">Anomaly simulation:<a class="anchor-link" href="#Anomaly-simulation:">¶</a></h3><p>Here is how you can set the KeepCells parameter for the <code>RootStreamHitMaker</code> algorithm:</p>
-<ul>
-<li>Parameter: <code>KeepCells</code></li>
-<li>Value: A list of cells specified by their hash number.</li>
-</ul>
-<p><strong>NOTE</strong>: This specific strategy is often utilized in anomaly simulations.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d9d8de95-2bb8-4bba-9e68-8c492b0b5acf">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=0a3a3a18-eb5c-443a-9899-9e771e8baf80">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7767,95 +7991,7 @@ Py.CaloHitBuilder                       INFO Create CaloHitMerge and dump all hi
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-
-<span class="n">cells</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="c1"># examples of cell hash IDs where noise is increased</span>
-                             <span class="mi">1265</span><span class="p">,</span>      <span class="mi">1266</span><span class="p">,</span>      <span class="mi">1267</span><span class="p">,</span>      <span class="mi">1268</span><span class="p">,</span>      <span class="mi">1269</span><span class="p">,</span> <span class="c1"># center PSB</span>
-                        <span class="mi">170001265</span><span class="p">,</span> <span class="mi">170001266</span><span class="p">,</span> <span class="mi">170001267</span><span class="p">,</span> <span class="mi">170001268</span><span class="p">,</span> <span class="mi">170001269</span><span class="p">,</span> <span class="c1"># right PSB</span>
-                        <span class="mi">340001265</span><span class="p">,</span> <span class="mi">340001266</span><span class="p">,</span> <span class="mi">340001267</span><span class="p">,</span> <span class="mi">340001268</span><span class="p">,</span> <span class="mi">340001269</span><span class="p">,</span> <span class="c1"># left PSB</span>
-                         <span class="mi">18400805</span><span class="p">,</span>  <span class="mi">18400806</span><span class="p">,</span>  <span class="mi">18400807</span><span class="p">,</span>  <span class="mi">18400808</span><span class="p">,</span>  <span class="mi">18400809</span><span class="p">,</span> <span class="c1"># center PSE</span>
-                        <span class="mi">188400805</span><span class="p">,</span> <span class="mi">188400806</span><span class="p">,</span> <span class="mi">188400807</span><span class="p">,</span> <span class="mi">188400808</span><span class="p">,</span> <span class="mi">188400809</span><span class="p">,</span> <span class="c1"># right PSE</span>
-                        <span class="mi">358000805</span><span class="p">,</span> <span class="mi">358000806</span><span class="p">,</span> <span class="mi">358000807</span><span class="p">,</span> <span class="mi">358000808</span><span class="p">,</span> <span class="mi">358000809</span><span class="p">,</span> <span class="c1"># left PSE</span>
-                         <span class="mi">20025610</span><span class="p">,</span>  <span class="mi">20025611</span><span class="p">,</span>  <span class="mi">20025612</span><span class="p">,</span>  <span class="mi">20025613</span><span class="p">,</span>  <span class="mi">20025614</span><span class="p">,</span> <span class="c1"># center EMB1</span>
-                        <span class="mi">190025610</span><span class="p">,</span> <span class="mi">190025611</span><span class="p">,</span> <span class="mi">190025612</span><span class="p">,</span> <span class="mi">190025613</span><span class="p">,</span> <span class="mi">190025614</span><span class="p">,</span> <span class="c1"># right EMB1</span>
-                        <span class="mi">360025610</span><span class="p">,</span> <span class="mi">360025611</span><span class="p">,</span> <span class="mi">360025612</span><span class="p">,</span> <span class="mi">360025613</span><span class="p">,</span> <span class="mi">360025614</span><span class="p">,</span> <span class="c1"># left EMB1</span>
-                         <span class="mi">30029160</span><span class="p">,</span>  <span class="mi">30029161</span><span class="p">,</span>  <span class="mi">30029162</span><span class="p">,</span>  <span class="mi">30029163</span><span class="p">,</span>  <span class="mi">30029164</span><span class="p">,</span> <span class="c1"># center EMB2</span>
-                        <span class="mi">200029160</span><span class="p">,</span> <span class="mi">200029161</span><span class="p">,</span> <span class="mi">200029162</span><span class="p">,</span> <span class="mi">200029163</span><span class="p">,</span> <span class="mi">200029164</span><span class="p">,</span> <span class="c1"># right EMB2</span>
-                        <span class="mi">370029160</span><span class="p">,</span> <span class="mi">370029161</span><span class="p">,</span> <span class="mi">370029162</span><span class="p">,</span> <span class="mi">370029163</span><span class="p">,</span> <span class="mi">370029164</span><span class="p">,</span> <span class="c1"># left EMB2</span>
-                         <span class="mi">40013020</span><span class="p">,</span>  <span class="mi">40013021</span><span class="p">,</span>  <span class="mi">40013022</span><span class="p">,</span>  <span class="mi">40013023</span><span class="p">,</span>  <span class="mi">40013024</span><span class="p">,</span> <span class="c1"># center EMB3</span>
-                        <span class="mi">210013020</span><span class="p">,</span> <span class="mi">210013021</span><span class="p">,</span> <span class="mi">210013022</span><span class="p">,</span> <span class="mi">210013023</span><span class="p">,</span> <span class="mi">210013024</span><span class="p">,</span> <span class="c1"># right EMB3</span>
-                        <span class="mi">380013020</span><span class="p">,</span> <span class="mi">380013021</span><span class="p">,</span> <span class="mi">380013022</span><span class="p">,</span> <span class="mi">380013023</span><span class="p">,</span> <span class="mi">380013024</span><span class="p">,</span> <span class="c1"># left EMB3</span>
-                         <span class="mi">50000245</span><span class="p">,</span>  <span class="mi">50000246</span><span class="p">,</span>  <span class="mi">50000247</span><span class="p">,</span>  <span class="mi">50000248</span><span class="p">,</span>  <span class="mi">50000249</span><span class="p">,</span> <span class="c1"># center TileCal1</span>
-                        <span class="mi">220000245</span><span class="p">,</span> <span class="mi">220000246</span><span class="p">,</span> <span class="mi">220000247</span><span class="p">,</span> <span class="mi">220000248</span><span class="p">,</span> <span class="mi">220000249</span><span class="p">,</span> <span class="c1"># right TileCal1</span>
-                        <span class="mi">390000245</span><span class="p">,</span> <span class="mi">390000246</span><span class="p">,</span> <span class="mi">390000247</span><span class="p">,</span> <span class="mi">390000248</span><span class="p">,</span> <span class="mi">390000249</span><span class="p">,</span> <span class="c1"># left TileCal1</span>
-                         <span class="mi">60000245</span><span class="p">,</span>  <span class="mi">60000246</span><span class="p">,</span>  <span class="mi">60000247</span><span class="p">,</span>  <span class="mi">60000248</span><span class="p">,</span>  <span class="mi">60000249</span><span class="p">,</span> <span class="c1"># center TileCal2</span>
-                        <span class="mi">230000245</span><span class="p">,</span> <span class="mi">230000246</span><span class="p">,</span> <span class="mi">230000247</span><span class="p">,</span> <span class="mi">230000248</span><span class="p">,</span> <span class="mi">230000249</span><span class="p">,</span> <span class="c1"># right TileCal2</span>
-                        <span class="mi">400000245</span><span class="p">,</span> <span class="mi">400000246</span><span class="p">,</span> <span class="mi">400000247</span><span class="p">,</span> <span class="mi">400000248</span><span class="p">,</span> <span class="mi">400000249</span><span class="p">,</span> <span class="c1"># left TileCal2</span>
-                         <span class="mi">78406245</span><span class="p">,</span>  <span class="mi">78406246</span><span class="p">,</span>  <span class="mi">78406247</span><span class="p">,</span>  <span class="mi">78406248</span><span class="p">,</span>  <span class="mi">78406249</span><span class="p">,</span> <span class="c1"># center TileCal3</span>
-                        <span class="mi">248406245</span><span class="p">,</span> <span class="mi">248406246</span><span class="p">,</span> <span class="mi">248406247</span><span class="p">,</span> <span class="mi">248406248</span><span class="p">,</span> <span class="mi">248406249</span><span class="p">,</span> <span class="c1"># right TileCal3</span>
-                        <span class="mi">418406245</span><span class="p">,</span> <span class="mi">418406246</span><span class="p">,</span> <span class="mi">418406247</span><span class="p">,</span> <span class="mi">418406248</span><span class="p">,</span> <span class="mi">418406249</span><span class="p">,</span> <span class="c1"># left TileCal3</span>
-                        <span class="mi">256000680</span><span class="p">,</span> <span class="mi">256000681</span><span class="p">,</span> <span class="mi">256000682</span><span class="p">,</span> <span class="mi">256000683</span><span class="p">,</span> <span class="mi">256000684</span><span class="p">,</span> <span class="c1"># right TileExt1</span>
-                        <span class="mi">426000680</span><span class="p">,</span> <span class="mi">426000681</span><span class="p">,</span> <span class="mi">426000682</span><span class="p">,</span> <span class="mi">426000683</span><span class="p">,</span> <span class="mi">426000684</span><span class="p">,</span> <span class="c1"># left TileExt1</span>
-                        <span class="mi">260000120</span><span class="p">,</span> <span class="mi">260000121</span><span class="p">,</span> <span class="mi">260000122</span><span class="p">,</span> <span class="mi">260000123</span><span class="p">,</span> <span class="mi">260000124</span><span class="p">,</span> <span class="c1"># right TileExt2</span>
-                        <span class="mi">430000120</span><span class="p">,</span> <span class="mi">430000121</span><span class="p">,</span> <span class="mi">430000122</span><span class="p">,</span> <span class="mi">430000123</span><span class="p">,</span> <span class="mi">430000124</span><span class="p">,</span> <span class="c1"># left TileExt2</span>
-                        <span class="mi">270000106</span><span class="p">,</span> <span class="mi">270000107</span><span class="p">,</span> <span class="mi">270000108</span><span class="p">,</span> <span class="mi">270000109</span><span class="p">,</span> <span class="mi">270000110</span><span class="p">,</span> <span class="c1"># right TileExt3</span>
-                        <span class="mi">440000106</span><span class="p">,</span> <span class="mi">440000107</span><span class="p">,</span> <span class="mi">440000108</span><span class="p">,</span> <span class="mi">440000109</span><span class="p">,</span> <span class="mi">440000110</span><span class="p">,</span> <span class="c1"># left TileExt3</span>
-                        <span class="mi">280000440</span><span class="p">,</span> <span class="mi">280000441</span><span class="p">,</span> <span class="mi">280000442</span><span class="p">,</span> <span class="mi">280000443</span><span class="p">,</span> <span class="mi">280000444</span><span class="p">,</span> <span class="c1"># right EMEC1</span>
-                        <span class="mi">450000440</span><span class="p">,</span> <span class="mi">450000441</span><span class="p">,</span> <span class="mi">450000442</span><span class="p">,</span> <span class="mi">450000443</span><span class="p">,</span> <span class="mi">450000444</span><span class="p">,</span> <span class="c1"># left EMEC1</span>
-                        <span class="mi">290000440</span><span class="p">,</span> <span class="mi">290000441</span><span class="p">,</span> <span class="mi">290000442</span><span class="p">,</span> <span class="mi">290000443</span><span class="p">,</span> <span class="mi">290000444</span><span class="p">,</span> <span class="c1"># right EMEC2</span>
-                        <span class="mi">460000440</span><span class="p">,</span> <span class="mi">460000441</span><span class="p">,</span> <span class="mi">460000442</span><span class="p">,</span> <span class="mi">460000443</span><span class="p">,</span> <span class="mi">460000444</span><span class="p">,</span> <span class="c1"># left EMEC2</span>
-                        <span class="mi">300005110</span><span class="p">,</span> <span class="mi">300005111</span><span class="p">,</span> <span class="mi">300005112</span><span class="p">,</span> <span class="mi">300005113</span><span class="p">,</span> <span class="mi">300005114</span><span class="p">,</span> <span class="c1"># right EMEC3</span>
-                        <span class="mi">470005110</span><span class="p">,</span> <span class="mi">470005111</span><span class="p">,</span> <span class="mi">470005112</span><span class="p">,</span> <span class="mi">470005113</span><span class="p">,</span> <span class="mi">470005114</span><span class="p">,</span> <span class="c1"># left EMEC3</span>
-                        <span class="mi">312807780</span><span class="p">,</span> <span class="mi">312807781</span><span class="p">,</span> <span class="mi">312807782</span><span class="p">,</span> <span class="mi">312807783</span><span class="p">,</span> <span class="mi">312807784</span><span class="p">,</span> <span class="c1"># right HEC1</span>
-                        <span class="mi">482807780</span><span class="p">,</span> <span class="mi">482807781</span><span class="p">,</span> <span class="mi">482807782</span><span class="p">,</span> <span class="mi">482807783</span><span class="p">,</span> <span class="mi">482807784</span><span class="p">,</span> <span class="c1"># left HEC1                        </span>
-                        <span class="mi">320000560</span><span class="p">,</span> <span class="mi">320000561</span><span class="p">,</span> <span class="mi">320000562</span><span class="p">,</span> <span class="mi">320000563</span><span class="p">,</span> <span class="mi">320000564</span><span class="p">,</span> <span class="c1"># right HEC2</span>
-                        <span class="mi">490000560</span><span class="p">,</span> <span class="mi">490000561</span><span class="p">,</span> <span class="mi">490000562</span><span class="p">,</span> <span class="mi">490000563</span><span class="p">,</span> <span class="mi">490000564</span><span class="p">,</span> <span class="c1"># left HEC2</span>
-                        <span class="mi">330000290</span><span class="p">,</span> <span class="mi">330000291</span><span class="p">,</span> <span class="mi">330000292</span><span class="p">,</span> <span class="mi">330000293</span><span class="p">,</span> <span class="mi">330000294</span><span class="p">,</span> <span class="c1"># right HEC3</span>
-                        <span class="mi">500000290</span><span class="p">,</span> <span class="mi">500000291</span><span class="p">,</span> <span class="mi">500000292</span><span class="p">,</span> <span class="mi">500000293</span><span class="p">,</span> <span class="mi">500000294</span><span class="p">,</span> <span class="c1"># left HEC3</span>
-      <span class="p">]</span>
-
-<span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"runs"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">"DeadModules"</span>     <span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="s2">"StartEventNumber"</span><span class="p">:</span> <span class="mi">80000</span><span class="p">,</span>
-            <span class="s2">"EndEventNumber"</span>  <span class="p">:</span> <span class="mi">81000</span><span class="p">,</span>
-            <span class="s2">"NoiseStdFactor"</span>  <span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="s2">"Cells"</span>           <span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">"DeadModules"</span>     <span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="s2">"StartEventNumber"</span><span class="p">:</span> <span class="mi">85000</span><span class="p">,</span>
-            <span class="s2">"EndEventNumber"</span>  <span class="p">:</span> <span class="mi">87000</span><span class="p">,</span>
-            <span class="s2">"NoiseStdFactor"</span>  <span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="s2">"Cells"</span>           <span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">41</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="mi">43</span><span class="p">,</span> <span class="mi">44</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">46</span><span class="p">,</span> <span class="mi">47</span><span class="p">,</span> <span class="mi">48</span><span class="p">,</span> <span class="mi">49</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">52</span><span class="p">,</span> <span class="mi">53</span><span class="p">,</span> <span class="mi">54</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">57</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mi">59</span><span class="p">]</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">"DeadModules"</span>     <span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="s2">"StartEventNumber"</span><span class="p">:</span> <span class="mi">89000</span><span class="p">,</span>
-            <span class="s2">"EndEventNumber"</span>  <span class="p">:</span> <span class="mi">92000</span><span class="p">,</span>
-            <span class="s2">"NoiseStdFactor"</span>  <span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="s2">"Cells"</span>           <span class="p">:</span> <span class="n">cells</span><span class="p">,</span>    
-        <span class="p">}</span>
-    <span class="p">]</span> 
-<span class="p">}</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"brl.json"</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5ff19465-251c-4cff-8f62-0711f5d1afa6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>simu_trf.py<span class="w"> </span>-i<span class="w"> </span>Zee.EVT.root<span class="w"> </span>-o<span class="w"> </span>Zee.HIT.root<span class="w"> </span>--nov<span class="w"> </span><span class="m">1</span><span class="w"> </span>--pre-exec<span class="w"> </span><span class="s2">"from CaloCellBuilder import get_cells_from_brl as reader;HIT.setProperty('KeepCells',reader('brl.json'))"</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>simu_trf.py<span class="w"> </span>-i<span class="w"> </span>Zee.EVT.root<span class="w"> </span>-o<span class="w"> </span>Zee.HIT.root<span class="w"> </span>-nt<span class="w"> </span><span class="m">5</span>
 </pre></div>
 </div>
 </div>
@@ -7871,9 +8007,9 @@ Py.CaloHitBuilder                       INFO Create CaloHitMerge and dump all hi
 <pre>Module libc not found.
 input file: Zee.EVT.root
 output file: Zee.HIT.root
-number of threads: 1
+number of threads: 5
 Cxx.ComponentAccumulator                 INFO Run manager was created.
-Compiling...: 100%|█████████████████| 34/34 [00:00&lt;00:00, 3278.76it/s]
+Compiling...: 100%|█████████████████| 34/34 [00:00&lt;00:00, 3414.41it/s]
 Py.CaloHitBuilder                       INFO Configure CaloHitBuilder.
 Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_PSB collection
 Py.CaloHitBuilder                       INFO Create new CaloHitMaker and dump all hits into Collection_EMB1 collection
@@ -7947,8 +8083,8 @@ Cxx.ComponentAccumulator                 INFO Create MT Manager...
 **************************************************************
 
 Cxx.ComponentAccumulator                 INFO Create MT Manager... done
-Cxx.ComponentAccumulator                 INFO Create MT Manager with 1 threads...
-Cxx.ComponentAccumulator                 INFO Create MT Manager with 1 threads... done
+Cxx.ComponentAccumulator                 INFO Create MT Manager with 5 threads...
+Cxx.ComponentAccumulator                 INFO Create MT Manager with 5 threads... done
 Cxx.ComponentAccumulator                 INFO Building the detector...
 &lt;&lt;&lt; Geant4 Physics List simulation engine: FTFP_BERT
 
@@ -8055,7 +8191,7 @@ Cxx.RootStreamHITMaker                   INFO Ntuple Name: CollectionTree
 Cxx.RootStreamHITMaker                   INFO Only RoI: true
 Cxx.RootStreamHITMaker                   INFO Eta Window: 0.4
 Cxx.RootStreamHITMaker                   INFO Phi Window: 0.4
-Cxx.RootStreamHITMaker                   INFO Keep Cells: true
+Cxx.RootStreamHITMaker                   INFO Keep Cells: false
 Cxx.ComponentAccumulator                 INFO Creating the vis executive...
 Visualization Manager instantiating with verbosity "warnings (3)"...
 Visualization Manager initialising...
@@ -10512,9 +10648,21 @@ Store e- internal conversion data                   0
 Correlated gamma emission flag                      0
 Max 2J for sampling of angular correlations         10
 =======================================================================
+Cxx.ActionInitialization                 INFO  (G4WT2) Build()
+Cxx.PrimaryGeneratorAction               INFO  (G4WT2) Create the generator copy
+Cxx.EventReader                          INFO  (G4WT2) Open the root file: Zee.EVT.root
 Cxx.ActionInitialization                 INFO  (G4WT0) Build()
 Cxx.PrimaryGeneratorAction               INFO  (G4WT0) Create the generator copy
 Cxx.EventReader                          INFO  (G4WT0) Open the root file: Zee.EVT.root
+Cxx.ActionInitialization                 INFO  (G4WT3) Build()
+Cxx.ActionInitialization                 INFO  (G4WT1) Build()
+Cxx.PrimaryGeneratorAction               INFO  (G4WT1) Create the generator copy
+Cxx.EventReader                          INFO  (G4WT1) Open the root file: Zee.EVT.root
+Cxx.PrimaryGeneratorAction               INFO  (G4WT3) Create the generator copy
+Cxx.EventReader                          INFO  (G4WT3) Open the root file: Zee.EVT.root
+Cxx.ActionInitialization                 INFO  (G4WT4) Build()
+Cxx.PrimaryGeneratorAction               INFO  (G4WT4) Create the generator copy
+Cxx.EventReader                          INFO  (G4WT4) Open the root file: Zee.EVT.root
 
 Region &lt;DefaultRegionForTheWorld&gt; --  -- appears in &lt;World&gt; world volume
  This region is in the mass world.
@@ -11439,166 +11587,315 @@ Index : 94     used in the geometry : Yes
 G4VisManager: Using G4TrajectoryDrawByCharge as fallback trajectory model.
 See commands in /vis/modeling/trajectories/ for other options.
 ### Run 0 starts.
+Cxx.RunAction                            INFO  (G4WT2) Creating the RunReconstruction...Cxx.RunAction                            INFO  (G4WT4) Creating the RunReconstruction...
+Cxx.RunAction                            INFO  (G4WT1) Creating the RunReconstruction...
+
 Cxx.RunAction                            INFO  (G4WT0) Creating the RunReconstruction...
+Cxx.RunAction                            INFO  (G4WT3) Creating the RunReconstruction...
+G4WT2 &gt; ### Run 0 starts on worker thread 2.
+Cxx.RunAction                            INFO  (G4WT2) RunAction::BeginOfRunAction
+G4WT2 &gt; --&gt; Event 0 starts with initial seeds (50537646,32951042).
+Cxx.PrimaryGeneratorAction               INFO  (G4WT2) GeneratePrimaryVertex...
 G4WT0 &gt; ### Run 0 starts on worker thread 0.
 Cxx.RunAction                            INFO  (G4WT0) RunAction::BeginOfRunAction
-G4WT0 &gt; --&gt; Event 0 starts with initial seeds (50537646,32951042).
+G4WT0 &gt; --&gt; Event 1 starts with initial seeds (55301888,97160606).
 Cxx.PrimaryGeneratorAction               INFO  (G4WT0) GeneratePrimaryVertex...
-Cxx.EventReader                          INFO  (G4WT0) Get event (EventReader) with number 0 and EventNumber 0
-Cxx.EventReader                          INFO  (G4WT0) Seed 0 in eta = 1.03743, phi = 2.84307
-Cxx.EventReader                          INFO  (G4WT0) Seed 1 in eta = 2.34878, phi = -0.242377
+G4WT1 &gt; ### Run 0 starts on worker thread 1.
+Cxx.RunAction                            INFO  (G4WT1) RunAction::BeginOfRunAction
+G4WT1 &gt; --&gt; Event 2 starts with initial seeds (64190065,34130856).
+Cxx.PrimaryGeneratorAction               INFO  (G4WT1) GeneratePrimaryVertex...
+G4WT4 &gt; ### Run 0 starts on worker thread 4.
+Cxx.RunAction                            INFO  (G4WT4) RunAction::BeginOfRunAction
+G4WT4 &gt; --&gt; Event 3 starts with initial seeds (99022847,61270663).
+Cxx.PrimaryGeneratorAction               INFO  (G4WT4) GeneratePrimaryVertex...
+Cxx.EventReader                          INFO  (G4WT0) Get event (EventReader) with number 1 and EventNumber 1
+Cxx.EventReader                          INFO  (G4WT2) Get event (EventReader) with number 0 and EventNumber 0
+Cxx.EventReader                          INFO  (G4WT4) Get event (EventReader) with number 3 and EventNumber 3
+Cxx.EventReader                          INFO  (G4WT4) Seed 0 in eta = 2.38299, phi = 1.80079
+Cxx.EventReader                          INFO  (G4WT0) Seed 0 in eta = -1.63831, phi = -0.636461
+Cxx.EventReader                          INFO  (G4WT2) Seed 0 in eta = 1.03743, phi = 2.84307
+Cxx.EventReader                          INFO  (G4WT0) Seed 1 in eta = -1.58226, phi = 2.44489
+Cxx.EventReader                          INFO  (G4WT1) Get event (EventReader) with number 2 and EventNumber 2
+Cxx.EventReader                          INFO  (G4WT2) Seed 1 in eta = 2.34878, phi = -0.242377
+Cxx.EventReader                          INFO  (G4WT4) RunNumber        : 0
+Cxx.EventReader                          INFO  (G4WT4) EventNumber      : 3
+Cxx.EventReader                          INFO  (G4WT1) Seed 0 in eta = -0.722034, phi = 2.43568
+Cxx.EventReader                          INFO  (G4WT2) RunNumber        : 0
+Cxx.EventReader                          INFO  (G4WT2) EventNumber      : 0
+Cxx.EventReader                          INFO  (G4WT2) Avgmu            : 0
+Cxx.EventReader                          INFO  (G4WT4) Avgmu            : 0Cxx.EventReader                          INFO  (G4WT2) Total Mu         : 0
+Cxx.EventReader                          INFO  (G4WT2) Number of seeds  : 2
+
+Cxx.EventReader                          INFO  (G4WT4) Total Mu         : 0
+Cxx.EventReader                          INFO  (G4WT4) Number of seeds  : 1
+Cxx.EventReader                          INFO  (G4WT1) Seed 1 in eta = -1.27205, phi = -0.814606
 Cxx.EventReader                          INFO  (G4WT0) RunNumber        : 0
-Cxx.EventReader                          INFO  (G4WT0) EventNumber      : 0
+Cxx.EventReader                          INFO  (G4WT0) EventNumber      : 1
 Cxx.EventReader                          INFO  (G4WT0) Avgmu            : 0
+Cxx.EventReader                          INFO  (G4WT1) RunNumber        : 0Cxx.RunReconstruction                    INFO  (G4WT4) RunReconstruction::BeginOfEvent...
+Cxx.RunReconstruction                    INFO  (G4WT2) RunReconstruction::BeginOfEvent...
 Cxx.EventReader                          INFO  (G4WT0) Total Mu         : 0
 Cxx.EventReader                          INFO  (G4WT0) Number of seeds  : 2
+
+Cxx.EventReader                          INFO  (G4WT1) EventNumber      : 2
 Cxx.RunReconstruction                    INFO  (G4WT0) RunReconstruction::BeginOfEvent...
+Cxx.EventReader                          INFO  (G4WT1) Avgmu            : 0
+Cxx.EventReader                          INFO  (G4WT1) Total Mu         : 0
+Cxx.EventReader                          INFO  (G4WT1) Number of seeds  : 2
+Cxx.RunReconstruction                    INFO  (G4WT1) RunReconstruction::BeginOfEvent...
+G4WT3 &gt; ### Run 0 starts on worker thread 3.
+Cxx.RunAction                            INFO  (G4WT3) RunAction::BeginOfRunAction
+G4WT3 &gt; --&gt; Event 4 starts with initial seeds (98437269,19475155).
+Cxx.PrimaryGeneratorAction               INFO  (G4WT3) GeneratePrimaryVertex...
+Cxx.EventReader                          INFO  (G4WT3) Get event (EventReader) with number 4 and EventNumber 4
+Cxx.EventReader                          INFO  (G4WT3) Seed 0 in eta = 1.21458, phi = 1.72264
+Cxx.EventReader                          INFO  (G4WT3) Seed 1 in eta = 2.11035, phi = -1.40415
+Cxx.EventReader                          INFO  (G4WT3) RunNumber        : 0
+Cxx.EventReader                          INFO  (G4WT3) EventNumber      : 4
+Cxx.EventReader                          INFO  (G4WT3) Avgmu            : 0
+Cxx.EventReader                          INFO  (G4WT3) Total Mu         : 0
+Cxx.EventReader                          INFO  (G4WT3) Number of seeds  : 2
+Cxx.RunReconstruction                    INFO  (G4WT3) RunReconstruction::BeginOfEvent...
+Cxx.RunReconstruction                    INFO  (G4WT1) RunReconstruction::EndOfEvent...
+Cxx.RunReconstruction                    INFO  (G4WT4) RunReconstruction::EndOfEvent...
+Cxx.RootStreamHITMaker                   INFO  (G4WT1) Keep Cells? No
+Cxx.RunReconstruction                    INFO  (G4WT1) Event loop was completed with 1356621 G4Steps and 47 seconds.
+G4WT1 &gt; Thread-local run terminated.
+G4WT1 &gt; Run Summary
+G4WT1 &gt;   Number of events processed : 1
+G4WT1 &gt;   User=228.620000s Real=47.746367s Sys=5.770000s [Cpu=490.9%]
+Cxx.RootStreamHITMaker                   INFO  (G4WT4) Keep Cells? No
+Cxx.RunReconstruction                    INFO  (G4WT4) Event loop was completed with 1510291 G4Steps and 50 seconds.
+G4WT4 &gt; Thread-local run terminated.
+G4WT4 &gt; Run Summary
+G4WT4 &gt;   Number of events processed : 1
+G4WT4 &gt;   User=238.220000s Real=50.237764s Sys=6.140000s [Cpu=486.4%]
 Cxx.RunReconstruction                    INFO  (G4WT0) RunReconstruction::EndOfEvent...
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Keep Cells? Yes
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 1265 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 1266 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 1267 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 1268 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 1269 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 20025610 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 20025611 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 20025612 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 20025613 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 20025614 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 30029160 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 30029161 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 30029162 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 30029163 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 30029164 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 40013020 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 40013021 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 40013022 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 40013023 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 40013024 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 50000245 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 50000246 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 50000247 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 50000248 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 50000249 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 60000245 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 60000246 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 60000247 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 60000248 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 60000249 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 260000120 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 260000121 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 260000122 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 270000106 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 270000107 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 270000108 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 270000109 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 270000110 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 280000440 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 280000441 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 280000442 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 280000443 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 280000444 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 290000440 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 290000441 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 290000442 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 290000443 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 290000444 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 300005110 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 300005111 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 300005112 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 300005113 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 300005114 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 320000560 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 320000561 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 320000562 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 320000563 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 320000564 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 330000290 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 330000291 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 330000292 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 330000293 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 330000294 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 430000120 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 430000121 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 430000122 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 430000123 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 430000124 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 440000106 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 440000107 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 440000108 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 440000109 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 440000110 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 450000440 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 450000441 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 450000442 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 450000443 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 450000444 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 460000440 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 460000441 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 460000442 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 460000443 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 460000444 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 470005110 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 470005111 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 470005112 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 470005113 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 470005114 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 490000560 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 490000561 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 490000562 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 490000563 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 490000564 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 500000290 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 500000291 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 500000292 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 500000293 is marked by the user and will be kept.
-Cxx.RootStreamHITMaker                   INFO  (G4WT0) Hit with hash 500000294 is marked by the user and will be kept.
-Cxx.RunReconstruction                    INFO  (G4WT0) Event loop was completed with 2294960 G4Steps and 69 seconds.
+Cxx.RootStreamHITMaker                   INFO  (G4WT0) Keep Cells? No
+Cxx.RunReconstruction                    INFO  (G4WT3) RunReconstruction::EndOfEvent...
+Cxx.RunReconstruction                    INFO  (G4WT0) Event loop was completed with 1940184 G4Steps and 62 seconds.
 G4WT0 &gt; Thread-local run terminated.
 G4WT0 &gt; Run Summary
 G4WT0 &gt;   Number of events processed : 1
-G4WT0 &gt;   User=68.360000s Real=68.624235s Sys=0.480000s [Cpu=100.3%]
+G4WT0 &gt;   User=274.330000s Real=62.592137s Sys=7.150000s [Cpu=449.7%]
+Cxx.RunReconstruction                    INFO  (G4WT2) RunReconstruction::EndOfEvent...
+Cxx.RootStreamHITMaker                   INFO  (G4WT3) Keep Cells? No
+Cxx.RunReconstruction                    INFO  (G4WT3) Event loop was completed with 2104053 G4Steps and 69 seconds.
+G4WT3 &gt; Thread-local run terminated.
+G4WT3 &gt; Run Summary
+G4WT3 &gt;   Number of events processed : 1
+G4WT3 &gt;   User=285.440000s Real=69.502626s Sys=9.830000s [Cpu=424.8%]
+Cxx.RootStreamHITMaker                   INFO  (G4WT2) Keep Cells? No
+Cxx.RunReconstruction                    INFO  (G4WT2) Event loop was completed with 2294960 G4Steps and 73 seconds.
+G4WT2 &gt; Thread-local run terminated.
+G4WT2 &gt; Run Summary
+G4WT2 &gt;   Number of events processed : 1
+G4WT2 &gt;   User=288.510000s Real=73.034827s Sys=10.330000s [Cpu=409.2%]
  Run terminated.
 Run Summary
-  Number of events processed : 1
-  User=68.360000s Real=68.650807s Sys=0.490000s [Cpu=100.3%]
-G4WT0 &gt; Destroying WorkerRunManager (0x7f69f805fdc0)
+  Number of events processed : 5
+  User=288.580000s Real=73.162717s Sys=10.380000s [Cpu=408.6%]
+G4WT0 &gt; Destroying WorkerRunManager (0x7f585005fdc0)
+G4WT4 &gt; Destroying WorkerRunManager (0x7f583c05fdc0)
+G4WT4 &gt; G4 kernel has come to Quit state.
 G4WT0 &gt; G4 kernel has come to Quit state.
-Cxx.StoreGate                            INFO  (G4WT0) Saving StoreGate...
+G4WT1 &gt; Destroying WorkerRunManager (0x7f584c05fdc0)
+G4WT1 &gt; G4 kernel has come to Quit state.
+G4WT2 &gt; Destroying WorkerRunManager (0x7f584405fdc0)
+G4WT2 &gt; G4 kernel has come to Quit state.
+G4WT3 &gt; Destroying WorkerRunManager (0x7f584805fdc0)
+Cxx.StoreGate                            INFO  (G4WT0) Saving StoreGate...Cxx.StoreGate                            INFO  (G4WT4) Saving StoreGate...G4WT3 &gt; G4 kernel has come to Quit state.
+Cxx.StoreGate                            INFO  (G4WT1) Saving StoreGate...
+Cxx.StoreGate                            INFO  (G4WT2) Saving StoreGate...Cxx.StoreGate                            INFO  (G4WT3) Saving StoreGate...
+
+
+
+Cxx.StoreGate                            INFO  (G4WT2) Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO  (G4WT2) Decorators will no be saved into the root file.
+Cxx.StoreGate                            INFO  (G4WT3) Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO  (G4WT3) Decorators will no be saved into the root file.
 Cxx.StoreGate                            INFO  (G4WT0) Writing all root objects into the file and delete all decorators
 Cxx.StoreGate                            INFO  (G4WT0) Decorators will no be saved into the root file.
+Cxx.StoreGate                            INFO  (G4WT4) Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO  (G4WT4) Decorators will no be saved into the root file.
+Cxx.StoreGate                            INFO  (G4WT1) Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO  (G4WT1) Decorators will no be saved into the root file.
 G4WT0 &gt; UserDetectorConstruction deleted.
 G4WT0 &gt; UserPhysicsList deleted.
 G4WT0 &gt; UserActionInitialization deleted.
 G4WT0 &gt; UserWorkerInitialization deleted.
+G4WT2 &gt; UserDetectorConstruction deleted.
+G4WT2 &gt; UserPhysicsList deleted.
+G4WT2 &gt; UserActionInitialization deleted.
+G4WT2 &gt; UserWorkerInitialization deleted.
 G4WT0 &gt; UserWorkerThreadInitialization deleted.
+G4WT2 &gt; UserWorkerThreadInitialization deleted.
 Cxx.RunAction                            INFO  (G4WT0) ~RunAction()
+Cxx.RunAction                            INFO  (G4WT2) ~RunAction()
 G4WT0 &gt; UserRunAction deleted.
+G4WT2 &gt; UserRunAction deleted.
 G4WT0 &gt; UserPrimaryGenerator deleted.
 G4WT0 &gt; RunManager is deleting RunManagerKernel.
+G4WT2 &gt; UserPrimaryGenerator deleted.
+G4WT2 &gt; RunManager is deleting RunManagerKernel.
 G4WT0 &gt; G4SDManager deleted.
+G4WT2 &gt; G4SDManager deleted.
+G4WT3 &gt; UserDetectorConstruction deleted.
+G4WT3 &gt; UserPhysicsList deleted.
+G4WT3 &gt; UserActionInitialization deleted.
+G4WT3 &gt; UserWorkerInitialization deleted.
+G4WT3 &gt; UserWorkerThreadInitialization deleted.
 G4WT0 &gt; EventManager deleted.
+Cxx.RunAction                            INFO  (G4WT3) ~RunAction()
+G4WT2 &gt; EventManager deleted.
+G4WT3 &gt; UserRunAction deleted.
 G4WT0 &gt; Units table cleared.
+G4WT2 &gt; Units table cleared.
+G4WT2 &gt; TransportationManager deleted.
 G4WT0 &gt; TransportationManager deleted.
-G4WT0 &gt; Total navigation history collections cleaned: 51
+G4WT0 &gt; Total navigation history collections cleaned: 43
+G4WT2 &gt; Total navigation history collections cleaned: 51
+G4WT3 &gt; UserPrimaryGenerator deleted.
+G4WT3 &gt; RunManager is deleting RunManagerKernel.
 G4WT0 &gt; ================== Deleting memory pools ===================
-G4WT0 &gt; Pool ID '20G4NavigationLevelRep', size : 0.0788 MB
+G4WT2 &gt; ================== Deleting memory pools ===================
+G4WT0 &gt; Pool ID '20G4NavigationLevelRep', size : 0.0663 MB
+G4WT2 &gt; Pool ID '20G4NavigationLevelRep', size : 0.0788 MB
 G4WT0 &gt; Pool ID '24G4ReferenceCountedHandleIvE', size : 0.000961 MB
+G4WT2 &gt; Pool ID '24G4ReferenceCountedHandleIvE', size : 0.000961 MB
+G4WT3 &gt; G4SDManager deleted.
+G4WT2 &gt; Pool ID '7G4Event', size : 0.000961 MB
+G4WT2 &gt; Pool ID '15G4PrimaryVertex', size : 0.000961 MB
+G4WT2 &gt; Pool ID '17G4PrimaryParticle', size : 0.000961 MB
 G4WT0 &gt; Pool ID '7G4Event', size : 0.000961 MB
+G4WT2 &gt; Pool ID '17G4DynamicParticle', size : 0.0231 MB
 G4WT0 &gt; Pool ID '15G4PrimaryVertex', size : 0.000961 MB
+G4WT2 &gt; Pool ID '7G4Track', size : 0.0452 MB
+G4WT3 &gt; EventManager deleted.
 G4WT0 &gt; Pool ID '17G4PrimaryParticle', size : 0.000961 MB
+G4WT3 &gt; Units table cleared.
 G4WT0 &gt; Pool ID '17G4DynamicParticle', size : 0.0231 MB
-G4WT0 &gt; Pool ID '7G4Track', size : 0.0452 MB
-G4WT0 &gt; Pool ID '18G4TouchableHistory', size : 0.00577 MB
+G4WT2 &gt; Pool ID '18G4TouchableHistory', size : 0.00577 MB
+G4WT2 &gt; Pool ID '15G4CountedObjectIvE', size : 0.000961 MB
+G4WT3 &gt; TransportationManager deleted.
+G4WT3 &gt; Total navigation history collections cleaned: 43
+G4WT2 &gt; Pool ID '10G4Fragment', size : 0.00192 MB
+G4WT0 &gt; Pool ID '7G4Track', size : 0.0461 MB
+G4WT3 &gt; ================== Deleting memory pools ===================
+G4WT2 &gt; Pool ID '17G4ReactionProduct', size : 0.00192 MB
+G4WT0 &gt; Pool ID '18G4TouchableHistory', size : 0.00481 MB
 G4WT0 &gt; Pool ID '15G4CountedObjectIvE', size : 0.000961 MB
 G4WT0 &gt; Pool ID '10G4Fragment', size : 0.00192 MB
 G4WT0 &gt; Pool ID '17G4ReactionProduct', size : 0.00192 MB
 G4WT0 &gt; Number of memory pools allocated: 11; of which, static: 0
-G4WT0 &gt; Dynamic pools deleted: 11 / Total memory freed: 0.16 MB
+G4WT0 &gt; Dynamic pools deleted: 11 / Total memory freed: 0.15 MB
+G4WT3 &gt; Pool ID '20G4NavigationLevelRep', size : 0.0663 MB
+G4WT2 &gt; Number of memory pools allocated: 11; of which, static: 0
+G4WT3 &gt; Pool ID '24G4ReferenceCountedHandleIvE', size : 0.000961 MB
+G4WT3 &gt; Pool ID '7G4Event', size : 0.000961 MB
 G4WT0 &gt; ============================================================
+G4WT3 &gt; Pool ID '15G4PrimaryVertex', size : 0.000961 MB
+G4WT3 &gt; Pool ID '17G4PrimaryParticle', size : 0.000961 MB
+G4WT3 &gt; Pool ID '17G4DynamicParticle', size : 0.0202 MB
+G4WT2 &gt; Dynamic pools deleted: 11 / Total memory freed: 0.16 MB
+G4WT2 &gt; ============================================================
 G4WT0 &gt; G4Allocator objects are deleted.
 G4WT0 &gt; Thread-local UImanager is to be deleted.
 G4WT0 &gt; There should not be any thread-local G4cout/G4cerr hereafter.
+G4WT2 &gt; G4Allocator objects are deleted.
+G4WT2 &gt; Thread-local UImanager is to be deleted.
+G4WT2 &gt; There should not be any thread-local G4cout/G4cerr hereafter.
+G4WT3 &gt; Pool ID '7G4Track', size : 0.0404 MB
+G4WT3 &gt; Pool ID '18G4TouchableHistory', size : 0.00481 MB
+G4WT3 &gt; Pool ID '15G4CountedObjectIvE', size : 0.000961 MB
+G4WT3 &gt; Pool ID '10G4Fragment', size : 0.00385 MB
+G4WT3 &gt; Pool ID '17G4ReactionProduct', size : 0.00385 MB
+G4WT3 &gt; Number of memory pools allocated: 11; of which, static: 0
+G4WT3 &gt; Dynamic pools deleted: 11 / Total memory freed: 0.14 MB
+G4WT3 &gt; ============================================================
+G4WT3 &gt; G4Allocator objects are deleted.
+G4WT3 &gt; Thread-local UImanager is to be deleted.
+G4WT3 &gt; There should not be any thread-local G4cout/G4cerr hereafter.
+UImanager deleted.
+UImanager deleted.
+StateManager deleted.
+RunManagerKernel is deleted. Good bye :)
+RunManager is deleted.
+StateManager deleted.
+RunManagerKernel is deleted. Good bye :)
+RunManager is deleted.
+UImanager deleted.
+StateManager deleted.
+RunManagerKernel is deleted. Good bye :)
+RunManager is deleted.
+G4WT1 &gt; UserDetectorConstruction deleted.
+G4WT1 &gt; UserPhysicsList deleted.
+G4WT1 &gt; UserActionInitialization deleted.
+G4WT1 &gt; UserWorkerInitialization deleted.
+G4WT1 &gt; UserWorkerThreadInitialization deleted.
+Cxx.RunAction                            INFO  (G4WT1) ~RunAction()
+G4WT1 &gt; UserRunAction deleted.
+G4WT1 &gt; UserPrimaryGenerator deleted.
+G4WT1 &gt; RunManager is deleting RunManagerKernel.
+G4WT1 &gt; G4SDManager deleted.
+G4WT1 &gt; EventManager deleted.
+G4WT1 &gt; Units table cleared.
+G4WT1 &gt; TransportationManager deleted.
+G4WT1 &gt; Total navigation history collections cleaned: 51
+G4WT1 &gt; ================== Deleting memory pools ===================
+G4WT1 &gt; Pool ID '20G4NavigationLevelRep', size : 0.0798 MB
+G4WT1 &gt; Pool ID '24G4ReferenceCountedHandleIvE', size : 0.000961 MB
+G4WT1 &gt; Pool ID '7G4Event', size : 0.000961 MB
+G4WT1 &gt; Pool ID '15G4PrimaryVertex', size : 0.000961 MB
+G4WT1 &gt; Pool ID '17G4PrimaryParticle', size : 0.000961 MB
+G4WT1 &gt; Pool ID '17G4DynamicParticle', size : 0.024 MB
+G4WT1 &gt; Pool ID '7G4Track', size : 0.0471 MB
+G4WT1 &gt; Pool ID '18G4TouchableHistory', size : 0.00577 MB
+G4WT1 &gt; Pool ID '15G4CountedObjectIvE', size : 0.000961 MB
+G4WT1 &gt; Pool ID '10G4Fragment', size : 0.00288 MB
+G4WT1 &gt; Pool ID '17G4ReactionProduct', size : 0.00288 MB
+G4WT1 &gt; Number of memory pools allocated: 11; of which, static: 0
+G4WT1 &gt; Dynamic pools deleted: 11 / Total memory freed: 0.17 MB
+G4WT1 &gt; ============================================================
+G4WT1 &gt; G4Allocator objects are deleted.
+G4WT1 &gt; Thread-local UImanager is to be deleted.
+G4WT1 &gt; There should not be any thread-local G4cout/G4cerr hereafter.
+UImanager deleted.
+StateManager deleted.
+RunManagerKernel is deleted. Good bye :)
+RunManager is deleted.
+G4WT4 &gt; UserDetectorConstruction deleted.
+G4WT4 &gt; UserPhysicsList deleted.
+G4WT4 &gt; UserActionInitialization deleted.
+G4WT4 &gt; UserWorkerInitialization deleted.
+G4WT4 &gt; UserWorkerThreadInitialization deleted.
+Cxx.RunAction                            INFO  (G4WT4) ~RunAction()
+G4WT4 &gt; UserRunAction deleted.
+G4WT4 &gt; UserPrimaryGenerator deleted.
+G4WT4 &gt; RunManager is deleting RunManagerKernel.
+G4WT4 &gt; G4SDManager deleted.
+G4WT4 &gt; EventManager deleted.
+G4WT4 &gt; Units table cleared.
+G4WT4 &gt; TransportationManager deleted.
+G4WT4 &gt; Total navigation history collections cleaned: 42
+G4WT4 &gt; ================== Deleting memory pools ===================
+G4WT4 &gt; Pool ID '20G4NavigationLevelRep', size : 0.0654 MB
+G4WT4 &gt; Pool ID '24G4ReferenceCountedHandleIvE', size : 0.000961 MB
+G4WT4 &gt; Pool ID '7G4Event', size : 0.000961 MB
+G4WT4 &gt; Pool ID '15G4PrimaryVertex', size : 0.000961 MB
+G4WT4 &gt; Pool ID '17G4PrimaryParticle', size : 0.000961 MB
+G4WT4 &gt; Pool ID '17G4DynamicParticle', size : 0.0183 MB
+G4WT4 &gt; Pool ID '7G4Track', size : 0.0365 MB
+G4WT4 &gt; Pool ID '18G4TouchableHistory', size : 0.00481 MB
+G4WT4 &gt; Pool ID '15G4CountedObjectIvE', size : 0.000961 MB
+G4WT4 &gt; Pool ID '10G4Fragment', size : 0.00192 MB
+G4WT4 &gt; Pool ID '17G4ReactionProduct', size : 0.00192 MB
+G4WT4 &gt; Number of memory pools allocated: 11; of which, static: 0
+G4WT4 &gt; Dynamic pools deleted: 11 / Total memory freed: 0.13 MB
+G4WT4 &gt; ============================================================
+G4WT4 &gt; G4Allocator objects are deleted.
+G4WT4 &gt; Thread-local UImanager is to be deleted.
+G4WT4 &gt; There should not be any thread-local G4cout/G4cerr hereafter.
 UImanager deleted.
 StateManager deleted.
 RunManagerKernel is deleted. Good bye :)
@@ -11644,6 +11941,10 @@ Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::EventInfo_t is av
 Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::Seed_t is available
 Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::TruthParticle_t is available
 Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::CaloHit_t is available
+hadd Source file 2: Zee.HIT.root.1
+hadd Source file 3: Zee.HIT.root.2
+hadd Source file 4: Zee.HIT.root.3
+hadd Source file 5: Zee.HIT.root.4
 hadd Target path: Zee.HIT.root:/
 hadd Target path: Zee.HIT.root:/Event
 hadd Target path: Zee.HIT.root:/Expert
@@ -11693,7 +11994,7 @@ hadd Target path: Zee.HIT.root:/Expert/Hits/FCal_HEC3_B_0
 hadd Target path: Zee.HIT.root:/Expert/Hits/FCal_HEC3_B_1
 Warning in &lt;StatusCode&gt;:
 Warning in &lt;StatusCode&gt;: Unchecked status codes encountered during the job
-Warning in &lt;StatusCode&gt;: Number of unchecked successes: 2
+Warning in &lt;StatusCode&gt;: Number of unchecked successes: 10
 Warning in &lt;StatusCode&gt;: To fail on an unchecked code, call StatusCode::enableFailure() at the job's start
 Warning in &lt;StatusCode&gt;:
 </pre>
@@ -11701,15 +12002,26 @@ Warning in &lt;StatusCode&gt;:
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5ffe5020-f4c5-4aeb-ba26-5f6eac135c73">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d618b10f-65fa-43f1-af7d-dad210defd42">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Digitization">Digitization<a class="anchor-link" href="#Digitization">¶</a></h1><p>The digitalization process may be configured to use different energy estimation methods such as Optimal Filter (OF) and Constrained Optimal Filter (COF). It is also possible to simulate the crosstalk effect between adjacent calorimeter cells. More details on how to use such features, check the Customization section. In the digitalization step, it is used second step output to feed <code>digit_trf.py</code> script. For instance:</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=a400983e-4ee4-4393-945b-622d4931cd59">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>ls
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>digit_trf.py
 </pre></div>
 </div>
 </div>
@@ -11722,42 +12034,842 @@ Warning in &lt;StatusCode&gt;:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Simulation.ipynb  Zee.ESD.root	Zee.HIT.root  dead_modules.json
-Untitled.ipynb	  Zee.EVT.root	brl.json
+<pre>Module libc not found.
+<span class="ansi-green-intense-fg ansi-bold">Usage:</span> <span class="ansi-bold" style="color: rgb(128,128,128)">digit_trf.py</span> [<span class="ansi-green-fg">-l</span> <span class="ansi-blue-fg">OUTPUT_LEVEL</span>] [<span class="ansi-green-fg">--pre-init</span> <span class="ansi-blue-fg">PRE_INIT</span>]
+                    [<span class="ansi-green-fg">--pre-exec</span> <span class="ansi-blue-fg">PRE_EXEC</span>] [<span class="ansi-green-fg">--post-exec</span> <span class="ansi-blue-fg">POST_EXEC</span>] <span class="ansi-green-fg">-i</span>
+                    <span class="ansi-blue-fg">INPUT_FILE</span> <span class="ansi-green-fg">-o</span> <span class="ansi-blue-fg">OUTPUT_FILE</span> [<span class="ansi-green-fg">--nov</span> <span class="ansi-blue-fg">NUMBER_OF_EVENTS</span>]
+                    [<span class="ansi-green-fg">--events-per-job</span> <span class="ansi-blue-fg">EVENTS_PER_JOB</span>] [<span class="ansi-green-fg">-nt</span> <span class="ansi-blue-fg">NUMBER_OF_THREADS</span>]
+                    [<span class="ansi-green-fg">-m</span>] [<span class="ansi-green-fg">--overwrite</span>] [<span class="ansi-green-fg">--dry-run</span>] [<span class="ansi-green-fg">--job-file</span> <span class="ansi-blue-fg">JOB_FILE</span>]
+
+<span class="ansi-green-intense-fg ansi-bold">Options:</span>
+  <span class="ansi-green-fg">-l</span>, <span class="ansi-green-fg">--output-level</span> <span class="ansi-blue-fg">OUTPUT_LEVEL</span>
+                        <span style="color: rgb(128,128,128)">The output level messenger.</span>
+  <span class="ansi-green-fg">--pre-init</span> <span class="ansi-blue-fg">PRE_INIT</span>   <span style="color: rgb(128,128,128)">The preinit command</span>
+  <span class="ansi-green-fg">--pre-exec</span> <span class="ansi-blue-fg">PRE_EXEC</span>   <span style="color: rgb(128,128,128)">The preexec command</span>
+  <span class="ansi-green-fg">--post-exec</span> <span class="ansi-blue-fg">POST_EXEC</span>
+                        <span style="color: rgb(128,128,128)">The postexec command</span>
+  <span class="ansi-green-fg">-i</span>, <span class="ansi-green-fg">--input-file</span> <span class="ansi-blue-fg">INPUT_FILE</span>
+                        <span style="color: rgb(128,128,128)">The input file or folder to run the job</span>
+  <span class="ansi-green-fg">-o</span>, <span class="ansi-green-fg">--output-file</span> <span class="ansi-blue-fg">OUTPUT_FILE</span>
+                        <span style="color: rgb(128,128,128)">The output file.</span>
+  <span class="ansi-green-fg">--nov</span>, <span class="ansi-green-fg">--number-of-events</span> <span class="ansi-blue-fg">NUMBER_OF_EVENTS</span>
+                        <span style="color: rgb(128,128,128)">The total number of events to run.</span>
+  <span class="ansi-green-fg">--events-per-job</span> <span class="ansi-blue-fg">EVENTS_PER_JOB</span>
+                        <span style="color: rgb(128,128,128)">The number of events per job</span>
+  <span class="ansi-green-fg">-nt</span>, <span class="ansi-green-fg">--number-of-threads</span> <span class="ansi-blue-fg">NUMBER_OF_THREADS</span>
+                        <span style="color: rgb(128,128,128)">The number of threads</span>
+  <span class="ansi-green-fg">-m</span>, <span class="ansi-green-fg">--merge</span>           <span style="color: rgb(128,128,128)">Merge all files.</span>
+  <span class="ansi-green-fg">--overwrite</span>           <span style="color: rgb(128,128,128)">Rerun all jobs.</span>
+  <span class="ansi-green-fg">--dry-run</span>             <span style="color: rgb(128,128,128)">Perform a dry run without executing jobs.</span>
+  <span class="ansi-green-fg">--job-file</span> <span class="ansi-blue-fg">JOB_FILE</span>   <span style="color: rgb(128,128,128)">The JSON file used to configure this job automatically</span>
+                        <span style="color: rgb(128,128,128)">by overwritting some arguments.</span>
 </pre>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=16d72b5e-ecf3-41da-aad0-f97c6be594f1">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1693bf79-fd0b-4b8a-9305-6d83477f505d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="How-to-run-digitization?">How to run digitization?<a class="anchor-link" href="#How-to-run-digitization?">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=93a6f91c-3448-4963-920c-64ae6fb6eb04">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span> 
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>digit_trf.py<span class="w"> </span>-i<span class="w"> </span>Zee.HIT.root<span class="w"> </span>-o<span class="w"> </span>Zee.ESD.root
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=13142a10-c1fc-468d-b552-f313e6a61947">
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Module libc not found.
+['/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.HIT.root']
+Loop over files...: 100%|█████████████████████████| 1/1 [00:00&lt;00:00,  5.61it/s]
+[('/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.HIT.root',
+  'Zee.ESD.0.0.root',
+  [0, 1, 2, 3, 4])]
+Py.CaloCellBuilder                      INFO Configure CaloCellBuilder.
+sampling noise:  90
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_PSB collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMB1 collection
+sampling noise:  60
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMB2 collection
+sampling noise:  40
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMB3 collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileCal1 collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileCal2 collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileCal3 collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileExt1_A collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileExt2_A collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileExt3_A collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_PSE_A collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC1_0A collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC1_1A collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC1_2A collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC1_3A collection
+sampling noise:  60
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC2_0A collection
+sampling noise:  60
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC2_1A collection
+sampling noise:  40
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC3_0A collection
+sampling noise:  40
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC3_1A collection
+sampling noise:  250
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC1_0A collection
+sampling noise:  250
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC1_1A collection
+sampling noise:  400
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC2_0A collection
+sampling noise:  400
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC2_1A collection
+sampling noise:  250
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC3_0A collection
+sampling noise:  250
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC3_1A collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileExt1_B collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileExt2_B collection
+sampling noise:  20
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_TileExt3_B collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_PSE_B collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC1_0B collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC1_1B collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC1_2B collection
+sampling noise:  26
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC1_3B collection
+sampling noise:  60
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC2_0B collection
+sampling noise:  60
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC2_1B collection
+sampling noise:  40
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC3_0B collection
+sampling noise:  40
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_EMEC3_1B collection
+sampling noise:  250
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC1_0B collection
+sampling noise:  250
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC1_1B collection
+sampling noise:  400
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC2_0B collection
+sampling noise:  400
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC2_1B collection
+sampling noise:  250
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC3_0B collection
+sampling noise:  250
+Py.CaloCellBuilder                      INFO Create new CaloCellMaker and dump all cells into Collection_HEC3_1B collection
+Py.CaloCellBuilder                      INFO Create CaloCellMerge and dump all cell collections into Cells container
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name HITReader
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_PSB
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMB1
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMB2
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMB3
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileCal1
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileCal2
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileCal3
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileExt1_A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileExt2_A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileExt3_A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_PSE_A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC1_0A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC1_1A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC1_2A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC1_3A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC2_0A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC2_1A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC3_0A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC3_1A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC1_0A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC1_1A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC2_0A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC2_1A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC3_0A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC3_1A
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileExt1_B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileExt2_B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_TileExt3_B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_PSE_B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC1_0B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC1_1B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC1_2B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC1_3B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC2_0B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC2_1B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC3_0B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_EMEC3_1B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC1_0B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC1_1B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC2_0B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC2_1B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC3_0B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMaker_Collection_HEC3_1B
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloCellMerge
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name RootStreamESDMaker
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Booking histograms for HITReader
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_PSB
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMB1
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMB2
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMB3
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileCal1
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileCal2
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileCal3
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileExt1_A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileExt2_A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileExt3_A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_PSE_A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC1_0A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC1_1A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC1_2A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC1_3A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC2_0A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC2_1A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC3_0A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC3_1A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC1_0A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC1_1A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC2_0A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC2_1A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC3_0A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC3_1A
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileExt1_B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileExt2_B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_TileExt3_B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_PSE_B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC1_0B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC1_1B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC1_2B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC1_3B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC2_0B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC2_1B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC3_0B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_EMEC3_1B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC1_0B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC1_1B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC2_0B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC2_1B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC3_0B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMaker_Collection_HEC3_1B
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloCellMerge
+Cxx.ComponentAccumulator                 INFO Booking histograms for RootStreamESDMaker
+Cxx.ComponentAccumulator                 INFO ======================= Event 0 =========================
+Cxx.ComponentAccumulator                 INFO ======================= Event 1 =========================
+Cxx.ComponentAccumulator                 INFO ======================= Event 2 =========================
+Cxx.ComponentAccumulator                 INFO ======================= Event 3 =========================
+Cxx.ComponentAccumulator                 INFO ======================= Event 4 =========================
+Cxx.StoreGate                            INFO Saving StoreGate...
+Cxx.StoreGate                            INFO Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO Decorators will no be saved into the root file.
+hadd -f Zee.ESD.root Zee.ESD.0.0.root
+Module libc not found.
+hadd Target file: Zee.ESD.root
+hadd compression setting for all output: 101
+hadd Source file 1: Zee.ESD.0.0.root
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::EventInfo_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::Seed_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::TruthParticle_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::CaloCell_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::CaloDetDescriptor_t is available
+hadd Target path: Zee.ESD.root:/
+hadd Target path: Zee.ESD.root:/Expert
+hadd Target path: Zee.ESD.root:/Expert/Cells
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_PSB_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMB1_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMB2_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMB3_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCal1_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCal2_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCal3_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCalExt1_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCalExt2_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCalExt3_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_PSE_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC1_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC1_A_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC1_A_2
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC1_A_3
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC2_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC2_A_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC3_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC3_A_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC1_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC1_A_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC2_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC2_A_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC3_A_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC3_A_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCalExt1_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCalExt2_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/TILE_TileCalExt3_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_PSE_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC1_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC1_B_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC1_B_2
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC1_B_3
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC2_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC2_B_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC3_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/LAr_EMEC3_B_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC1_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC1_B_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC2_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC2_B_1
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC3_B_0
+hadd Target path: Zee.ESD.root:/Expert/Cells/FCal_HEC3_B_1
+hadd Target path: Zee.ESD.root:/Event
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a92dc208-8346-4aac-aa2e-83ebf92758e3">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Reconstruction">Reconstruction<a class="anchor-link" href="#Reconstruction">¶</a></h1><p>The reconstruction process is responsible to build all high level variables from the raw detector information (cells) and dump into a ntuple. In the reconstruction step, it is used third step output to feed <code>reco_trf.py</code> script. For instance:</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=64e123ff-2c9c-4d89-aed5-473412bee64e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span> 
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>reco_trf.py
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f08459de-9051-4e52-9512-4b156405c5a3">
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Module libc not found.
+<span class="ansi-green-intense-fg ansi-bold">Usage:</span> <span class="ansi-bold" style="color: rgb(128,128,128)">reco_trf.py</span> [<span class="ansi-green-fg">-l</span> <span class="ansi-blue-fg">OUTPUT_LEVEL</span>] [<span class="ansi-green-fg">-c</span> <span class="ansi-blue-fg">COMMAND</span>] <span class="ansi-green-fg">-i</span> <span class="ansi-blue-fg">INPUT_FILE</span> <span class="ansi-green-fg">-o</span> <span class="ansi-blue-fg">OUTPUT_FILE</span>
+                   [<span class="ansi-green-fg">--nov</span> <span class="ansi-blue-fg">NUMBER_OF_EVENTS</span>] [<span class="ansi-green-fg">--events-per-job</span> <span class="ansi-blue-fg">EVENTS_PER_JOB</span>]
+                   [<span class="ansi-green-fg">-nt</span> <span class="ansi-blue-fg">NUMBER_OF_THREADS</span>] [<span class="ansi-green-fg">-m</span>] [<span class="ansi-green-fg">--overwrite</span>] [<span class="ansi-green-fg">--dry-run</span>]
+                   [<span class="ansi-green-fg">--job-file</span> <span class="ansi-blue-fg">JOB_FILE</span>]
+
+<span class="ansi-green-intense-fg ansi-bold">Options:</span>
+  <span class="ansi-green-fg">-l</span>, <span class="ansi-green-fg">--output-level</span> <span class="ansi-blue-fg">OUTPUT_LEVEL</span>
+                        <span style="color: rgb(128,128,128)">The output level messenger.</span>
+  <span class="ansi-green-fg">-c</span>, <span class="ansi-green-fg">--command</span> <span class="ansi-blue-fg">COMMAND</span>
+                        <span style="color: rgb(128,128,128)">The preexec command</span>
+  <span class="ansi-green-fg">-i</span>, <span class="ansi-green-fg">--input-file</span> <span class="ansi-blue-fg">INPUT_FILE</span>
+                        <span style="color: rgb(128,128,128)">The input file or folder to run the job</span>
+  <span class="ansi-green-fg">-o</span>, <span class="ansi-green-fg">--output-file</span> <span class="ansi-blue-fg">OUTPUT_FILE</span>
+                        <span style="color: rgb(128,128,128)">The output file.</span>
+  <span class="ansi-green-fg">--nov</span>, <span class="ansi-green-fg">--number-of-events</span> <span class="ansi-blue-fg">NUMBER_OF_EVENTS</span>
+                        <span style="color: rgb(128,128,128)">The total number of events to run.</span>
+  <span class="ansi-green-fg">--events-per-job</span> <span class="ansi-blue-fg">EVENTS_PER_JOB</span>
+                        <span style="color: rgb(128,128,128)">The number of events per job</span>
+  <span class="ansi-green-fg">-nt</span>, <span class="ansi-green-fg">--number-of-threads</span> <span class="ansi-blue-fg">NUMBER_OF_THREADS</span>
+                        <span style="color: rgb(128,128,128)">The number of threads</span>
+  <span class="ansi-green-fg">-m</span>, <span class="ansi-green-fg">--merge</span>           <span style="color: rgb(128,128,128)">Merge all files.</span>
+  <span class="ansi-green-fg">--overwrite</span>           <span style="color: rgb(128,128,128)">Rerun all jobs.</span>
+  <span class="ansi-green-fg">--dry-run</span>             <span style="color: rgb(128,128,128)">Perform a dry run without executing jobs.</span>
+  <span class="ansi-green-fg">--job-file</span> <span class="ansi-blue-fg">JOB_FILE</span>   <span style="color: rgb(128,128,128)">The JSON file used to configure this job automatically</span>
+                        <span style="color: rgb(128,128,128)">by overwritting some arguments.</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a3d0677a-038b-4479-9a39-579f3bfc1d23">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="How-to-run-reconstruction?">How to run reconstruction?<a class="anchor-link" href="#How-to-run-reconstruction?">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=4cb98c73-f3e5-4c95-b149-27858ecb04b2">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>reco_trf.py<span class="w"> </span>-i<span class="w"> </span>Zee.ESD.root<span class="w"> </span>-o<span class="w"> </span>Zee.AOD.root<span class="w"> </span>-nt<span class="w"> </span><span class="m">5</span><span class="w"> </span>--events-per-job<span class="w"> </span><span class="m">1</span><span class="w"> </span>-m
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Module libc not found.
+['/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.ESD.root']
+Loop over files...: 100%|█████████████████████████| 1/1 [00:00&lt;00:00,  5.88it/s]
+[('/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.ESD.root',
+  'Zee.AOD.0.0.root',
+  [0]),
+ ('/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.ESD.root',
+  'Zee.AOD.0.1.root',
+  [1]),
+ ('/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.ESD.root',
+  'Zee.AOD.0.2.root',
+  [2]),
+ ('/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.ESD.root',
+  'Zee.AOD.0.3.root',
+  [3]),
+ ('/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.ESD.root',
+  'Zee.AOD.0.4.root',
+  [4])]
+Module libc not found.
+Module libc not found.
+Module libc not found.
+Module Module libclibc not found.
+ not found.
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ESDReader
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Booking histograms for ESDReader
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Booking histograms for ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO ======================= Event 3 =========================
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ESDReader
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Booking histograms for ESDReader
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Booking histograms for ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO ======================= Event 0 =========================
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ESDReader
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ESDReader
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Booking histograms for ESDReader
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Booking histograms for ESDReader
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Booking histograms for ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Booking histograms for ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO ======================= Event 1 =========================
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ESDReader
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloClusterMaker
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsBuilder_Fwd
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name RootStreamAODMaker
+Cxx.ComponentAccumulator                 INFO ======================= Event 4 =========================
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Booking histograms for ESDReader
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 70182.9
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloClusterMaker
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 149589
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsBuilder_Fwd
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.ComponentAccumulator                 INFO Booking histograms for CaloRingsMerge
+Cxx.ComponentAccumulator                 INFO Booking histograms for ElectronBuilder
+Cxx.ComponentAccumulator                 INFO Booking histograms for RootStreamAODMaker
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsMerge                       INFO Starting collection merge algorithm...
+Cxx.ElectronBuilder                      INFO Cluster eta: 1.2125 phi: 1.7304 et: 39282.1 e: 71873.2
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: 1.2125 phi: 1.7304 et: 39282.1 e: 71873.2
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: 1.2125 phi: 1.7304 et: 39282.1 e: 71873.2
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: 1.2125 phi: 1.7304 et: 39282.1 e: 71873.2
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: 1.2125 phi: 1.7304 et: 39282.1 e: 71873.2
+Cxx.ElectronBuilder                      INFO Cluster eta: 2.1255 phi: -1.4112 et: 37153.1 e: 157835
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: 2.1255 phi: -1.4112 et: 37153.1 e: 157835
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: 2.1255 phi: -1.4112 et: 37153.1 e: 157835
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: 2.1255 phi: -1.4112 et: 37153.1 e: 157835
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: 2.1255 phi: -1.4112 et: 37153.1 e: 157835
+Cxx.ComponentAccumulator                 INFO ======================= Event 2 =========================
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 151047
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsMerge                       INFO Starting collection merge algorithm...
+Cxx.ElectronBuilder                      INFO Cluster eta: 2.3755 phi: 1.804 et: 31052 e: 168447
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: 2.3755 phi: 1.804 et: 31052 e: 168447
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: 2.3755 phi: 1.804 et: 31052 e: 168447
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: 2.3755 phi: 1.804 et: 31052 e: 168447
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: 2.3755 phi: 1.804 et: 31052 e: 168447
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 109631
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 102481
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsMerge                       INFO Starting collection merge algorithm...
+Cxx.ElectronBuilder                      INFO Cluster eta: -1.6505 phi: -0.6258 et: 41396.2 e: 111802
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: -1.6505 phi: -0.6258 et: 41396.2 e: 111802
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: -1.6505 phi: -0.6258 et: 41396.2 e: 111802
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: -1.6505 phi: -0.6258 et: 41396.2 e: 111802
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: -1.6505 phi: -0.6258 et: 41396.2 e: 111802
+Cxx.ElectronBuilder                      INFO Cluster eta: -1.5755 phi: 2.4421 et: 42948.8 e: 108232
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: -1.5755 phi: 2.4421 et: 42948.8 e: 108232
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: -1.5755 phi: 2.4421 et: 42948.8 e: 108232
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: -1.5755 phi: 2.4421 et: 42948.8 e: 108232
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: -1.5755 phi: 2.4421 et: 42948.8 e: 108232
+Cxx.StoreGate                            INFO Saving StoreGate...
+Cxx.StoreGate                            INFO Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO Decorators will no be saved into the root file.
+Cxx.StoreGate                            INFO Saving StoreGate...
+Cxx.StoreGate                            INFO Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO Decorators will no be saved into the root file.
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 53031.1
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 84082.4
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 44751.2
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.CaloClusterMaker                     INFO Eletromagnetic energy in 0.1 x 0.1 center in the hotcell is: 193361
+Cxx.CaloClusterMaker                     INFO Creating one cluster since the center energy is higher than the energy cut
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsMerge                       INFO Starting collection merge algorithm...
+Cxx.ElectronBuilder                      INFO Cluster eta: -0.7125 phi: 2.4421 et: 44463.3 e: 56234.9
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: -0.7125 phi: 2.4421 et: 44463.3 e: 56234.9
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: -0.7125 phi: 2.4421 et: 44463.3 e: 56234.9
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: -0.7125 phi: 2.4421 et: 44463.3 e: 56234.9
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: -0.7125 phi: 2.4421 et: 44463.3 e: 56234.9
+Cxx.ElectronBuilder                      INFO Cluster eta: -1.2625 phi: -0.8222 et: 45445.3 e: 86736.6
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: -1.2625 phi: -0.8222 et: 45445.3 e: 86736.6
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: -1.2625 phi: -0.8222 et: 45445.3 e: 86736.6
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: -1.2625 phi: -0.8222 et: 45445.3 e: 86736.6
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: -1.2625 phi: -0.8222 et: 45445.3 e: 86736.6
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder                     INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsBuilder_Fwd                 INFO Creating the CaloRings for this cluster...
+Cxx.CaloRingsMerge                       INFO Starting collection merge algorithm...
+Cxx.ElectronBuilder                      INFO Cluster eta: 1.0125 phi: 2.8348 et: 32190.2 e: 50148.9
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: 1.0125 phi: 2.8348 et: 32190.2 e: 50148.9
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: 1.0125 phi: 2.8348 et: 32190.2 e: 50148.9
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: 1.0125 phi: 2.8348 et: 32190.2 e: 50148.9
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: 1.0125 phi: 2.8348 et: 32190.2 e: 50148.9
+Cxx.ElectronBuilder                      INFO Cluster eta: 2.3505 phi: -0.2331 et: 39677.6 e: 210016
+Cxx.ElectronBuilder                      INFO Computing PID (tight) for cluster with eta: 2.3505 phi: -0.2331 et: 39677.6 e: 210016
+Cxx.ElectronBuilder                      INFO Computing PID (medium) for cluster with eta: 2.3505 phi: -0.2331 et: 39677.6 e: 210016
+Cxx.ElectronBuilder                      INFO Computing PID (loose) for cluster with eta: 2.3505 phi: -0.2331 et: 39677.6 e: 210016
+Cxx.ElectronBuilder                      INFO Computing PID (vloose) for cluster with eta: 2.3505 phi: -0.2331 et: 39677.6 e: 210016
+Cxx.StoreGate                            INFO Saving StoreGate...
+Cxx.StoreGate                            INFO Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO Decorators will no be saved into the root file.
+Cxx.StoreGate                            INFO Saving StoreGate...
+Cxx.StoreGate                            INFO Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO Decorators will no be saved into the root file.
+Cxx.StoreGate                            INFO Saving StoreGate...
+Cxx.StoreGate                            INFO Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO Decorators will no be saved into the root file.
+hadd -f Zee.AOD.root Zee.AOD.0.0.root Zee.AOD.0.1.root Zee.AOD.0.2.root Zee.AOD.0.3.root Zee.AOD.0.4.root
+Module libc not found.
+hadd Target file: Zee.AOD.root
+hadd compression setting for all output: 101
+hadd Source file 1: Zee.AOD.0.0.root
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::EventInfo_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::Seed_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::TruthParticle_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::CaloRings_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::CaloCluster_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::Electron_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::CaloCell_t is available
+Warning in &lt;TClass::Init&gt;: no dictionary for class xAOD::CaloDetDescriptor_t is available
+hadd Source file 2: Zee.AOD.0.1.root
+hadd Source file 3: Zee.AOD.0.2.root
+hadd Source file 4: Zee.AOD.0.3.root
+hadd Source file 5: Zee.AOD.0.4.root
+hadd Target path: Zee.AOD.root:/
+hadd Target path: Zee.AOD.root:/Expert
+hadd Target path: Zee.AOD.root:/Expert/Clusters
+hadd Target path: Zee.AOD.root:/Expert/Rings
+hadd Target path: Zee.AOD.root:/Expert/Rings_Fwd
+hadd Target path: Zee.AOD.root:/Event
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;: Unchecked status codes encountered during the job
+Warning in &lt;StatusCode&gt;: Number of unchecked successes: 1
+Warning in &lt;StatusCode&gt;: To fail on an unchecked code, call StatusCode::enableFailure() at the job's start
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;: Unchecked status codes encountered during the job
+Warning in &lt;StatusCode&gt;: Number of unchecked successes: 2
+Warning in &lt;StatusCode&gt;: To fail on an unchecked code, call StatusCode::enableFailure() at the job's start
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;: Unchecked status codes encountered during the job
+Warning in &lt;StatusCode&gt;: Number of unchecked successes: 2
+Warning in &lt;StatusCode&gt;: To fail on an unchecked code, call StatusCode::enableFailure() at the job's start
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;: Unchecked status codes encountered during the job
+Warning in &lt;StatusCode&gt;: Number of unchecked successes: 2
+Warning in &lt;StatusCode&gt;: To fail on an unchecked code, call StatusCode::enableFailure() at the job's start
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;:
+Warning in &lt;StatusCode&gt;: Unchecked status codes encountered during the job
+Warning in &lt;StatusCode&gt;: Number of unchecked successes: 2
+Warning in &lt;StatusCode&gt;: To fail on an unchecked code, call StatusCode::enableFailure() at the job's start
+Warning in &lt;StatusCode&gt;:
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6c0e4fa9-acc9-4001-afaa-864b4f5e70eb">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Ntuple">Ntuple<a class="anchor-link" href="#Ntuple">¶</a></h1><p>Finally, the last step is responsible to dump all the event information into a ntuple root format.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=269bdd91-44fc-43fe-bcae-f77c42b970b7">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>ntuple_trf.py
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Module libc not found.
+<span class="ansi-green-intense-fg ansi-bold">Usage:</span> <span class="ansi-bold" style="color: rgb(128,128,128)">ntuple_trf.py</span> [<span class="ansi-green-fg">-l</span> <span class="ansi-blue-fg">OUTPUT_LEVEL</span>] <span class="ansi-green-fg">-i</span> <span class="ansi-blue-fg">INPUT_FILE</span> <span class="ansi-green-fg">-o</span> <span class="ansi-blue-fg">OUTPUT_FILE</span>
+                     [<span class="ansi-green-fg">--nov</span> <span class="ansi-blue-fg">NUMBER_OF_EVENTS</span>]
+                     [<span class="ansi-green-fg">--events-per-job</span> <span class="ansi-blue-fg">EVENTS_PER_JOB</span>] [<span class="ansi-green-fg">-nt</span> <span class="ansi-blue-fg">NUMBER_OF_THREADS</span>]
+                     [<span class="ansi-green-fg">-m</span>] [<span class="ansi-green-fg">--overwrite</span>] [<span class="ansi-green-fg">--dry-run</span>] [<span class="ansi-green-fg">--job-file</span> <span class="ansi-blue-fg">JOB_FILE</span>]
+
+<span class="ansi-green-intense-fg ansi-bold">Options:</span>
+  <span class="ansi-green-fg">-l</span>, <span class="ansi-green-fg">--output-level</span> <span class="ansi-blue-fg">OUTPUT_LEVEL</span>
+                        <span style="color: rgb(128,128,128)">The output level messenger.</span>
+  <span class="ansi-green-fg">-i</span>, <span class="ansi-green-fg">--input-file</span> <span class="ansi-blue-fg">INPUT_FILE</span>
+                        <span style="color: rgb(128,128,128)">The input file or folder to run the job</span>
+  <span class="ansi-green-fg">-o</span>, <span class="ansi-green-fg">--output-file</span> <span class="ansi-blue-fg">OUTPUT_FILE</span>
+                        <span style="color: rgb(128,128,128)">The output file.</span>
+  <span class="ansi-green-fg">--nov</span>, <span class="ansi-green-fg">--number-of-events</span> <span class="ansi-blue-fg">NUMBER_OF_EVENTS</span>
+                        <span style="color: rgb(128,128,128)">The total number of events to run.</span>
+  <span class="ansi-green-fg">--events-per-job</span> <span class="ansi-blue-fg">EVENTS_PER_JOB</span>
+                        <span style="color: rgb(128,128,128)">The number of events per job</span>
+  <span class="ansi-green-fg">-nt</span>, <span class="ansi-green-fg">--number-of-threads</span> <span class="ansi-blue-fg">NUMBER_OF_THREADS</span>
+                        <span style="color: rgb(128,128,128)">The number of threads</span>
+  <span class="ansi-green-fg">-m</span>, <span class="ansi-green-fg">--merge</span>           <span style="color: rgb(128,128,128)">Merge all files.</span>
+  <span class="ansi-green-fg">--overwrite</span>           <span style="color: rgb(128,128,128)">Rerun all jobs.</span>
+  <span class="ansi-green-fg">--dry-run</span>             <span style="color: rgb(128,128,128)">Perform a dry run without executing jobs.</span>
+  <span class="ansi-green-fg">--job-file</span> <span class="ansi-blue-fg">JOB_FILE</span>   <span style="color: rgb(128,128,128)">The JSON file used to configure this job automatically</span>
+                        <span style="color: rgb(128,128,128)">by overwritting some arguments.</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=448793ef-b0a6-4c94-9bd6-de712166ab36">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="How-to-run-ntuple?">How to run ntuple?<a class="anchor-link" href="#How-to-run-ntuple?">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c99a48a7-b6fe-4435-8540-03d2b6457d0a">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>ntuple_trf.py<span class="w"> </span>-i<span class="w"> </span>Zee.AOD.root<span class="w"> </span>-o<span class="w"> </span>Zee.NTUPLE.root
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Module libc not found.
+['/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.AOD.root']
+Loop over files...: 100%|█████████████████████████| 1/1 [00:00&lt;00:00,  5.79it/s]
+[('/home/joao.pinto/git_repos/lorenzetti/TEST/Zee.AOD.root',
+  'Zee.NTUPLE.0.0.root',
+  [0, 1, 2, 3, 4])]
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name AODReader
+Cxx.ComponentAccumulator                 INFO Initializing the tool with name NtupleMaker
+Cxx.ComponentAccumulator                 INFO Initialize...
+Cxx.ComponentAccumulator                 INFO Booking histograms for AODReader
+Cxx.ComponentAccumulator                 INFO Booking histograms for NtupleMaker
+Cxx.NtupleMaker                          INFO Booking ttree...
+Cxx.ComponentAccumulator                 INFO ======================= Event 0 =========================
+Cxx.NtupleMaker                          INFO fill ttree...
+Cxx.NtupleMaker                          INFO Link all branches...0x556af350c970
+Cxx.NtupleMaker                          INFO Cluster energy: 114370
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: 11
+Cxx.NtupleMaker                          INFO Cluster energy: 107573
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: -11
+Cxx.ComponentAccumulator                 INFO ======================= Event 1 =========================
+Cxx.NtupleMaker                          INFO fill ttree...
+Cxx.NtupleMaker                          INFO Link all branches...0x556af350c970
+Cxx.NtupleMaker                          INFO Cluster energy: 56995
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: 11
+Cxx.NtupleMaker                          INFO Cluster energy: 87722.2
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: -11
+Cxx.ComponentAccumulator                 INFO ======================= Event 2 =========================
+Cxx.NtupleMaker                          INFO fill ttree...
+Cxx.NtupleMaker                          INFO Link all branches...0x556af350c970
+Cxx.NtupleMaker                          INFO Cluster energy: 48748
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: 11
+Cxx.NtupleMaker                          INFO Cluster energy: 207674
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: -11
+Cxx.ComponentAccumulator                 INFO ======================= Event 3 =========================
+Cxx.NtupleMaker                          INFO fill ttree...
+Cxx.NtupleMaker                          INFO Link all branches...0x556af350c970
+Cxx.NtupleMaker                          INFO Cluster energy: 74116.5
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: 11
+Cxx.NtupleMaker                          INFO Cluster energy: 158006
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: -11
+Cxx.ComponentAccumulator                 INFO ======================= Event 4 =========================
+Cxx.NtupleMaker                          INFO fill ttree...
+Cxx.NtupleMaker                          INFO Link all branches...0x556af350c970
+Cxx.NtupleMaker                          INFO Cluster energy: 168425
+Cxx.NtupleMaker                          INFO Found mc particle with PDGID: -11
+Cxx.StoreGate                            INFO Saving StoreGate...
+Cxx.StoreGate                            INFO Writing all root objects into the file and delete all decorators
+Cxx.StoreGate                            INFO Decorators will no be saved into the root file.
+hadd -f Zee.NTUPLE.root Zee.NTUPLE.0.0.root
+Module libc not found.
+hadd Target file: Zee.NTUPLE.root
+hadd compression setting for all output: 101
+hadd Source file 1: Zee.NTUPLE.0.0.root
+hadd Target path: Zee.NTUPLE.root:/
+hadd Target path: Zee.NTUPLE.root:/Event
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a72a9ea5-d943-4a01-9ccc-51bd24fd4076">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
