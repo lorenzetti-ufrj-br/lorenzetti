@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Usage</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>usage</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7516,7 +7516,14 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Tutorial-101:">Tutorial 101:<a class="anchor-link" href="#Tutorial-101:">¶</a></h1><p>This <code>notebook</code> is a tutorial about how to simulate and reconstruct events end-to-end in lorenzetti framework.</p>
+<h1 id="Tutorial-101:">Tutorial 101:<a class="anchor-link" href="#Tutorial-101:">¶</a></h1><p>This tutorial is about how to simulate and reconstruct events end-to-end in lorenzetti framework.</p>
+<ul>
+<li><a href="#generation">Generation</a></li>
+<li><a href="#simulation">Simulation</a></li>
+<li><a href="#Digitalization">Digitalization</a></li>
+<li><a href="#Reconstruction">Reconstruction</a></li>
+<li><a href="#Ntuple">Ntuple</a></li>
+</ul>
 </div>
 </div>
 </div>
@@ -7527,6 +7534,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><a id="generation"></a></p>
 <h2 id="How-to-generate-events?">How to generate events?<a class="anchor-link" href="#How-to-generate-events?">¶</a></h2><p>The event generation process is a critical first step in our simulation pipeline. It involves creating simulated particle interactions that mimic real-world physics events. This process is typically carried out using specialized scripts, such as <code>gen_zee.py</code>, which are designed to generate events based on specific parameters and configurations.</p>
 <p>During event generation, we define various parameters, including the number of events to generate, the output file format, and the characteristics of the particles involved. The script utilizes a random number generator to simulate the inherent uncertainties in particle interactions, ensuring that the generated events are representative of actual experimental conditions.</p>
 <p>The generated events can then be used for further analysis, including shower propagation, digitalization, and event reconstruction. This allows researchers to study the properties of particles and their interactions in a controlled environment, facilitating a deeper understanding of high-energy physics phenomena.</p>
@@ -7911,7 +7919,8 @@ Warning in &lt;StatusCode&gt;:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Geant4-Simulation">Geant4 Simulation<a class="anchor-link" href="#Geant4-Simulation">¶</a></h1><p>The Geant4 simulation step is essential for accurately modeling the passage of particles through matter. It simulates the interactions of particles with the detector materials, allowing us to understand how particles lose energy, scatter, and produce secondary particles. This step is crucial for obtaining realistic hit information that will be used in subsequent analysis stages.</p>
+<h1 id="Geant4-Simulation">Geant4 Simulation<a class="anchor-link" href="#Geant4-Simulation">¶</a></h1><p><a id="simulation"></a></p>
+<p>The Geant4 simulation step is essential for accurately modeling the passage of particles through matter. It simulates the interactions of particles with the detector materials, allowing us to understand how particles lose energy, scatter, and produce secondary particles. This step is crucial for obtaining realistic hit information that will be used in subsequent analysis stages.</p>
 <p>To run the Geant4 simulation, we typically use the <code>simu_trf.py</code> script, which takes the output from the event generation step as input. The script can be configured to enable various features, such as magnetic fields, which are important for simulating charged particle trajectories accurately.</p>
 </div>
 </div>
