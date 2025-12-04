@@ -38,10 +38,9 @@ Details are given in [Reconstruction](docs/Reconstruction.md).
 ## Manual:
 
 - [Installation](docs/installation.md)
-- [Event geneation](docs/generation.html)
-- [Simulation](docs/simulation.html)
-- [Digitization](docs/digitization.html)
-- [Visualization (Extra)](docs/Visualization.md)
+- [Usage](docs/usage.html)
+- [Particle Generators](docs/generation.html)
+
 
 
 ## Software considerations:
