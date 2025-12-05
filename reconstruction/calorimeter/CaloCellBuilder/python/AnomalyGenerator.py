@@ -6,7 +6,6 @@ import ROOT, json
 from typing import List
 from GaugiKernel import Cpp, LoggingLevel
 from GaugiKernel.macros import *
-from RootStreamBuilder import RootStreamESDFlags as flags
 
 
 def get_cells_from_brl( path : str) -> List[int]:
@@ -36,7 +35,7 @@ class AnomalyGenerator( Cpp ):
     self.setProperty( "NoiseMean"       , NoiseMean         )
     self.setProperty( "NoiseStd"        , NoiseStd          )
     self.setProperty( "InputEventKey"   , InputEventKey     )
-    MSG_INFO(self, f"Reading bad run list from {BadRunListFile}")
+
     with open(BadRunListFile, 'r') as f:
       d = json.load(f)      
       events = []
