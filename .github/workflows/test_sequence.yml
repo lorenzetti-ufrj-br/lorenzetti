@@ -68,7 +68,7 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          digi_trf.py -i Zee.HIT.root -o Zee.ESD.root
+          digit_trf.py -i Zee.HIT.root -o Zee.ESD.root
               
   reconstruction:
     runs-on: self-hosted
@@ -82,6 +82,17 @@ jobs:
           cd lorenzetti && source build/lzt_setup.sh
           reco_trf.py -i Zee.ESD.root -o Zee.AOD.root
 
+  ntuple:
+    runs-on: self-hosted
+    needs: reconstruction
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Ntuple Events
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          ntuple_trf.py -i Zee.AOD.root -o Zee.NTUPLE.root
 
 
 #
