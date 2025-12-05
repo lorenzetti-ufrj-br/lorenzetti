@@ -13,7 +13,7 @@ jobs:
         shell: bash
         run: |
           rm -rf *
-          git clone https://github.com/lorenzetti-hep/lorenzetti.git
+          git clone https://github.com/lorenzetti-ufrj-br/lorenzetti.git
           export CPU_N=$(grep -c ^processor /proc/cpuinfo)
           cd lorenzetti && make 
           
@@ -54,8 +54,8 @@ jobs:
         shell: bash
         run: |
           cd lorenzetti && source build/lzt_setup.sh
-          cd .github/workflows/tests
-          source test_merge_trf.sh
+          merge_trf.py -i Zee.HIT.root --low-pileup-files mb.HIT.root --high-pileup-files mb.HIT.root --pileup-avg 0 --pileup-sigma 0 -o Zee.merged.HIT.root
+
 
   digitalization:
     runs-on: self-hosted
