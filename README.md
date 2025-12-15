@@ -4,7 +4,7 @@
 [![anomaly](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml/badge.svg)](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml)
 [![maestro](https://github.com/lps-ufrj-br/maestro-lightning/actions/workflows/flow.yml/badge.svg)](https://github.com/lps-ufrj-br/maestro-lighning/actions/workflows/flow.yml)
 
-# Lorenzetti Simulator
+# Lorenzetti Simulator ([WebPage](https://sites.google.com/lps.ufrj.br/lorenzetti/início?authuser=0), [DocPage](https://lorenzetti-ufrj-br.github.io/lorenzetti/))
 
 Lorenzetti is a framework for the HEP community to freely exploit the full potential of calorimetry data. We expect to enable the community to mitigate bottlenecks for R&D in processing algorithms using calorimetry data by providing:
 
@@ -47,7 +47,6 @@ It is possible, by using Geant4 modules to change the geometry, the layers and t
 
 
 ## Software considerations:
-
 
 Lorenzetti is built on top of standard simulation technology employed on HEP experiments ([Pythia](http://home.thep.lu.se/~torbjorn/Pythia.html) and [Geant](https://geant4.web.cern.ch)). Lorenzetti's concept design was greatly inspired in the [Athena framework](https://gitlab.cern.ch/atlas/athena). Other frameworks of potential interest:
 
