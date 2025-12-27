@@ -56,9 +56,9 @@ void ActionInitialization::BuildForMaster() const
 void ActionInitialization::Build() const
 {
   MSG_INFO( "Build()" );
-  SetUserAction(new PrimaryGeneratorAction(m_generator));
-  SetUserAction(new RunAction(m_numberOfThreads, m_timeout, m_acc, m_output));
-  SetUserAction(new EventAction());
-  SetUserAction(new SteppingAction());
+  SetUserAction(new Step2_PrimaryGeneratorAction(m_generator));
+  SetUserAction(new Step3_RunAction(m_numberOfThreads, m_timeout, m_acc, m_output));
+  SetUserAction(new Step4_EventAction());
+  SetUserAction(new Step5_SteppingAction());
 }  
 
