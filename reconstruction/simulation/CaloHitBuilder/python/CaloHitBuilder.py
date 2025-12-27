@@ -3,8 +3,8 @@ __all__ = ["CaloHitBuilder"]
 
 from GaugiKernel import Logger, LoggingLevel
 from GaugiKernel.macros import *
-from CaloCellBuilder import CaloHitMaker
-from CaloCellBuilder import CaloHitMerge
+from CaloHitBuilder import CaloHitMaker
+from CaloHitBuilder import CaloHitMerge
 from G4Kernel import ComponentAccumulator
 
 
@@ -14,7 +14,6 @@ from G4Kernel import ComponentAccumulator
 class CaloHitBuilder(Logger):
 
     def __init__(self, name,
-                 InputEventKey: str,
                  OutputHitsKey: str,
                  HistogramPath: str = "Expert",
                  OutputLevel: int = LoggingLevel.toC('INFO'),
