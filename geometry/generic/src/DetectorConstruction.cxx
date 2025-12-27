@@ -1,5 +1,5 @@
 
-#include "G4Kernel/DetectorConstruction.h"
+#include "generic/DetectorConstruction.h"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4Box.hh"

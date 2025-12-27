@@ -13,29 +13,29 @@ def flatten(l):
     return o
 
 
-from . import Tracking
+from .detectors import Tracking
 __all__.extend(Tracking.__all__)
-from .Tracking import *
+from .detectors.Tracking import *
 
-from . import ECAL
+from .detectors import ECAL
 __all__.extend(ECAL.__all__)
-from .ECAL import *
+from .detectors.ECAL import *
 
-from . import TILE
+from .detectors import TILE
 __all__.extend(TILE.__all__)
-from .TILE import *
+from .detectors.TILE import *
 
-from . import EMEC
+from .detectors import EMEC
 __all__.extend(EMEC.__all__)
-from .EMEC import *
+from .detectors.EMEC import *
 
-from . import HEC
+from .detectors import HEC
 __all__.extend(HEC.__all__)
-from .HEC import *
+from .detectors.HEC import *
 
-from . import DeadMaterials
+from .detectors import DeadMaterials
 __all__.extend(DeadMaterials.__all__)
-from .DeadMaterials import *
+from .detectors.DeadMaterials import *
 
 from . import ATLASConstruction
 __all__.extend(ATLASConstruction.__all__)
