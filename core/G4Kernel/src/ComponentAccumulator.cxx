@@ -1,5 +1,5 @@
 
-#include "G4Kernel/RunReconstruction.h"
+#include "G4Kernel/ComponentAccumulator.h"
 #include "GaugiKernel/Timer.h"
 #include "G4Threading.hh"
 #include "G4SystemOfUnits.hh"
@@ -11,10 +11,10 @@
 
 
 
-RunReconstruction::RunReconstruction( int numberOfThreads, int timeout,
-                                      std::vector<Gaugi::Algorithm*> acc , 
-                                      std::string output ): 
-  IMsgService("RunReconstruction"),
+ComponentAccumulator::ComponentAccumulator( int numberOfThreads, int timeout,
+                                            std::vector<Gaugi::Algorithm*> acc , 
+                                            std::string output ): 
+  IMsgService("ComponentAccumulator"),
   G4Run(), 
   m_store( output + "." + std::to_string(G4Threading::G4GetThreadId()) ),
   m_ctx( "EventContext" ),
@@ -39,7 +39,7 @@ RunReconstruction::RunReconstruction( int numberOfThreads, int timeout,
 
 //!=====================================================================
 
-RunReconstruction::~RunReconstruction()
+ComponentAccumulator::~ComponentAccumulator()
 {
   m_store.cd("Event");
   /*
@@ -59,9 +59,9 @@ RunReconstruction::~RunReconstruction()
 
 //!=====================================================================
 
-void RunReconstruction::BeginOfEvent()
+void ComponentAccumulator::BeginOfEvent()
 {
-  MSG_INFO("RunReconstruction::BeginOfEvent...");
+  MSG_INFO("ComponentAccumulator::BeginOfEvent...");
   
   m_stepCounter=0;
   
@@ -92,7 +92,7 @@ void RunReconstruction::BeginOfEvent()
 
 //!=====================================================================
 
-void RunReconstruction::ExecuteEvent( const G4Step* step )
+void ComponentAccumulator::ExecuteEvent( const G4Step* step )
 {
   m_stepCounter++;
   float edep = (float)step->GetTotalEnergyDeposit()/MeV;
@@ -118,7 +118,7 @@ void RunReconstruction::ExecuteEvent( const G4Step* step )
 
 //!=====================================================================
 
-void RunReconstruction::EndOfEvent()
+void ComponentAccumulator::EndOfEvent()
 {
 
   
@@ -126,7 +126,7 @@ void RunReconstruction::EndOfEvent()
   
   timer.start();
   if (!m_lock){
-    MSG_INFO("RunReconstruction::EndOfEvent...");
+    MSG_INFO("ComponentAccumulator::EndOfEvent...");
     for( auto &toolHandle : m_toolHandles){
       MSG_DEBUG( "Launching post execute step for " << toolHandle->name() );
       if (toolHandle->post_execute( m_ctx ).isFailure() ){
@@ -159,7 +159,7 @@ void RunReconstruction::EndOfEvent()
 
 //!=====================================================================
 
-void RunReconstruction::bookHistograms(){
+void ComponentAccumulator::bookHistograms(){
 
   m_store.cd();
   m_store.mkdir( "Event" );
@@ -175,26 +175,26 @@ void RunReconstruction::bookHistograms(){
 
 //!=====================================================================
 
-SG::EventContext & RunReconstruction::getContext()
+SG::EventContext & ComponentAccumulator::getContext()
 {
   return m_ctx;
 }
 
 //!=====================================================================
 
-bool RunReconstruction::timeout(){
+bool ComponentAccumulator::timeout(){
   return m_timeout.resume() > m_event_timeout ? true : false;
 }
 
 //!=====================================================================
 
-void RunReconstruction::lock(){
+void ComponentAccumulator::lock(){
   m_lock=true;
 }
 
 //!=====================================================================
 
-void RunReconstruction::unlock(){
+void ComponentAccumulator::unlock(){
   m_lock=false;
 }
 

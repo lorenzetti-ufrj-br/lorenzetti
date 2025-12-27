@@ -1,6 +1,12 @@
 
 file(GLOB SOURCES src/*.cxx)
+file(GLOB SOURCES src/actions/*.cxx)
+file(GLOB SOURCES src/inputs/*.cxx)
+
+
 file(GLOB_RECURSE HEADERS G4Kernel/*.h )
+file(GLOB_RECURSE HEADERS G4Kernel/actions/*.h )
+file(GLOB_RECURSE HEADERS G4Kernel/inputs/*.h )
 
 find_package(X11 REQUIRED)
 link_libraries(${X11_LIBRARIES})

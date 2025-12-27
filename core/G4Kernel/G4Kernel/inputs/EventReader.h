@@ -5,7 +5,7 @@
 #include "TTree.h"
 #include "EventInfo/EventInfo.h"
 #include "EventInfo/EventInfoContainer.h"
-#include "G4Kernel/PrimaryGenerator.h"
+#include "G4Kernel/inputs/PrimaryGenerator.h"
 
 namespace generator{
 

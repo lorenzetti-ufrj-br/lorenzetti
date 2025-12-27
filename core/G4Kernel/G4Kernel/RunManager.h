@@ -3,7 +3,7 @@
 #define RunManager_h
 
 #include "G4VUserDetectorConstruction.hh"
-#include "G4Kernel/PrimaryGenerator.h"
+#include "G4Kernel/inputs/PrimaryGenerator.h"
 #include "GaugiKernel/Algorithm.h"
 #include "GaugiKernel/MsgStream.h"
 #include "GaugiKernel/Property.h"

@@ -1,19 +1,19 @@
 
-#include "G4Kernel/ActionInitialization.h"
-#include "G4Kernel/PrimaryGeneratorAction.h"
-#include "G4Kernel/RunAction.h"
-#include "G4Kernel/EventAction.h"
-#include "G4Kernel/SteppingAction.h"
+#include "G4Kernel/actions/Step1_ActionInitialization.h"
+#include "G4Kernel/actions/Step2_PrimaryGeneratorAction.h"
+#include "G4Kernel/actions/Step3_RunAction.h"
+#include "G4Kernel/actions/Step4_EventAction.h"
+#include "G4Kernel/actions/Step5_SteppingAction.h"
 #include "G4MTRunManager.hh"
 #include <iostream>
 
-ActionInitialization::ActionInitialization( int numberOfThreads,
-                                            int timeout,
-                                            PrimaryGenerator *gen,
-                                            std::vector<Gaugi::Algorithm*> acc , 
-                                            std::string output)
+Step1_ActionInitialization::Step1_ActionInitialization( int numberOfThreads,
+                                                        int timeout,
+                                                        PrimaryGenerator *gen,
+                                                        std::vector<Gaugi::Algorithm*> acc , 
+                                                        std::string output)
  : 
-  IMsgService("ActionInitialization"), 
+  IMsgService("Step1_ActionInitialization"), 
   G4VUserActionInitialization(),
   m_acc(acc),
   m_generator(gen),
@@ -34,9 +34,9 @@ ActionInitialization::ActionInitialization( int numberOfThreads,
 }
 
 
-ActionInitialization::~ActionInitialization()
+Step1_ActionInitialization::~Step1_ActionInitialization()
 {
-  MSG_INFO( "~ActionInitialization()" );
+  MSG_INFO( "~Step1_ActionInitialization()" );
   for ( auto toolHandle : m_acc )
   { 
     if ( toolHandle->finalize().isFailure() )
@@ -47,13 +47,13 @@ ActionInitialization::~ActionInitialization()
 }
 
 
-void ActionInitialization::BuildForMaster() const
+void Step1_ActionInitialization::BuildForMaster() const
 {
   //SetUserAction(new RunAction(m_acc, m_output));
 }
 
 
-void ActionInitialization::Build() const
+void Step1_ActionInitialization::Build() const
 {
   MSG_INFO( "Build()" );
   SetUserAction(new Step2_PrimaryGeneratorAction(m_generator));

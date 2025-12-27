@@ -1,7 +1,7 @@
 
 
 #include "G4Kernel/RunManager.h"
-#include "G4Kernel/ActionInitialization.h"
+#include "G4Kernel/actions/ActionInitialization.h"
 #include "GaugiKernel/Algorithm.h"
 
 

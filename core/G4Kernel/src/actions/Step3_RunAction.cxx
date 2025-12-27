@@ -1,7 +1,6 @@
 
-#include "G4Kernel/RunReconstruction.h"
-#include "G4Kernel/RunAction.h"
-#include "G4Kernel/Analysis.h"
+#include "G4Kernel/ComponentAccumulator.h"
+#include "G4Kernel/actions/Step3_RunAction.h"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
@@ -15,8 +14,8 @@
 
 #include <iostream>
 
-RunAction::RunAction( int numberOfThreads, int timeout, std::vector<Gaugi::Algorithm*> acc, std::string output )
- : IMsgService("RunAction"),
+Step3_RunAction::Step3_RunAction( int numberOfThreads, int timeout, std::vector<Gaugi::Algorithm*> acc, std::string output )
+ : IMsgService("Step3_RunAction"),
    G4UserRunAction(),
    m_acc(acc),
    m_output(output),
@@ -25,27 +24,27 @@ RunAction::RunAction( int numberOfThreads, int timeout, std::vector<Gaugi::Algor
 {;}
 
 
-RunAction::~RunAction()
+Step3_RunAction::~Step3_RunAction()
 {
-  MSG_INFO( "~RunAction()" );	
+  MSG_INFO( "~Step3_RunAction()" );	
   //delete G4AnalysisManager::Instance();  
 }
 
 
-G4Run* RunAction::GenerateRun()
+G4Run* Step3_RunAction::GenerateRun()
 {
-  MSG_INFO("Creating the RunReconstruction...");
-  return new RunReconstruction(m_numberOfThreads, m_timeout, m_acc, m_output);
+  MSG_INFO("Creating the ComponentAccumulator..");
+  return new ComponentAccumulator(m_numberOfThreads, m_timeout, m_acc, m_output);
 }
 
 
-void RunAction::BeginOfRunAction(const G4Run* /*run*/)
+void Step3_RunAction::BeginOfRunAction(const G4Run* /*run*/)
 {
-  MSG_INFO( "RunAction::BeginOfRunAction" );
+  MSG_INFO( "Step3_RunAction::BeginOfRunAction" );
 }
 
 
-void RunAction::EndOfRunAction(const G4Run* /*run*/)
+void Step3_RunAction::EndOfRunAction(const G4Run* /*run*/)
 {;}
 
 

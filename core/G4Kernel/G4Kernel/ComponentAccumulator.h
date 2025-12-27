@@ -1,5 +1,5 @@
-#ifndef RunReconstruction_h 
-#define RunReconstruction_h
+#ifndef ComponentAccumulator_h 
+#define ComponentAccumulator_h
 
 #include "GaugiKernel/DataHandle.h"
 #include "GaugiKernel/MsgStream.h"
@@ -12,15 +12,15 @@
 #include <string>
 #include <vector>
 
-class RunReconstruction : public G4Run, public MsgService
+class ComponentAccumulator : public G4Run, public MsgService
 {
   public:
 
     /** Constructor **/
-    RunReconstruction( int numberOfThreads, int timeout, std::vector<Gaugi::Algorithm*>, std::string output );
+    ComponentAccumulator( int numberOfThreads, int timeout, std::vector<Gaugi::Algorithm*>, std::string output );
     
     /** Destructor **/
-    virtual ~RunReconstruction();
+    virtual ~ComponentAccumulator();
     
     /** Used in Geant core, Loop event **/
 
