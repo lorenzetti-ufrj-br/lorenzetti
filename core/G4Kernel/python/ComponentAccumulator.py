@@ -32,7 +32,7 @@ class ComponentAccumulator(Cpp):
         # set the geant detector into the geant
         self._core.setDetectorConstruction(self.__detector.core())
         self.setProperty("OutputFile", OutputFile)
-        #self.setProperty("OutputLevel", OutputLevel)
+        self.setProperty("OutputLevel", OutputLevel)
         self.setProperty("VisMac", self.__detector.VisMac)
         self.setProperty("NumberOfThreads", NumberOfThreads)
         self.setProperty("Timeout", Timeout)

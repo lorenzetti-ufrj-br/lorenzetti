@@ -13,8 +13,5 @@ from . import EventReader
 __all__.extend(EventReader.__all__)
 from .EventReader import *
 
-from ....geometry.atlas.python import DetectorConstruction
-__all__.extend(DetectorConstruction.__all__)
-from ....geometry.atlas.python.DetectorConstruction import *
 
 
