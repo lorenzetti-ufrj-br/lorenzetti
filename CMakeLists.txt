@@ -83,7 +83,7 @@ add_subdirectory( events/CaloRings )
 add_subdirectory( events/Egamma)
 
 # detector definitions
-add_subdirectory( geometry/generic )
+add_subdirectory( geometry/generic_calorimeter )
 
 
 
@@ -118,7 +118,7 @@ add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:CaloRings>
   $<TARGET_OBJECTS:Egamma>
   $<TARGET_OBJECTS:SpacePoint>
-  $<TARGET_OBJECTS:generic>
+  $<TARGET_OBJECTS:generic_calorimeter>
 
 
   $<TARGET_OBJECTS:CaloCellBuilder>
