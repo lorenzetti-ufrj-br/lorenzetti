@@ -13,13 +13,14 @@ from G4Kernel import ComponentAccumulator
 #
 class CaloHitBuilder(Logger):
 
-    def __init__(self, name,
+    def __init__(self, 
+                 name : str,
                  OutputHitsKey: str,
                  HistogramPath: str = "Expert",
                  OutputLevel: int = LoggingLevel.toC('INFO'),
                  ):
 
-        Logger.__init__(self)
+        Logger.__init__(self, name)
         self.__recoAlgs = []
         self.HistogramPath = HistogramPath
         self.OutputLevel = OutputLevel

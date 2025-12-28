@@ -20,6 +20,11 @@ do
   ln -sf $file
 done
 
+for file in "`pwd`"/*/*.pcm
+do
+  echo "ln -sf $file"
+  ln -sf $file
+done
 
 # Link all libs
 if [[ "$OSTYPE" == "darwin"* ]]; then

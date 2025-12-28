@@ -1,11 +1,11 @@
 
 
-#include "G4Kernel/actions/Step2_PrimaryGeneratorAction.h"
+#include "G4Kernel/actions/PrimaryGeneratorAction.h"
 #include "G4Event.hh"
 
 
-Step2_PrimaryGeneratorAction::Step2_PrimaryGeneratorAction( PrimaryGenerator *gen): 
-  IMsgService("Step2_PrimaryGeneratorAction"),
+PrimaryGeneratorAction::PrimaryGeneratorAction( PrimaryGenerator *gen): 
+  IMsgService("PrimaryGeneratorAction"),
   G4VUserPrimaryGeneratorAction()
 {
   // Need to copy the generator to works on thread mode
@@ -15,20 +15,20 @@ Step2_PrimaryGeneratorAction::Step2_PrimaryGeneratorAction( PrimaryGenerator *ge
 }
 
 
-Step2_PrimaryGeneratorAction::~Step2_PrimaryGeneratorAction()
+PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   m_generator->finalize();
   delete m_generator;
 }
 
 
-void Step2_PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   if(m_generator){
     MSG_INFO( "GeneratePrimaryVertex..." );
     m_generator->GeneratePrimaryVertex(anEvent);
   }else
-    G4Exception("Step2_PrimaryGeneratorAction::GeneratePrimaries",
+    G4Exception("PrimaryGeneratorAction::GeneratePrimaries",
                 "InvalidSetup", FatalException,
                 "Generator is not instanciated.");
 }

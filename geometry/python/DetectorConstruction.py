@@ -3,25 +3,35 @@ __all__ = [
            ]
 
 
-import collections
 import ROOT
 
 from typing import List
 from prettytable import PrettyTable
+from pprint import pprint
 from tqdm import tqdm
 
 from GaugiKernel.constants import *
 from GaugiKernel import Cpp
 from GaugiKernel.macros import *
 
-from .PhysicalVolume          import Plates
-from .detectors.ECAL          import *
-from .detectors.TILE          import *
-from .detectors.EMEC          import *
-from .detectors.HEC           import *
-from .detectors.DeadMaterials import *
-from .detectors.Tracking      import *
+from geometry.PhysicalVolume          import Plates
+from geometry.detectors.ECAL          import getLArBarrelCfg
+from geometry.detectors.TILE          import getTileBarrelCfg, getTileExtendedCfg
+from geometry.detectors.EMEC          import getLArEMECCfg
+from geometry.detectors.HEC           import getHECCfg
+from geometry.detectors.DeadMaterials import getDMVolumesCfg, getCrackVolumesCfg
+#from geometry.detectors.Tracking      import *
 
+
+def flatten(nested_list : List) -> List:
+  """Flatten a nested list."""
+  result = []
+  for item in nested_list:
+    if isinstance(item, list):
+      result.extend(flatten(item))
+    else:
+      result.append(item)
+  return result
 
 
 class DetectorConstruction( Cpp ):
@@ -36,7 +46,6 @@ class DetectorConstruction( Cpp ):
     
     self.setProperty( "UseMagneticField", UseMagneticField  )
     self.setProperty( "CutOnPhi"        , CutOnPhi          )
-
 
     self.samplings = []
     self.volumes = []
@@ -56,18 +65,9 @@ class DetectorConstruction( Cpp ):
     self.samplings.extend( getLArEMECCfg(left_side=True)        ) 
     self.samplings.extend( getHECCfg(left_side=True)            )    
     self.volumes.extend( getCrackVolumesCfg(left_side=True)     )
-
-    self.__volumes = collections.OrderedDict({})
-
+    self.samplings = flatten(self.samplings)
     
-  def __add__(self, pv):
-    if pv.Name not in self.__volumes.keys():
-      self.__volumes[pv.Name] = pv
-    return self
-
-  #
-  # Build the core object
-  #
+  
   def compile(self):
     # Create all volumes inside of the detector
     
@@ -92,17 +92,13 @@ class DetectorConstruction( Cpp ):
 
   def summary(self):
 
-      samp_vol_names = []
-
       print('Display all calorimeter samplings...')
-
       t = PrettyTable(["Name", "Plates", "z",'Zmin','Zmax', "Rmin", 
                        "Rmax", "abso","gap", "deta", "dphi", "EtaMin", 
                        "EtaMax", "N_bins", "Container"])
-
       # Add all volumes that came from a sampling detector and has a sensitive parameter
       for samp in self.samplings:
-        pv = samp.volume(); sv = samp.sensitive(); samp_vol_names.append(pv.Name)
+        pv = samp.volume(); sv = samp.sensitive()
         t.add_row( [pv.Name,
                     Plates.tostring(pv.Plates),pv.ZSize,pv.ZMin,pv.ZMax,pv.RMin,pv.RMax,
                     pv.AbsorberMaterial,pv.GapMaterial,
@@ -113,13 +109,9 @@ class DetectorConstruction( Cpp ):
                     samp.CollectionKey
                   ])
       print(t)
-
-
       print('Display all non-sensitive volumes...')
-
       t = PrettyTable(["Name", "Plates", "z",'Zmin','Zmax', "Rmin", 
                        "Rmax", "abso","gap"])
-
       # Add ither volumes that not came from a sampling detector (extra volumes only)
       for pv in self.volumes:
         t.add_row([pv.Name, Plates.tostring(pv.Plates),pv.ZSize, pv.ZMin, pv.ZMax, 
@@ -128,7 +120,7 @@ class DetectorConstruction( Cpp ):
 
   
   
-  def create_visualization_commands(self) -> List[str]:
+  def get_ui_commands(self) -> List[str]:
 
     commands = [
      "/vis/open OGL 600x600-0+0"
@@ -150,7 +142,7 @@ class DetectorConstruction( Cpp ):
     ,"/vis/ogl/set/displayListLimit 10000000"
     ]
   
-    def _add_volume_vis_commands(volumes, name, color, visualization) -> List[str]:
+    def _add_volume_vis_commands(name, color, visualization) -> List[str]:
       vis_command = [
          f"/vis/geometry/set/colour {name} 0 {color}"
         ,f"/vis/geometry/set/colour {name}_Layer 0 {color}"
@@ -163,8 +155,11 @@ class DetectorConstruction( Cpp ):
       ]
       return vis_command
 
-    for vol in self.__volumes.values():
-      commands.extend( _add_volume_vis_commands( vol, vol.name(), vol.Color, 'true' if vol.Visualization else 'false') )
+    for samp in self.samplings:
+      vol = samp.volume()
+      commands.extend( _add_volume_vis_commands( vol.name(), vol.Color, 'true' if vol.Visualization else 'false') )
+    for vol in self.volumes:
+      commands.extend( _add_volume_vis_commands( vol.name(), vol.Color, 'true' if vol.Visualization else 'false') )
 
     commands.extend( [
              "/vis/viewer/set/autoRefresh true"
@@ -180,6 +175,7 @@ if __name__ == "__main__":
     atlas = DetectorConstruction("ATLAS")
     atlas.summary()
     #atlas.compile()
+    #pprint(atlas.create_visualization_commands())
 
 
 

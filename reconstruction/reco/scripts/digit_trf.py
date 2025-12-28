@@ -5,16 +5,14 @@ import os
 
 from pathlib            import Path
 from typing             import List
-from expand_folders     import expand_folders
 from CaloCellBuilder    import CaloCellBuilder
-from ATLAS              import ATLASConstruction as ATLAS
 from GaugiKernel        import LoggingLevel, get_argparser_formatter
 from GaugiKernel        import ComponentAccumulator
 from RootStreamBuilder  import RootStreamHITReader, recordable
 from RootStreamBuilder  import RootStreamESDMaker
-from RootStreamBuilder import RootStreamESDFlags as flags
 
 from reco.reco_job import merge_args, update_args, create_parallel_job
+from geometry import DetectorConstruction
 
 def parse_args():
     # create the top-level parser
@@ -79,7 +77,7 @@ def main(events : List[int],
     reader.merge(acc)
 
     # digitalization!    
-    calorimeter = CaloCellBuilder("CaloCellBuilder", ATLAS(),
+    calorimeter = CaloCellBuilder("CaloCellBuilder", DetectorConstruction("ATLAS"),
                                   HistogramPath="Expert/Cells",
                                   OutputLevel=outputLevel,
                                   InputHitsKey=recordable("Hits"),

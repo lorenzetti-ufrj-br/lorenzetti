@@ -4,9 +4,9 @@ __all__ = ["getLArEMECCfg"]
 from GaugiKernel.constants import mm,MeV,pi
 from CaloCell.CaloDefs import Detector, CaloSampling
 
-from ..Calorimeter import Calorimeter
-from ..PhysicalVolume import PhysicalVolume, Plates
-from ..SensitiveDetector import SensitiveDetector
+from geometry.Calorimeter import Calorimeter
+from geometry.PhysicalVolume import PhysicalVolume, Plates
+from geometry.SensitiveDetector import SensitiveDetector
 
 
 import os

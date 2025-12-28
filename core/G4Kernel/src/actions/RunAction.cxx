@@ -1,6 +1,6 @@
 
 #include "G4Kernel/RunSequence.h"
-#include "G4Kernel/actions/Step3_RunAction.h"
+#include "G4Kernel/actions/RunAction.h"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
@@ -14,8 +14,8 @@
 
 #include <iostream>
 
-Step3_RunAction::Step3_RunAction( int numberOfThreads, int timeout, std::vector<Gaugi::Algorithm*> acc, std::string output )
- : IMsgService("Step3_RunAction"),
+RunAction::RunAction( int numberOfThreads, int timeout, std::vector<Gaugi::Algorithm*> acc, std::string output )
+ : IMsgService("RunAction"),
    G4UserRunAction(),
    m_acc(acc),
    m_output(output),
@@ -24,27 +24,27 @@ Step3_RunAction::Step3_RunAction( int numberOfThreads, int timeout, std::vector<
 {;}
 
 
-Step3_RunAction::~Step3_RunAction()
+RunAction::~RunAction()
 {
-  MSG_INFO( "~Step3_RunAction()" );	
+  MSG_INFO( "~RunAction()" );	
   //delete G4AnalysisManager::Instance();  
 }
 
 
-G4Run* Step3_RunAction::GenerateRun()
+G4Run* RunAction::GenerateRun()
 {
   MSG_INFO("Creating the RunSequence..");
   return new RunSequence(m_numberOfThreads, m_timeout, m_acc, m_output);
 }
 
 
-void Step3_RunAction::BeginOfRunAction(const G4Run* /*run*/)
+void RunAction::BeginOfRunAction(const G4Run* /*run*/)
 {
-  MSG_INFO( "Step3_RunAction::BeginOfRunAction" );
+  MSG_INFO( "RunAction::BeginOfRunAction" );
 }
 
 
-void Step3_RunAction::EndOfRunAction(const G4Run* /*run*/)
+void RunAction::EndOfRunAction(const G4Run* /*run*/)
 {;}
 
 

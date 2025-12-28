@@ -7,7 +7,7 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGunMessenger.hh"
 #include "G4VPrimaryGenerator.hh"
-#include "G4Kernel/PrimaryGenerator.h"
+#include "G4Kernel/inputs/PrimaryGenerator.h"
 #include "GaugiKernel/MsgStream.h"
 
 class G4Event;

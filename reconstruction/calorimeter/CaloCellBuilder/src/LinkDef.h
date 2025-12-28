@@ -20,7 +20,7 @@
 #pragma link C++ class PulseGenerator+;
 #pragma link C++ class OptimalFilter+;
 //#pragma link C++ class CrossTalkMaker+;
-#pragma link C++ class ConstrainedOptimalFilter++;
+#pragma link C++ class ConstrainedOptimalFilter+;
 #pragma link C++ class PileupMerge+;
 #pragma link C++ class AnomalyGenerator+;
 #endif
