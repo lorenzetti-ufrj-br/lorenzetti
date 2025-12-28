@@ -1,16 +1,5 @@
 
-__all__ = ['flatten']
-
-
-
-def flatten(l):
-    o = []
-    for item in l:
-        if type(item) is list:
-            o.extend(item)
-        else:
-            o.append(item)
-    return o
+__all__ = []
 
 
 from . import PhysicalVolume
@@ -20,6 +9,10 @@ from .PhysicalVolume import *
 from . import SensitiveDetector
 __all__.extend(SensitiveDetector.__all__)
 from .SensitiveDetector import *
+
+from . import Calorimeter
+__all__.extend(Calorimeter.__all__)
+from .Calorimeter import *
 
 from . import DetectorConstruction
 __all__.extend(DetectorConstruction.__all__)

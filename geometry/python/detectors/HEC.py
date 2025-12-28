@@ -2,12 +2,14 @@
 
 __all__ = ["getHECCfg"]
 
+
 from GaugiKernel.constants import mm,MeV,pi
-from G4Kernel.DetectorConstruction import *
-from G4Kernel.DetectorConstruction import SensitiveCaloVolume as SensitiveVolume
 from CaloCell.CaloDefs import Detector, CaloSampling
-from CaloCellBuilder import Calorimeter
-import numpy as np
+
+from ..Calorimeter import Calorimeter
+from ..PhysicalVolume import PhysicalVolume, Plates
+from ..SensitiveDetector import SensitiveDetector
+
 import os
 
 
@@ -41,8 +43,8 @@ def getHECCfg(left_side=False):
                                   ) 
 
    
-    hec1_sv0 = SensitiveVolume( hec1_pv, EtaMax = sign*2.50         , Segment = 0, DeltaEta = 0.1, DeltaPhi = pi/32 )
-    hec1_sv1 = SensitiveVolume( hec1_pv, EtaMin = hec1_sv0.EtaMax   , Segment = 1, DeltaEta = 0.2, DeltaPhi = pi/16 )
+    hec1_sv0 = SensitiveDetector( hec1_pv, EtaMax = sign*2.50         , Segment = 0, DeltaEta = 0.1, DeltaPhi = pi/32 )
+    hec1_sv1 = SensitiveDetector( hec1_pv, EtaMin = hec1_sv0.EtaMax   , Segment = 1, DeltaEta = 0.2, DeltaPhi = pi/16 )
 
 
 
@@ -92,8 +94,8 @@ def getHECCfg(left_side=False):
                              ) 
 
 
-    hec2_sv0 = SensitiveVolume( hec2_pv, EtaMax = sign*2.50         , Segment = 0, DeltaEta = 0.1, DeltaPhi = pi/32 )
-    hec2_sv1 = SensitiveVolume( hec2_pv, EtaMin = hec2_sv0.EtaMax   , Segment = 1, DeltaEta = 0.2, DeltaPhi = pi/16 )
+    hec2_sv0 = SensitiveDetector( hec2_pv, EtaMax = sign*2.50         , Segment = 0, DeltaEta = 0.1, DeltaPhi = pi/32 )
+    hec2_sv1 = SensitiveDetector( hec2_pv, EtaMin = hec2_sv0.EtaMax   , Segment = 1, DeltaEta = 0.2, DeltaPhi = pi/16 )
 
 
     # Configure the electronic frontend and the detector parameters
@@ -144,8 +146,8 @@ def getHECCfg(left_side=False):
                              ) 
 
 
-    hec3_sv0 = SensitiveVolume( hec3_pv, EtaMax = sign*2.50         , Segment = 0, DeltaEta = 0.1, DeltaPhi = pi/32 )
-    hec3_sv1 = SensitiveVolume( hec3_pv, EtaMin = hec3_sv0.EtaMax   , Segment = 1, DeltaEta = 0.2, DeltaPhi = pi/16 )
+    hec3_sv0 = SensitiveDetector( hec3_pv, EtaMax = sign*2.50         , Segment = 0, DeltaEta = 0.1, DeltaPhi = pi/32 )
+    hec3_sv1 = SensitiveDetector( hec3_pv, EtaMin = hec3_sv0.EtaMax   , Segment = 1, DeltaEta = 0.2, DeltaPhi = pi/16 )
 
     # Configure the electronic frontend and the detector parameters
     hec3_det0  = Calorimeter( hec3_sv0, -21, 3, -2, # sensitive volume, bunch start, bunch end, sampling start,

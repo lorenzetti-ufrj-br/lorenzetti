@@ -2,18 +2,13 @@
 __all__ = ["getLArBarrelCfg"]
 
 
-#
-# ATLAS Detector construction
-#
-from GaugiKernel.constants import m,cm,mm,MeV,pi
-from G4Kernel.DetectorConstruction import *
-from G4Kernel.DetectorConstruction import SensitiveCaloVolume as SensitiveVolume
-from CaloCell.CaloDefs import Detector, CaloSampling
-from CaloCellBuilder import Calorimeter
-import numpy as np
 import os
+from CaloCell.CaloDefs import Detector, CaloSampling
+from GaugiKernel.constants import m,cm,mm,MeV,pi
 
-
+from ..Calorimeter import Calorimeter
+from ..PhysicalVolume import PhysicalVolume, Plates
+from ..SensitiveDetector import SensitiveDetector
 
 
 def getLArBarrelCfg():
@@ -90,10 +85,10 @@ def getLArBarrelCfg():
 
 
 
-  psb_sv  = SensitiveVolume( psb_pv , DeltaEta = 0.025  , DeltaPhi = pi/32  )
-  emb1_sv = SensitiveVolume( emb1_pv, DeltaEta = 0.00325, DeltaPhi = pi/32  )
-  emb2_sv = SensitiveVolume( emb2_pv, DeltaEta = 0.025  , DeltaPhi = pi/128 )
-  emb3_sv = SensitiveVolume( emb3_pv, DeltaEta = 0.050  , DeltaPhi = pi/128 )
+  psb_sv  = SensitiveDetector( psb_pv , DeltaEta = 0.025  , DeltaPhi = pi/32  )
+  emb1_sv = SensitiveDetector( emb1_pv, DeltaEta = 0.00325, DeltaPhi = pi/32  )
+  emb2_sv = SensitiveDetector( emb2_pv, DeltaEta = 0.025  , DeltaPhi = pi/128 )
+  emb3_sv = SensitiveDetector( emb3_pv, DeltaEta = 0.050  , DeltaPhi = pi/128 )
 
 
 

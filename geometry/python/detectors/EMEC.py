@@ -1,12 +1,14 @@
 
 __all__ = ["getLArEMECCfg"]
 
-from GaugiKernel.constants import m,cm,mm,MeV,pi
-from G4Kernel.DetectorConstruction import *
-from G4Kernel.DetectorConstruction import SensitiveCaloVolume as SensitiveVolume
+from GaugiKernel.constants import mm,MeV,pi
 from CaloCell.CaloDefs import Detector, CaloSampling
-from CaloCellBuilder import Calorimeter
-import numpy as np
+
+from ..Calorimeter import Calorimeter
+from ..PhysicalVolume import PhysicalVolume, Plates
+from ..SensitiveDetector import SensitiveDetector
+
+
 import os
 
 
@@ -41,7 +43,7 @@ def getLArEMECCfg(left_side=False):
                                 )
 
 
-    pde_sv = SensitiveVolume( pse_pv, DeltaEta = 0.025  , DeltaPhi = pi/32  )
+    pde_sv = SensitiveDetector( pse_pv, DeltaEta = 0.025  , DeltaPhi = pi/32  )
 
 
     # Configure the electronic frontend and the detector parameters
@@ -78,10 +80,10 @@ def getLArEMECCfg(left_side=False):
                                   Color         = 'aquamarine'
                               ) 
 
-    emec1_sv0 = SensitiveVolume( emec1_pv, EtaMax = sign*1.80                           , Segment = 0, DeltaEta = 0.00325, DeltaPhi = pi/32 )
-    emec1_sv1 = SensitiveVolume( emec1_pv, EtaMin = emec1_sv0.EtaMax, EtaMax = sign*2.00, Segment = 1, DeltaEta = 0.025  , DeltaPhi = pi/32 )
-    emec1_sv2 = SensitiveVolume( emec1_pv, EtaMin = emec1_sv1.EtaMax, EtaMax = sign*2.37, Segment = 2, DeltaEta = 0.006  , DeltaPhi = pi/32 )
-    emec1_sv3 = SensitiveVolume( emec1_pv, EtaMin = emec1_sv2.EtaMax                    , Segment = 3, DeltaEta = 0.1    , DeltaPhi = pi/32 )
+    emec1_sv0 = SensitiveDetector( emec1_pv, EtaMax = sign*1.80                           , Segment = 0, DeltaEta = 0.00325, DeltaPhi = pi/32 )
+    emec1_sv1 = SensitiveDetector( emec1_pv, EtaMin = emec1_sv0.EtaMax, EtaMax = sign*2.00, Segment = 1, DeltaEta = 0.025  , DeltaPhi = pi/32 )
+    emec1_sv2 = SensitiveDetector( emec1_pv, EtaMin = emec1_sv1.EtaMax, EtaMax = sign*2.37, Segment = 2, DeltaEta = 0.006  , DeltaPhi = pi/32 )
+    emec1_sv3 = SensitiveDetector( emec1_pv, EtaMin = emec1_sv2.EtaMax                    , Segment = 3, DeltaEta = 0.1    , DeltaPhi = pi/32 )
 
     # Configure the electronic frontend and the detector parameters
     emec1_det0  = Calorimeter( emec1_sv0, -21, 3, -2, # sensitive volume, bunch start, bunch end, sampling start,
@@ -148,8 +150,8 @@ def getLArEMECCfg(left_side=False):
                                   Color         = 'cornflowerblue'
                               ) 
  
-    emec2_sv0 = SensitiveVolume( emec2_pv, EtaMax = sign*2.50                    , Segment = 0, DeltaEta = 0.025, DeltaPhi = pi/128 )
-    emec2_sv1 = SensitiveVolume( emec2_pv, EtaMin = emec2_sv0.EtaMax             , Segment = 1, DeltaEta = 0.1  , DeltaPhi = pi/32  )
+    emec2_sv0 = SensitiveDetector( emec2_pv, EtaMax = sign*2.50                    , Segment = 0, DeltaEta = 0.025, DeltaPhi = pi/128 )
+    emec2_sv1 = SensitiveDetector( emec2_pv, EtaMin = emec2_sv0.EtaMax             , Segment = 1, DeltaEta = 0.1  , DeltaPhi = pi/32  )
 
 
     # Configure the electronic frontend and the detector parameters
@@ -198,8 +200,8 @@ def getLArEMECCfg(left_side=False):
                                   Color         = 'cyan'
                               ) 
  
-    emec3_sv0 = SensitiveVolume( emec3_pv, EtaMax = sign*2.50                    , Segment = 0, DeltaEta = 0.050 , DeltaPhi = pi/128 )
-    emec3_sv1 = SensitiveVolume( emec3_pv, EtaMin = emec3_sv0.EtaMax             , Segment = 1, DeltaEta = 0.1   , DeltaPhi = pi/32 )
+    emec3_sv0 = SensitiveDetector( emec3_pv, EtaMax = sign*2.50                    , Segment = 0, DeltaEta = 0.050 , DeltaPhi = pi/128 )
+    emec3_sv1 = SensitiveDetector( emec3_pv, EtaMin = emec3_sv0.EtaMax             , Segment = 1, DeltaEta = 0.1   , DeltaPhi = pi/32 )
 
 
     # Configure the electronic frontend and the detector parameters

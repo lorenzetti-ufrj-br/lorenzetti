@@ -2,11 +2,12 @@
 __all__ = ["getTileBarrelCfg","getTileExtendedCfg"]
 
 from GaugiKernel.constants import m,cm,mm,MeV,pi
-from G4Kernel.DetectorConstruction import *
-from G4Kernel.DetectorConstruction import SensitiveCaloVolume as SensitiveVolume
 from CaloCell.CaloDefs import Detector, CaloSampling
-from CaloCellBuilder import Calorimeter
-import numpy as np
+
+from ..Calorimeter import Calorimeter
+from ..PhysicalVolume import PhysicalVolume, Plates
+from ..SensitiveDetector import SensitiveDetector
+
 import os
 
 
@@ -78,9 +79,9 @@ def getTileBarrelCfg():
     #tilecal3_pv.Cuts = ProductionCuts(ElectronCut = 1, PositronCut = 1, GammaCut = 1)
 
 
-    tilecal1_sv = SensitiveVolume( tilecal1_pv, DeltaEta = 0.1  , DeltaPhi = pi/32 )
-    tilecal2_sv = SensitiveVolume( tilecal2_pv, DeltaEta = 0.1  , DeltaPhi = pi/32 )
-    tilecal3_sv = SensitiveVolume( tilecal3_pv, DeltaEta = 0.2  , DeltaPhi = pi/32 )
+    tilecal1_sv = SensitiveDetector( tilecal1_pv, DeltaEta = 0.1  , DeltaPhi = pi/32 )
+    tilecal2_sv = SensitiveDetector( tilecal2_pv, DeltaEta = 0.1  , DeltaPhi = pi/32 )
+    tilecal3_sv = SensitiveDetector( tilecal3_pv, DeltaEta = 0.2  , DeltaPhi = pi/32 )
 
 
 
@@ -190,9 +191,9 @@ def getTileExtendedCfg(left_side=False):
                                     )
 
 
-    tilecalExt1_sv = SensitiveVolume( tilecalExt1_pv, DeltaEta = 0.1  , DeltaPhi = pi/32  )
-    tilecalExt2_sv = SensitiveVolume( tilecalExt2_pv, DeltaEta = 0.1  , DeltaPhi = pi/32  )
-    tilecalExt3_sv = SensitiveVolume( tilecalExt3_pv, DeltaEta = 0.2  , DeltaPhi = pi/32  )
+    tilecalExt1_sv = SensitiveDetector( tilecalExt1_pv, DeltaEta = 0.1  , DeltaPhi = pi/32  )
+    tilecalExt2_sv = SensitiveDetector( tilecalExt2_pv, DeltaEta = 0.1  , DeltaPhi = pi/32  )
+    tilecalExt3_sv = SensitiveDetector( tilecalExt3_pv, DeltaEta = 0.2  , DeltaPhi = pi/32  )
 
 
     # Configure the electronic frontend and the detector parameters
