@@ -35,7 +35,7 @@ Please cite [![DOI](https://zenodo.org/badge/370090835.svg)](https://zenodo.org/
  - [WebPage](https://sites.google.com/lps.ufrj.br/lorenzetti/início?authuser=0)
  - [DocPage](https://lorenzetti-ufrj-br.github.io/lorenzetti/)
 
-## Detector Construction:
+## Detector Construction (version 1):
 
 The standard detector in the Lorenzetti framework consist in a eletromagnetic calorimeter and a hadronic calorimeter using a cylinder shape. Each one has 3 layers with different granularities to capture the shower develop by the particles. Also, between regions, there is a small slice of dead material.
 
