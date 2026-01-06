@@ -2,10 +2,8 @@
 
 import argparse
 import sys
-import traceback
 import multiprocessing
 
-from multiprocessing        import Process
 from pathlib                import Path
 from GaugiKernel.constants  import MINUTES
 from GaugiKernel            import LoggingLevel, get_argparser_formatter
@@ -15,7 +13,7 @@ from ATLAS                  import ATLASConstruction as ATLAS
 from CaloCellBuilder        import CaloHitBuilder
 from RootStreamBuilder      import RootStreamHITMaker
 
-from reco import update_args_from_file, append_index_to_file, merge_args_from_file
+from reco import update_args_from_file,  merge_args_from_file
 
 
 def parse_args():
@@ -36,7 +34,7 @@ def parse_args():
                         help="The total number of events to run.")
     parser.add_argument('-nt', '--number-of-threads', action='store',
                         dest='number_of_threads', required=False,
-                        type=int, default=1,
+                        type=int, default=multiprocessing.cpu_count(),
                         help="The number of threads")
     parser.add_argument('--enable-magnetic-field', action='store_true',
                         dest='enable_magnetic_field', required=False,

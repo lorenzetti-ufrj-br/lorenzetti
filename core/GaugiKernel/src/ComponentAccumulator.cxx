@@ -105,7 +105,7 @@ void ComponentAccumulator::finalize()
 
 //!=====================================================================
 
-void ComponentAccumulator::run(SG::EventContext *ctx , int evt) const
+void ComponentAccumulator::run(SG::EventContext *ctx , int evt ) const
 {
   MSG_INFO("======================= Event "<< evt << " =========================");
   Timer timer;
@@ -114,20 +114,21 @@ void ComponentAccumulator::run(SG::EventContext *ctx , int evt) const
   ctx->clear();
   auto store = ctx->getStoreGateSvc();
 
+  bool completed = true;
   for( auto &toolHandle : m_toolHandles){
     
-    //MSG_INFO( "Launching execute step for " << toolHandle->name() );
-    if (toolHandle->execute( *ctx , evt ).isFailure() ){
-      MSG_FATAL("It's not possible to execute for " << toolHandle->name());
-    }
-    
-    //MSG_INFO( "Launching booking step for " << toolHandle->name() );
-    if (toolHandle->fillHistograms( *ctx ).isFailure() ){
-      MSG_FATAL("It's not possible to fill histograms for " << toolHandle->name());
-    }
+      //MSG_INFO( "Launching execute step for " << toolHandle->name() );
+      if (toolHandle->execute( *ctx , evt ).isFailure() ){
+          MSG_FATAL("It's not possible to execute for " << toolHandle->name());
+      }
+
+      //MSG_INFO( "Launching booking step for " << toolHandle->name() );
+      if (toolHandle->fillHistograms( *ctx ).isFailure() ){
+          MSG_FATAL("It's not possible to fill histograms for " << toolHandle->name());
+      }
   }
   store->cd("Event");
-  store->histI("EventCounter")->Fill("Completed",1);
+  store->histI("EventCounter")->Fill("Completed", completed ? 1 : 0 );
   timer.stop();
   store->cd("Event");
   store->hist1( "Event" )->Fill( timer.resume() );

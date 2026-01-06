@@ -5,20 +5,12 @@ __all__  = [
 ]
 
 
-import ROOT
-import argparse
 import random
-import json
-import sys
-import os
 import joblib
 
 from math               import ceil
-from typing             import List, Dict, Callable, Union
-from pathlib            import Path
+from typing             import List, Callable, Union
 from pprint             import pprint
-from expand_folders     import expand_folders
-from tqdm               import tqdm
 
 from reco import chunks, merge, merge_args_from_file, update_args_from_file, append_index_to_file, check_file_exists
 
@@ -106,7 +98,7 @@ class Parallel:
                 jobs.append( (output_file, config['evt'], config['seed']) )
         pprint(args)
         if not self.dry_run:
-            pool = joblib.Parallel(n_jobs=self.number_of_threads)
+            pool = joblib.Parallel(n_jobs=self.number_of_threads, backend='multiprocessing')
             pool(joblib.delayed(function)(
                 events=events,
                 output_file=output_file,

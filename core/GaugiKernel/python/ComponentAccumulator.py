@@ -1,6 +1,7 @@
 __all__ = ["ComponentAccumulator"]
 
 from GaugiKernel import Logger
+from GaugiKernel.macros import MSG_WARNING
 from typing import List
 import numpy as np
 import os
@@ -48,7 +49,8 @@ class ComponentAccumulator( Logger ):
   def run( self , events : List[int] ):
     self.configure()
     for evt in events:
-      self.__acc.run(self.__ctx, evt)
+        self.__acc.run(self.__ctx, evt)
+      
     self.__acc.finalize()
     self.__ctx.getStoreGateSvc().save()
  

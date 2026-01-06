@@ -27,36 +27,6 @@ Run the container:
 singularity run lorenzetti_latest.sif
 ```
 
-### Docker
-
-If you do not have Singularity installed, you can use the standard Docker engine.
-
-Run the container with X11 forwarding (for GUI):
-```bash
-docker run -e DISPLAY=$DISPLAY -v ${HOME}:${HOME} -v /tmp/.X11-unix:/tmp/.X11-unix -v $XAUTHORITY:/tmp/.XAuthority -e XAUTHORITY=/tmp/.XAuthority  -it lorenzetti/lorenzetti:latest
-```
-
-
-### 🖥️ GUI Application Setup (Optional - Linux Only)
-
-This step is only necessary if you need to run graphical user interface (GUI) applications *inside* the container and forward them to your Linux host machine.
-
-**Install Xorg on the host machine:**
-```bash
-sudo apt-get install xorg
-```
-
-**Disable host access control:**
-
-This command allows the container to forward the GUI interface to the host machine.
-
-```bash
-xhost +
-```
-> **Note:** For security, remember to revoke access after your session by running `xhost -`.
-
-> **Note:** To run the event display, use the command `run_vis.py`
-
 
 ## 🛠️ Manual Installation (Inside the Container)
 
@@ -82,3 +52,32 @@ This command will set up all necessary environment variables to run the Lorenzet
 ```bash
 source build/lzt_setup.sh
 ```
+
+
+
+
+## 🖥️ GUI Application Setup (Optional - Linux Only with Docker)
+
+Run the container with X11 forwarding (for GUI):
+```bash
+docker run -e DISPLAY=$DISPLAY -v ${HOME}:${HOME} -v /tmp/.X11-unix:/tmp/.X11-unix -v $XAUTHORITY:/tmp/.XAuthority -e XAUTHORITY=/tmp/.XAuthority  -it lorenzetti/lorenzetti:latest
+```
+
+This step is only necessary if you need to run graphical user interface (GUI) applications *inside* the container and forward them to your Linux host machine.
+
+**Install Xorg on the host machine:**
+```bash
+sudo apt-get install xorg
+```
+
+**Disable host access control:**
+
+This command allows the container to forward the GUI interface to the host machine.
+
+```bash
+xhost +
+```
+> **Note:** For security, remember to revoke access after your session by running `xhost -`.
+
+> **Note:** To run the event display, use the command `run_vis.py`
+
