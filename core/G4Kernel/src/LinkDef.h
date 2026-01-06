@@ -1,6 +1,6 @@
 
 #include "G4Kernel/RunManager.h"
-#include "G4Kernel/PrimaryGenerator.h"
+#include "G4Kernel/inputs/PrimaryGenerator.h"
 #include "G4Kernel/CaloPhiRange.h"
 
 #ifdef __CINT__

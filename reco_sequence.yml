@@ -1,0 +1,161 @@
+name: Test reconstruction sequence
+
+on: [push]
+
+jobs:
+
+  build:
+    runs-on: self-hosted
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Compile
+        shell: bash
+        run: |
+          rm -rf *
+          git clone https://github.com/lorenzetti-ufrj-br/lorenzetti.git
+          export CPU_N=$(grep -c ^processor /proc/cpuinfo)
+          cd lorenzetti && make 
+          
+
+          
+  generation:
+    runs-on: self-hosted
+    needs: build
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event Generation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          gen_zee.py --nov 5 -o Zee.EVT.root
+          
+
+  simulation:
+    runs-on: self-hosted
+    needs: generation
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event Simulation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          simu_trf.py -i Zee.EVT.root -o Zee.HIT.root -nt 5
+
+  merge:
+    runs-on: self-hosted
+    needs: simulation
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Merge Events
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          simu_trf.py -i mb.EVT.root -o mb.HIT.root -nt 1
+          merge_trf.py -i Zee.HIT.root --low-pileup-files mb.HIT.root --high-pileup-files mb.HIT.root --pileup-avg 0 --pileup-sigma 0 -o Zee.merged.HIT.root
+
+
+  digitalization:
+    runs-on: self-hosted
+    needs: simulation
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Digit Events
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          digit_trf.py -i Zee.HIT.root -o Zee.ESD.root
+              
+  reconstruction:
+    runs-on: self-hosted
+    needs: digitalization
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Reco Events
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          reco_trf.py -i Zee.ESD.root -o Zee.AOD.root
+
+  ntuple:
+    runs-on: self-hosted
+    needs: reconstruction
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Ntuple Events
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          ntuple_trf.py -i Zee.AOD.root -o Zee.NTUPLE.root
+
+
+#
+# Event generation tests
+# 
+
+  gen_zee:
+    runs-on: self-hosted
+    needs: build
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event Zee Generation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          gen_zee.py --nov 5 -o Zee.EVT.root
+
+  gen_jets:
+    runs-on: self-hosted
+    needs: build
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event Jets Generation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          gen_jets.py --nov 2 -o JF17.EVT.root
+
+  gen_minbias:
+    runs-on: self-hosted
+    needs: build
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event MB Generation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          gen_minbias.py --nov 1 --pileup-per-bunch-crossing 2 -o mb.EVT.root --eta-max 2.5
+
+
+  gen_single_particle:
+    runs-on: self-hosted
+    needs: build
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event Single Particle Generation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          gen_single.py -p Electron --eta-min 0 --eta-max 1.8 --nov 10 -o Electron.EVT.root
+
+  gen_overlapped_zee:
+    runs-on: self-hosted
+    needs: build
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event Overlapped Zee Generation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          gen_overlapped_zee.py --nov 5 -o OverlappedZee.EVT.root

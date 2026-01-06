@@ -19,7 +19,8 @@ from CaloCellBuilder    import CaloFlags, CrossTalkFlags, AnomalyFlags
 class CaloCellBuilder( Logger ):
 
 
-  def __init__( self, name, detector,
+  def __init__( self, name, 
+                      detector,
                       HistogramPath        = "Expert", 
                       InputHitsKey         = "Hits",
                       OutputCellsKey       = "Cells",
@@ -28,7 +29,7 @@ class CaloCellBuilder( Logger ):
                       OutputLevel          = LoggingLevel.toC('INFO'),
                       ):
 
-    Logger.__init__(self)
+    Logger.__init__(self, name)
     self.__recoAlgs = []
     self.HistogramPath       = HistogramPath
     self.OutputLevel         = OutputLevel

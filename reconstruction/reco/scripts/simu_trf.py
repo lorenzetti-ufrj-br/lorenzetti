@@ -2,18 +2,17 @@
 
 import argparse
 import sys
-import multiprocessing
 
 from pathlib                import Path
 from GaugiKernel.constants  import MINUTES
 from GaugiKernel            import LoggingLevel, get_argparser_formatter
 from G4Kernel               import ComponentAccumulator, EventReader
 from RootStreamBuilder      import recordable
-from ATLAS                  import ATLASConstruction as ATLAS
-from CaloCellBuilder        import CaloHitBuilder
+from CaloHitBuilder         import CaloHitBuilder
 from RootStreamBuilder      import RootStreamHITMaker
 
-from reco import update_args_from_file,  merge_args_from_file
+from geometry import DetectorConstruction_v1
+from reco import update_args_from_file,merge_args_from_file
 
 
 def parse_args():
@@ -86,9 +85,9 @@ def main(logging_level: str,
     
     outputLevel = LoggingLevel.toC(logging_level)
     exec(pre_init)
-    detector = ATLAS(UseMagneticField=enable_magnetic_field)
 
-    acc = ComponentAccumulator("ComponentAccumulator", detector,
+    acc = ComponentAccumulator("ComponentAccumulator", 
+                               DetectorConstruction_v1( "ATLAS", UseMagneticField=enable_magnetic_field),
                                NumberOfThreads=number_of_threads,
                                OutputFile=output_file,
                                Timeout=timeout * MINUTES)
@@ -102,7 +101,6 @@ def main(logging_level: str,
     calorimeter = CaloHitBuilder("CaloHitBuilder",
                                  HistogramPath="Expert/Hits",
                                  OutputLevel=outputLevel,
-                                 InputEventKey=recordable("Events"),
                                  OutputHitsKey=recordable("Hits")
                                  )
     
