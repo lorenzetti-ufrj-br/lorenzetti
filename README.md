@@ -19,26 +19,23 @@ By providing a streamlined environment—independent of massive experimental sof
 
 Here is an overview of the repository structure:
 
-```mermaid
-graph TD;
-    core-->Core_Libraries;
-    events-->Event_Data_Definitions;
-    generator-->Physics_Event_Generators;
-    geometry-->Detector_Geometry_Definitions;
-    reconstruction-->Reconstruction_Algorithms;
-    docs-->Documentation_and_Tutorials;
-    examples-->Production_Examples;
-    ci_tests-->CI_Configuration;
-```
+## 📂 Directory Structure
 
-- **`core/`**: Core libraries and utilities.
-- **`events/`**: Event data models and I/O handling.
-- **`generator/`**: Modules for physics event generation (Pythia interfaces).
-- **`geometry/`**: Detector geometry construction (Geant4).
-- **`reconstruction/`**: Reconstruction algorithms and sequences.
-- **`docs/`**: Documentation, guides, and Jupyter notebook tutorials.
-- **`examples/`**: Scripts and examples for running large-scale productions.
-- **`ci_tests/`**: Continuous Integration tests and configurations.
+Here is an overview of the repository structure:
+
+```text
+📂 lorenzetti/
+├── 📂 core/             # Core libraries, utilities, and common tools.
+├── 📂 events/           # Event data models (EDM) and ROOT I/O handling definitions.
+├── 📂 generator/        # Physics event generator interfaces (e.g., Pythia8).
+├── 📂 geometry/         # Detector geometry construction and definitions using Geant4.
+├── 📂 reconstruction/   # Algorithms for signal processing and object reconstruction.
+├── 📂 docs/             # Documentation, guides, and Jupyter notebook tutorials.
+├── 📂 examples/         # Scripts and configuration examples for large-scale productions.
+├── 📂 ci_tests/         # Continuous Integration checks and validation workflows.
+├── 📄 CMakeLists.txt    # Main CMake configuration file.
+├── 📄 Makefile          # Shortcut commands for building and testing.
+```
 
 ## 🚀 Installation
 
