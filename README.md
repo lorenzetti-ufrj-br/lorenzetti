@@ -20,9 +20,15 @@ Crucially, it handles both **In-Time Pileup** (simultaneous collisions) and **Ou
 
 Described fully in *[Computer Physics Communications (2023)](https://doi.org/10.1016/j.cpc.2023.108671)*, Lorenzetti serves as a "virtual testbeam," enabling the scientific community to validate novel ideas independently of major collaborations.
 
-## 📂 Directory Structure
+## 📝 Citations
 
-Here is an overview of the repository structure:
+Please cite the following paper if you use the software:
+
+> **Lorenzetti Showers: A general-purpose framework for supporting signal reconstruction and triggering with calorimeters**  
+> *Computer Physics Communications*, Volume 286, 2023, 108671.  
+> DOI: [10.1016/j.cpc.2023.108671](https://doi.org/10.1016/j.cpc.2023.108671)
+
+[![DOI](https://zenodo.org/badge/370090835.svg)](https://zenodo.org/badge/latestdoi/370090835)
 
 ## 📂 Directory Structure
 
@@ -114,31 +120,7 @@ Lorenzetti is rigorously tested using Github Actions. The validation workflow in
 
 You can run these commands manually (as seen in `.github/workflows/reco_sequence.yml`) to validate your local environment.
 
-## 🤝 Contribution
 
-We welcome everyone to contribute! 🌍 Whether it's fixing bugs, adding new generators, or improving documentation.
-
-1.  Fork the repository.
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes.
-4.  Open a Pull Request.
-
-Please ensure your code passes existing tests.
-
-## ⚖️ License
-
-This project is licensed under the **GNU General Public License v3.0 (GPLv3)**.
-See the [LICENSE](LICENSE) file for details.
-
-## 📝 Citations
-
-Please cite the following paper if you use the software:
-
-> **Lorenzetti Showers: A general-purpose framework for supporting signal reconstruction and triggering with calorimeters**  
-> *Computer Physics Communications*, Volume 286, 2023, 108671.  
-> DOI: [10.1016/j.cpc.2023.108671](https://doi.org/10.1016/j.cpc.2023.108671)
-
-[![DOI](https://zenodo.org/badge/370090835.svg)](https://zenodo.org/badge/latestdoi/370090835)
 
 ## 🌐 Web Pages
 
@@ -187,3 +169,20 @@ The geometry is highly customizable via Python scripts, allowing users to modify
 
 ![Detector Front View](geometry/doc/front_view.png)
 *(Front view showing the concentric calorimeter layers)*
+
+## 🤝 Contribution
+
+We welcome everyone to contribute! 🌍 Whether it's fixing bugs, adding new generators, or improving documentation.
+
+1.  Fork the repository.
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes.
+4.  Open a Pull Request.
+
+Please ensure your code passes existing tests.
+
+## ⚖️ License
+
+This project is licensed under the **GNU General Public License v3.0 (GPLv3)**.
+See the [LICENSE](LICENSE) file for details.
+
