@@ -4,54 +4,179 @@
 [![anomaly](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml/badge.svg)](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml)
 [![maestro](https://github.com/lps-ufrj-br/maestro-lightning/actions/workflows/flow.yml/badge.svg)](https://github.com/lps-ufrj-br/maestro-lighning/actions/workflows/flow.yml)
 
-# Lorenzetti Simulator 
+# 🔬 Lorenzetti Simulator 
 
-Lorenzetti is a framework for the HEP community to freely exploit the full potential of calorimetry data. We expect to enable the community to mitigate bottlenecks for R&D in processing algorithms using calorimetry data by providing:
+Lorenzetti is a **general-purpose framework** designed to support **signal reconstruction** and **triggering** studies in High Energy Physics (HEP) calorimeters. Described in *[Computer Physics Communications (2023)](https://doi.org/10.1016/j.cpc.2023.108671)*, it aims to democratize access to high-quality simulation data and foster algorithm development.
 
- - Unified low-level calorimetry and physics information based on full simulation (geant);
- - Free-to-use data. 
- 
-In other words, it provides a way for the HEP community to work on proof-of-concepts (POCs) using simulated data that is currently difficult to obtain on experiments and to publish them independently. We believe that this possibility, i.e. to publish POCs apart from the experiments, can be a powerful way to foster scientific exchange within the HEP community, but also to facilitate the exchange of processing algorithms with the broader scientific community.
+We expect to enable the community to mitigate bottlenecks for R&D in processing algorithms by providing:
 
-We welcome everyone to contribute!
+- ⚛️ **Unified Simulation**: Seamless integration of comprehensive physics simulation (Geant4) with low-level calorimetry readout.
+- 🔓 **Open Access Data**: Free-to-use, high-fidelity datasets for proof-of-concepts (POCs) and independent research.
 
+By providing a streamlined environment—independent of massive experimental software stacks—Lorenzetti allows researchers to easily develop, benchmark, and publish novel processing algorithms (e.g., for fast trigger systems or anomaly detection).
 
-## Citations
+## 📂 Directory Structure
 
-Please cite [![DOI](https://zenodo.org/badge/370090835.svg)](https://zenodo.org/badge/latestdoi/370090835) if you use the software.
+Here is an overview of the repository structure:
 
-[//]: # (and/or the applicable papers.)
+```mermaid
+graph TD;
+    core-->Core_Libraries;
+    events-->Event_Data_Definitions;
+    generator-->Physics_Event_Generators;
+    geometry-->Detector_Geometry_Definitions;
+    reconstruction-->Reconstruction_Algorithms;
+    docs-->Documentation_and_Tutorials;
+    examples-->Production_Examples;
+    ci_tests-->CI_Configuration;
+```
 
+- **`core/`**: Core libraries and utilities.
+- **`events/`**: Event data models and I/O handling.
+- **`generator/`**: Modules for physics event generation (Pythia interfaces).
+- **`geometry/`**: Detector geometry construction (Geant4).
+- **`reconstruction/`**: Reconstruction algorithms and sequences.
+- **`docs/`**: Documentation, guides, and Jupyter notebook tutorials.
+- **`examples/`**: Scripts and examples for running large-scale productions.
+- **`ci_tests/`**: Continuous Integration tests and configurations.
 
-## Manual:
+## 🚀 Installation
 
-- [Installation](docs/installation.md)
-- [Usage](docs/usage.html)
-- [Particle Generators](docs/generation.html)
-- [Anomaly Injection Tutorial](docs/anomaly.html)
+The recommended way to use Lorenzetti is via pre-built container images (**Docker** or **Singularity**), which come with all dependencies pre-installed.
 
-## Web Pages:
+### Singularity (Recommended)
+```bash
+singularity pull docker://lorenzetti/lorenzetti:latest
+singularity run lorenzetti_latest.sif
+```
 
- - [WebPage](https://sites.google.com/lps.ufrj.br/lorenzetti/início?authuser=0)
- - [DocPage](https://lorenzetti-ufrj-br.github.io/lorenzetti/)
+### Manual Build
+For development, you can clone and build the source inside the container:
+```bash
+git clone https://github.com/lorenzetti-ufrj-br/lorenzetti.git && cd lorenzetti
+make
+source build/lzt_setup.sh
+```
 
-## Detector Construction (version 1):
+📄 **Full Installation Guide**: [docs/installation.md](docs/installation.md)
 
-The standard detector in the Lorenzetti framework consist in a eletromagnetic calorimeter and a hadronic calorimeter using a cylinder shape. Each one has 3 layers with different granularities to capture the shower develop by the particles. Also, between regions, there is a small slice of dead material.
+## 📚 Tutorials
 
+We provide several Jupyter Notebooks to help you get started:
 
-![Screenshot](geometry/doc/cut_view.png)
+- 📘 **[Usage Guide](docs/notebooks/usage.ipynb)**: General introduction to using the framework.
+- ⚛️ **[Particle Generation](docs/notebooks/generation.ipynb)**: How to generate physics events (e.g., Z bosons, Jets).
+- 💥 **[Simulation](docs/notebooks/simulation.ipynb)**: Simulating detector response and interactions.
+- 🕵️ **[Anomaly Injection](docs/notebooks/anomaly.ipynb)**: Tutorial on injecting anomalies for study.
 
-It is possible, by using Geant4 modules to change the geometry, the layers and the cell granularity, allowing a high level of customization of the full detector.
+## ⚡ Quick Example: Zee Event Chain
 
-![Screenshot](geometry/doc/front_view.png)
+Run a full chain reconstruction for $Z \to e^+e^-$ events (without pileup) directly from your terminal:
 
+1. **Generate 10 physics events** (Z boson decaying to electrons):
+   ```bash
+   gen_zee.py --nov 10 -o Zee.EVT.root
+   ```
 
+2. **Simulate detector response** (Energy hits in calorimeters):
+   ```bash
+   simu_trf.py -i Zee.EVT.root -o Zee.HIT.root -nt 10
+   ```
+   > **Note**: `-nt` specifies the number of events to process.
 
+3. **Digitization** (Convert energy hits to electronic signals):
+   ```bash
+   digit_trf.py -i Zee.HIT.root -o Zee.ESD.root
+   ```
 
-## Software considerations:
+4. **Reconstruction** (Build cluster objects):
+   ```bash
+   reco_trf.py -i Zee.ESD.root -o Zee.AOD.root
+   ```
 
-Lorenzetti is built on top of standard simulation technology employed on HEP experiments ([Pythia](http://home.thep.lu.se/~torbjorn/Pythia.html) and [Geant](https://geant4.web.cern.ch)). Lorenzetti's concept design was greatly inspired in the [Athena framework](https://gitlab.cern.ch/atlas/athena). Other frameworks of potential interest:
+5. **Analysis** (Dump content to a flat ROOT Ntuple):
+   ```bash
+   ntuple_trf.py -i Zee.AOD.root -o Zee.NTUPLE.root
+   ```
 
-- [FCC software](https://github.com/HEP-FCC/FCCSW). Particularly, we consider to eventually merge Lorenzetti inside the FCC software;
-- [Delphes](https://github.com/delphes/delphes).
+## ✅ Tests & Validation
+
+Lorenzetti is rigorously tested using Github Actions. The validation workflow includes:
+
+1.  **Event Generation**: `gen_zee.py`, `gen_jets.py`, `gen_minbias.py`
+2.  **Simulation**: `simu_trf.py` (Hit generation)
+3.  **Merging**: `merge_trf.py` (Pileup mixing)
+4.  **Digitalization**: `digit_trf.py` (Electronic signal simulation)
+5.  **Reconstruction**: `reco_trf.py` (Object reconstruction)
+6.  **Analysis**: `ntuple_trf.py` (Root Ntuple dumping)
+
+You can run these commands manually (as seen in `.github/workflows/reco_sequence.yml`) to validate your local environment.
+
+## 🤝 Contribution
+
+We welcome everyone to contribute! 🌍 Whether it's fixing bugs, adding new generators, or improving documentation.
+
+1.  Fork the repository.
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes.
+4.  Open a Pull Request.
+
+Please ensure your code passes existing tests.
+
+## ⚖️ License
+
+This project is licensed under the **GNU General Public License v3.0 (GPLv3)**.
+See the [LICENSE](LICENSE) file for details.
+
+## 📝 Citations
+
+Please cite the following paper if you use the software:
+
+> **Lorenzetti Showers: A general-purpose framework for supporting signal reconstruction and triggering with calorimeters**  
+> *Computer Physics Communications*, Volume 286, 2023, 108671.  
+> DOI: [10.1016/j.cpc.2023.108671](https://doi.org/10.1016/j.cpc.2023.108671)
+
+[![DOI](https://zenodo.org/badge/370090835.svg)](https://zenodo.org/badge/latestdoi/370090835)
+
+## 🌐 Web Pages
+
+- [Official WebPage](https://sites.google.com/lps.ufrj.br/lorenzetti/início?authuser=0)
+- [Documentation Page](https://lorenzetti-ufrj-br.github.io/lorenzetti/)
+
+## 🏗️ Detector Construction (Version 1)
+
+The standard detector in Lorenzetti aims to mimic the properties of modern high-granularity calorimeters used in LHC experiments (such as ATLAS). It is constructed as a **cylindrical 4π detector** with two main systems:
+
+### 1. Electromagnetic Calorimeter (ECAL)
+A sampling calorimeter designed to measure electrons and photons with high precision.
+- **Material**: **Lead** ($Pb$) absorber plates interleaved with **Liquid Argon** ($LAr$) as the active medium.
+- **Structure**:
+    - **Pre-Sampler**: A thin layer to correct for energy loss upstream.
+    - **Layer 1 (Strips)**: Finely segmented ($\Delta\eta \approx 0.003$) for $\pi^0/\gamma$ separation.
+    - **Layer 2 (Middle)**: The thickest layer (55 radiation lengths) containing most of the shower energy.
+    - **Layer 3 (Back)**: Estimates energy leakage into the hadronic calorimeter.
+
+### 2. Hadronic Calorimeter (HCAL)
+Located outside the ECAL, this sampling calorimeter measures jets and missing energy.
+- **Material**: **Iron** ($Fe$) absorber plates with **Plastic Scintillator** tiles.
+- **Structure**: Divided into 3 longitudinal layers with coarser granularity ($\Delta\eta \times \Delta\phi \approx 0.1 \times 0.1$).
+
+### 📊 Detector Layers & Granularity
+
+| System | Layer | Name | Material | Granularity ($\Delta\eta \times \Delta\phi$) | # of Cell Layers |
+| :--- | :---: | :--- | :--- | :---: | :---: |
+| **ECAL** | 0 | Pre-Sampler | LAr / Pb | $0.025 \times 0.1$ | 1 |
+| | 1 | Strips | LAr / Pb | $0.003125 \times 0.1$ | 16 |
+| | 2 | Middle | LAr / Pb | $0.025 \times 0.025$ | 55 |
+| | 3 | Back | LAr / Pb | $0.050 \times 0.025$ | 9 |
+| **HCAL** | 1 | Front | Scint. / Fe | $0.1 \times 0.1$ | 4 |
+| | 2 | Middle | Scint. / Fe | $0.1 \times 0.1$ | 11 |
+| | 3 | Back | Scint. / Fe | $0.2 \times 0.1$ | 5 |
+
+The geometry is highly customizable via Python scripts, allowing users to modify layer depths, material composition, and segmentation without recompiling the C++ core.
+
+![Detector Cut View](geometry/doc/cut_view.png)
+*(Cut view of the detector geometry)*
+
+![Detector Front View](geometry/doc/front_view.png)
+*(Front view showing the concentric calorimeter layers)*
