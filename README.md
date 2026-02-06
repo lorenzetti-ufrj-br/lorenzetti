@@ -160,15 +160,20 @@ Located outside the ECAL, this sampling calorimeter measures jets and missing en
 
 ### 📊 Detector Layers & Granularity
 
-| System | Layer | Name | Material | Granularity (Δη × Δφ) | # of Cell Layers |
-| :--- | :---: | :--- | :--- | :---: | :---: |
-| **ECAL** | 0 | Pre-Sampler | LAr / Pb | 0.025 × 0.1 | 1 |
-| | 1 | Strips | LAr / Pb | 0.003125 × 0.1 | 16 |
-| | 2 | Middle | LAr / Pb | 0.025 × 0.025 | 55 |
-| | 3 | Back | LAr / Pb | 0.050 × 0.025 | 9 |
-| **HCAL** | 1 | Front | Scint. / Fe | 0.1 × 0.1 | 4 |
-| | 2 | Middle | Scint. / Fe | 0.1 × 0.1 | 11 |
-| | 3 | Back | Scint. / Fe | 0.2 × 0.1 | 5 |
+| System | Layer | Name | Material | Granularity (Δη × Δφ) |
+| :--- | :---: | :--- | :--- | :---: |
+| **ECAL (Barrel)** | 0 | Pre-Sampler | LAr / Pb | 0.025 × 0.1 |
+| | 1 | Front (Strips) | LAr / Pb | 0.003125 × 0.1 |
+| | 2 | Middle | LAr / Pb | 0.025 × 0.025 |
+| | 3 | Back | LAr / Pb | 0.050 × 0.025 |
+| **TileCal (Barrel)** | 1 | Front | Scint. / Fe | 0.1 × 0.1 |
+| | 2 | Middle | Scint. / Fe | 0.1 × 0.1 |
+| | 3 | Back | Scint. / Fe | 0.2 × 0.1 |
+| **EMEC (EndCap)** | 0 | Pre-Sampler | LAr / Pb | 0.025 × 0.1 |
+| | 1 | Front | LAr / Pb | varies (0.003-0.006) × 0.1 |
+| | 2 | Middle | LAr / Pb | 0.025 × 0.025 / 0.1 × 0.1|
+| | 3 | Back | LAr / Pb | 0.050 × 0.025 / 0.1 × 0.1|
+| **HEC (EndCap)** | 1-3 | All Layers | LAr / Cu | 0.1 × 0.1 / 0.2 × 0.2 |
 
 The geometry is highly customizable via Python scripts, allowing users to modify layer depths, material composition, and segmentation without recompiling the C++ core.
 
