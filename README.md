@@ -6,14 +6,19 @@
 
 # 🔬 Lorenzetti Simulator 
 
-Lorenzetti is a **general-purpose framework** designed to support **signal reconstruction** and **triggering** studies in High Energy Physics (HEP) calorimeters. Described in *[Computer Physics Communications (2023)](https://doi.org/10.1016/j.cpc.2023.108671)*, it aims to democratize access to high-quality simulation data and foster algorithm development.
+Lorenzetti is a **dedicated HEP framework** conceptualized to streamline the Research & Development (R&D) of **calorimetry signal processing**, **reconstruction**, and **triggering algorithms**. While modern LHC experiments rely on massive, monolithic software stacks, Lorenzetti provides a **lightweight, modular, and stand-alone** environment that grants researchers direct access to high-fidelity simulation data. Built upon the robust **Geant4** toolkit, Lorenzetti simulates the complete physics of particle showers within complex detector geometries. However, unlike general-purpose simulators, it focuses deeply on the **readout chain**: transforming raw energy deposits into realistic electronic pulses, digitizing them, and reconstructing the original particle properties.
 
-We expect to enable the community to mitigate bottlenecks for R&D in processing algorithms by providing:
+This framework addresses a critical gap in the community: **Access to quality data**. Experiment-specific data is often restricted or difficult to generate for outsiders. Lorenzetti democratizes this by establishing a standard reference for:
+- 🧠 **Algorithm Development**: Fast prototyping of filters (Optimal Filtering, Wiener), clustering algorithms, and jet reconstruction.
+- 🤖 **Machine Learning**: Generating massive, labelled datasets ideal for training Neural Networks (e.g., for *anomaly detection*, *pileup mitigation*, or *super-resolution*).
+- ⚡ **Trigger Studies**: Simulating hardware-level constraints to test fast decision-making logic.
 
-- ⚛️ **Unified Simulation**: Seamless integration of comprehensive physics simulation (Geant4) with low-level calorimetry readout.
-- 🔓 **Open Access Data**: Free-to-use, high-fidelity datasets for proof-of-concepts (POCs) and independent research.
+### 🌪️ Advanced Pileup Simulation via Overlay
+One of Lorenzetti's most defining features is its ability to realistically simulate **high-luminosity environments** through a sophisticated **Overlay Strategy**. High Energy Physics experiments often face the challenge of **Pileup**—multiple proton-proton collisions occurring simultaneously. Lorenzetti accurately models this by overlaying background "Minimum Bias" events onto the signal event of interest. 
 
-By providing a streamlined environment—independent of massive experimental software stacks—Lorenzetti allows researchers to easily develop, benchmark, and publish novel processing algorithms (e.g., for fast trigger systems or anomaly detection).
+Crucially, it handles both **In-Time Pileup** (simultaneous collisions) and **Out-of-Time Pileup** (signals from previous or subsequent bunch crossings that distort the current measurement). This is achieved by convolving the energy deposits with the detector's realistic **electronic pulse shapes** over a configurable time window. This setup provides a perfect playground for developing cutting-edge **Pileup Mitigation algorithms** (e.g., using timing information or deep learning) to recover clean signals from high-noise backgrounds, mimicking the harsh conditions of the **HL-LHC**.
+
+Described fully in *[Computer Physics Communications (2023)](https://doi.org/10.1016/j.cpc.2023.108671)*, Lorenzetti serves as a "virtual testbeam," enabling the scientific community to validate novel ideas independently of major collaborations.
 
 ## 📂 Directory Structure
 
