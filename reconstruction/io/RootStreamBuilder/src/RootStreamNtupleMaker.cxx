@@ -29,6 +29,19 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamNtupleMaker
+ * @brief Dumps flat Ntuples for analysis (ML training, performance studies).
+ * 
+ * Unlike the AOD/ESD makers which serialize EDM objects, this algorithm flatterns
+ * the data into simple floating-point branches (e.g. `cl_et`, `cl_eta`, `cl_rings`, etc.).
+ * This is the standard format used for training neural networks (e.g. Ringer) or
+ * plotting variables in ROOT.
+ * 
+ * Properties:
+ * - Input*Key: Keys to retrieve objects to dump.
+ * - OutputNtupleName: Name of the output TTree.
+ */
 RootStreamNtupleMaker::RootStreamNtupleMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -66,6 +79,12 @@ StatusCode RootStreamNtupleMaker::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Books the analysis TTree.
+ * 
+ * Defines all branches: event info, cluster variables, shower shapes,
+ * rings, electron MC truth, etc.
+ */
 StatusCode RootStreamNtupleMaker::bookHistograms( EventContext &ctx ) const
 {
   MSG_INFO("Booking ttree...");
@@ -221,6 +240,13 @@ StatusCode RootStreamNtupleMaker::post_execute( EventContext &/*ctx*/ ) const
 
 //!=====================================================================
 
+/**
+ * @brief Fills the TTree.
+ * 
+ * For each electron in the container, it retrieves the associated cluster, rings, and truth particle.
+ * It flattens their properties into the linked variables and calls `tree->Fill()`.
+ * Thus, one entry in the tree corresponds to one Electron candidate.
+ */
 StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
 {
   MSG_INFO("fill ttree...");

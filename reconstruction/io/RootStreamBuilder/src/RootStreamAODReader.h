@@ -11,6 +11,13 @@
 
 
 
+/**
+ * @class RootStreamAODReader
+ * @brief Algorithm to read AOD (Analysis Object Data) from a ROOT file.
+ * 
+ * Restores reconstructed objects (Clusters, Rings, Electrons, etc) from disk
+ * to the memory (Event Store).
+ */
 class RootStreamAODReader : public Gaugi::Algorithm
 {
 

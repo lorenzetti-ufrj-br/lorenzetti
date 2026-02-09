@@ -6,6 +6,13 @@
 #include "CaloCell/CaloCell.h"
 
 
+/**
+ * @class CaloRingsMerge
+ * @brief Algorithm to merge CaloRings containers.
+ * 
+ * Merges multiple CaloRings containers into a single one. This is useful when
+ * rings are built in parallel or in different steps.
+ */
 class CaloRingsMerge : public Gaugi::Algorithm
 {
   public:

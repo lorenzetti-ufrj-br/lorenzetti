@@ -11,6 +11,21 @@
 using namespace generator;
 
 
+/**
+ * @class JF17
+ * @brief Jet filtering algorithm (J17/JF17-like) for event selection.
+ *
+ * This algorithm filters events based on Jet properties (Anti-Kt). It interfaces with
+ * FastJet to cluster particles and selects events where jets fall within specific
+ * Pt strings (bins) and pile-up windows. It serves as a generator-level filter
+ * to produce specific slice samples (e.g., J0, J1, ... J5).
+ * 
+ * Properties:
+ * - EtaMax/Min: Jet eta acceptance.
+ * - MinPt/MaxPt: Jet Transverse Momentum selection range.
+ * - Select: Filter mode (e.g. 2 for specific Pythia filter logic).
+ * - Eta/PhiWindow: Cluster size.
+ */
 JF17::JF17(const std::string name , IGenerator *gen): 
   IMsgService(name),
   IAlgorithm(gen)

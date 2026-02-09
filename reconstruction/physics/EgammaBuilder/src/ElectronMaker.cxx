@@ -14,6 +14,19 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class ElectronMaker
+ * @brief Reconstructs Electron objects from CaloClusters.
+ * 
+ * Creates electron candidates by iterating over calorimeter clusters.
+ * It also performs PID (particle identification) evaluation using "IsEM" style
+ * rectangular cuts (Loose, Medium, Tight, etc).
+ * 
+ * Properties:
+ * - InputClusterKey: Key for input CaloClusters.
+ * - OutputElectronKey: Key for output Electrons.
+ * - *Cuts: Various vectors defining the cut values for PID variables.
+ */
 ElectronMaker::ElectronMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -84,6 +97,13 @@ StatusCode ElectronMaker::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Executes the electron creation.
+ * 
+ * Iterates over the CaloCluster container. For each cluster, creates a new
+ * `xAOD::Electron`, links it to the cluster, and calculates the PID decisions
+ * (Loose, Medium, Tight) calling the `compute()` method.
+ */
 StatusCode ElectronMaker::post_execute( EventContext &ctx ) const
 {
   SG::WriteHandle<xAOD::ElectronContainer> electron(m_electronKey, ctx);
@@ -116,6 +136,17 @@ StatusCode ElectronMaker::fillHistograms(EventContext &ctx ) const
 
 //!=====================================================================
 
+/**
+ * @brief Evaluates the PID decision.
+ * 
+ * Applies rectangular cuts on shower shape variables based on the requested
+ * operating point (tight, medium, loose). Differentiates between central
+ * and forward electrons as they use different discriminating variables.
+ * 
+ * @param cluster The input cluster.
+ * @param pidname The name of the working point ("tight", "medium", etc.).
+ * @return True if the cluster satisfies the cuts, false otherwise.
+ */
 bool ElectronMaker::compute(const xAOD::CaloCluster* cluster, std::string pidname) const{
   MSG_INFO("Computing PID ("<<pidname<<") for cluster with eta: " << cluster->eta() << " phi: " << cluster->phi() << " et: " << cluster->et() << " e: " << cluster->e());
   if(cluster->isForward()) {

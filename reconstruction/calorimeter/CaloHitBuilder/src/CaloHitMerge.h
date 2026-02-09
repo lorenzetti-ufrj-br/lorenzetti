@@ -6,6 +6,13 @@
 #include "CaloHit/CaloHit.h"
 
 
+/**
+ * @class CaloHitMerge
+ * @brief Algorithm to merge hit collections.
+ * 
+ * Aggregates separate hit collections (usually from different detector regions)
+ * into a single container.
+ */
 class CaloHitMerge : public Gaugi::Algorithm
 {
   public:

@@ -6,6 +6,14 @@
 #include "CaloCell/CaloCell.h"
 
 
+/**
+ * @class CaloCellMerge
+ * @brief Algorithm to merge multiple cell collections.
+ * 
+ * Collects cells from different calorimeter samplings (created by separate
+ * CaloCellMaker instances) and merges them into a single global
+ * CaloCellContainer.
+ */
 class CaloCellMerge : public Gaugi::Algorithm
 {
   public:

@@ -5,6 +5,14 @@
 #include "G4SystemOfUnits.hh"
 using namespace std;
 using namespace SG;
+/**
+ * @class ShowerShapes
+ * @brief Utility tool for calculating calorimetric shower shape variables.
+ * 
+ * Computes various quantities describing the longitudinal and lateral 
+ * development of the shower, such as Reta, Rphi, weta2, f1, f3, etc.
+ * Use for electron identification/discrimination.
+ */
 ShowerShapes::ShowerShapes( std::string name ) : 
   IMsgService(name),
   AlgTool()
@@ -20,6 +28,23 @@ StatusCode ShowerShapes::finalize()
   return StatusCode::SUCCESS;
 }
 //!=====================================================================
+/**
+ * @brief Execution entry point.
+ * 
+ * Calculates all defined shower shapes for a given CaloCluster.
+ * Populates the cluster object with the computed variables (setters).
+ * 
+ * The calculated variables include:
+ * - **Pre-Sampler**: e0, f0
+ * - **EM1 (Strip)**: e1, f1, emaxs1, e2tsts1, eratio, weta1 (not implemented but reserved)
+ * - **EM2 (Middle)**: e2, f2, reta, rphi, weta2, e233, e237, e277
+ * - **EM3 (Back)**: e3, f3
+ * - **Hadronic**: ehad1, ehad2, ehad3, rhad, rhad1
+ * - **Forward Moments**: secondR, lambdaCenter, secondLambda, fracMax, lateralMom, longitudinalMom (for forward electrons)
+ * 
+ * @param ctx EventContext (unused here but required by interface).
+ * @param edm Pointer to the CaloCluster object.
+ */
 StatusCode ShowerShapes::execute( SG::EventContext &/*ctx*/, Gaugi::EDM *edm ) const
 {
   MSG_DEBUG("Calculate shower shapes for this cluster." );
@@ -39,13 +64,42 @@ StatusCode ShowerShapes::execute( SG::EventContext &/*ctx*/, Gaugi::EDM *edm ) c
   
   float emaxs1  = (em1Cells.size()>=4)?(em1Cells[0]->e() + em1Cells[1]->e()):0;
   float e2tsts1 = (em1Cells.size()>=4)?(em1Cells[2]->e() + em1Cells[3]->e()):0;
+  
+  /**
+   * @brief Eratio (EM1)
+   * Calculation: (E_1st_max - E_2nd_max) / (E_1st_max + E_2nd_max) in sampling 1.
+   * Purpose: Discrimination between single photons (or electrons) and pi0 -> gamma gamma decays.
+   * Pi0 decays often produce two close clusters, resulting in two distinct energy peaks (lower value),
+   * while single EM showers typically have one dominant peak (value close to 1).
+   */
   float eratio = (emaxs1 + e2tsts1)?((emaxs1 - e2tsts1)/(emaxs1 + e2tsts1)):0.;
 
+  /**
+   * @brief Energy Sums in EM2 (Middle Layer) for Reta/Rphi.
+   * - e233: Energy in 3x3 cells.
+   * - e237: Energy in 3x7 cells (3 in eta, 7 in phi).
+   * - e277: Energy in 7x7 cells.
+   */
   float e277  = sumEnergyEM( clus, 2, 7, 7 );
   float e233  = sumEnergyEM( clus, 2, 3, 3 );
   float e237  = sumEnergyEM( clus, 2, 3, 7 );
+
+  /**
+   * @brief Reta (EM2)
+   * Calculation: E(3x7) / E(7x7) in sampling 2.
+   * Purpose: Measures the lateral shower containment in eta. EM showers are narrow in eta, 
+   * so this value is close to 1. Hadronic jets are wider.
+   */
   float reta  = e237/e277;
+
+  /**
+   * @brief Rphi (EM2)
+   * Calculation: E(3x3) / E(3x7) in sampling 2.
+   * Purpose: Measures the lateral shower containment in phi. Electrons bend in the magnetic field,
+   * making the shower wider in phi than eta.
+   */
   float rphi  = e233/e237;
+
   float e0    = sumEnergyEM( clus, 0 );
   float e1    = sumEnergyEM( clus, 1 );
   float e2    = sumEnergyEM( clus, 2 );
@@ -53,17 +107,33 @@ StatusCode ShowerShapes::execute( SG::EventContext &/*ctx*/, Gaugi::EDM *edm ) c
   float ehad1 = sumEnergyHAD( clus, 0 );
   float ehad2 = sumEnergyHAD( clus, 1 );
   float ehad3 = sumEnergyHAD( clus, 2 );
+
+  /**
+   * @brief Weta2 (EM2)
+   * Calculation: Calculated from the energy weighted standard deviation of cell eta positions in a 3x5 window.
+   * Purpose: lateral width of the shower in the middle layer. EM showers are narrow.
+   */
   float weta2 = calculateWeta2(clus, 3, 5);
 
   float etot = e0+e1+e2+e3+ehad1+ehad2+ehad3;
   float emtot = e0+e1+e2+e3;
-  // fraction of energy deposited in 1st sampling
+  
+  // Fraction of energy deposited in each sampling layer
+  // Purpose: Longitudinal shower profile. Electrons deposit most energy in EM layers (high f0-f3),
+  // while hadrons penetrate deeper (high rhad).
   float f0 = e0 / emtot;
   float f1 = e1 / emtot;
   float f2 = e2 / emtot;
   float f3 = e3 / emtot;
+  
+  /**
+   * @brief Rhad / Rhad1
+   * Calculation: Ratio of hadronic energy to EM energy.
+   * Purpose: Standard electron identification variable to reject hadronic background.
+   */
   float rhad = (ehad1+ehad2+ehad3) / emtot;
   float rhad1 = (ehad1) / emtot;
+
   clus->setE0( e0 );
   clus->setE1( e1 );
   clus->setE2( e2 );
@@ -114,6 +184,14 @@ StatusCode ShowerShapes::execute( SG::EventContext &/*ctx*/, Gaugi::EDM *edm ) c
 }
 
 //!=====================================================================
+/**
+ * @brief Sums energy in specified EM layer within a window.
+ * @param clus The cluster.
+ * @param sampling 0=PS, 1=EM1, 2=EM2, 3=EM3.
+ * @param eta_ncell Window size in eta (units of cell size).
+ * @param phi_ncell Window size in phi (units of cell size).
+ * @return Sum of energy of cells matching validity criteria.
+ */
 float ShowerShapes::sumEnergyEM( xAOD::CaloCluster *clus, int sampling, unsigned eta_ncell, unsigned phi_ncell ) const
 {
   float energy = 0.0;
@@ -148,6 +226,14 @@ float ShowerShapes::sumEnergyEM( xAOD::CaloCluster *clus, int sampling, unsigned
   return energy;
 }
 //!=====================================================================
+/**
+ * @brief Sums energy in specified Hadronic layer within a window.
+ * @param clus The cluster.
+ * @param sampling 0=HAD1, 1=HAD2, 2=HAD3.
+ * @param eta_ncell Window size in eta.
+ * @param phi_ncell Window size in phi.
+ * @return Sum of energy of cells matching validity criteria.
+ */
 float ShowerShapes::sumEnergyHAD( xAOD::CaloCluster *clus, int sampling, unsigned eta_ncell, unsigned phi_ncell ) const
 {
   float energy = 0.0;
@@ -181,6 +267,17 @@ float ShowerShapes::sumEnergyHAD( xAOD::CaloCluster *clus, int sampling, unsigne
   return energy;
 }
 //!=====================================================================
+/**
+ * @brief Calculates Weta2 (Lateral Shower Width in EM2).
+ * 
+ * Formula: sqrt( (Sum(E_i * eta_i^2) / TotalE) - (Sum(E_i * eta_i) / TotalE)^2 )
+ * Basically the standard deviation of the energy distribution in eta.
+ * 
+ * @param clus Cluster object.
+ * @param eta_ncell Eta window size.
+ * @param phi_ncell Phi window size.
+ * @return Weta2 value.
+ */
 float ShowerShapes::calculateWeta2( xAOD::CaloCluster *clus , unsigned eta_ncell, unsigned phi_ncell) const
 {
   float En2=0.0;
@@ -203,6 +300,15 @@ float ShowerShapes::calculateWeta2( xAOD::CaloCluster *clus , unsigned eta_ncell
   return std::sqrt( (En2/E) - std::pow( (En/E),2 ) );
 }
 
+/**
+ * @brief Calculates the Shower Axis using Principal Component Analysis (Eigen analysis).
+ * 
+ * Constructs the covariance matrix of energy deposits in space (3D).
+ * The principal eigenvector (highest eigenvalue) corresponds to the main shower axis.
+ * Used for Forward forward electron identification where Calo pointing is crucial.
+ * 
+ * @return Vector containing: [ShowerAxis, ShowerCenter, Energies(Total, Max1, Max2), EMEC1_POS]
+ */
 std::vector<TVector3> ShowerShapes::calculateShowerAxis(xAOD::CaloCluster * clus) const{
   float xc = 0;
   float yc = 0;
@@ -298,6 +404,12 @@ std::vector<TVector3> ShowerShapes::calculateShowerAxis(xAOD::CaloCluster * clus
   return axis;
 }
 
+/**
+ * @brief Calculates LambdaCenter (Distance of shower center from calorimeter front face along axis).
+ * 
+ * @param axis Result from calculateShowerAxis.
+ * @return Distance in mm (approximation).
+ */
 float ShowerShapes::calculateLambdaCenter ( xAOD::CaloCluster *clus, std::vector<TVector3> axis ) const{
   float LambdaCenter = 0;
   float factor = 0;
@@ -318,6 +430,12 @@ float ShowerShapes::calculateLambdaCenter ( xAOD::CaloCluster *clus, std::vector
 	return LambdaCenter;
 }
 
+/**
+ * @brief Calculates SecondLambda (Longitudinal spread along the shower axis).
+ * 
+ * @param axis Result from calculateShowerAxis.
+ * @return Second moment longitudinal.
+ */
 float ShowerShapes::calculateSecondLambda ( xAOD::CaloCluster *clus, std::vector<TVector3> axis ) const{
   float secondLambda = 0;
 	auto showerAxis = axis.at(0);
@@ -342,6 +460,12 @@ float ShowerShapes::calculateSecondLambda ( xAOD::CaloCluster *clus, std::vector
 	return secondLambda/totalE;
 }
 
+/**
+ * @brief Calculates SecondR (Lateral spread perpendicular to the shower axis).
+ * 
+ * @param axis Result from calculateShowerAxis.
+ * @return Second moment lateral.
+ */
 float ShowerShapes::calculateSecondR ( xAOD::CaloCluster *clus, std::vector<TVector3> axis ) const{
   float secondR = 0;
 	auto showerAxis = axis.at(0);
@@ -365,6 +489,12 @@ float ShowerShapes::calculateSecondR ( xAOD::CaloCluster *clus, std::vector<TVec
 	return secondR/totalE;
 }
 
+/**
+ * @brief Calculates FracMax (Fraction of energy in the max-E cell).
+ * 
+ * @param axis Result from calculateShowerAxis.
+ * @return MaxCelEnergy / TotalEnergy
+ */
 float ShowerShapes::calculateFracMax ( xAOD::CaloCluster *clus, std::vector<TVector3> axis ) const{
   float fracMax = 0;
 	auto totalE = axis.at(2).X();
@@ -373,6 +503,13 @@ float ShowerShapes::calculateFracMax ( xAOD::CaloCluster *clus, std::vector<TVec
 	return fracMax/totalE;
 }
 
+/**
+ * @brief Calculates Lateral Moment (describes lateral shape).
+ * 
+ * Code derived from standard Forward Electron ID implementation.
+ * @param axis Result from calculateShowerAxis.
+ * @return Lateral moment.
+ */
 float ShowerShapes::calculateLateralMom ( xAOD::CaloCluster *clus, std::vector<TVector3> axis ) const{
 	float lateralMom = 0;
   float r = 0;
@@ -406,6 +543,13 @@ float ShowerShapes::calculateLateralMom ( xAOD::CaloCluster *clus, std::vector<T
   return lateralMom;
 }
 
+/**
+ * @brief Calculates Longitudinal Moment (describes longitudinal shape).
+ * 
+ * Code derived from standard Forward Electron ID implementation.
+ * @param axis Result from calculateShowerAxis.
+ * @return Longitudinal moment.
+ */
 float ShowerShapes::calculateLongitudinalMom ( xAOD::CaloCluster *clus, std::vector<TVector3> axis ) const{
 	float longitudinalMom = 0;
   float l = 0;

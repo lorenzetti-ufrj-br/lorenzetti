@@ -14,6 +14,18 @@
 using namespace Gaugi;
 
 
+/**
+ * @class CrossTalkMaker
+ * @brief Simulates cell-to-cell cross-talk effects.
+ * 
+ * This algorithm modifies the pulse shapes of calorimeter cells by mixing in
+ * contributions from their neighbors. It models both capacitive and inductive
+ * coupling. It creates a new collection of "cross-talked" cells.
+ * 
+ * Properties:
+ * - AmpCapacitive/Inductive: Coupling amplitudes.
+ * - MinEnergy: Process only cells above this energy threshold.
+ */
 CrossTalkMaker::CrossTalkMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -76,6 +88,16 @@ StatusCode CrossTalkMaker::execute( SG::EventContext &/*ctx*/ , const G4Step * /
 
 //!=====================================================================
 
+/**
+ * @brief Executes the cross-talk simulation.
+ * 
+ * 1. Copies the original cells to a new container.
+ * 2. Iterates over valid central cells (above threshold).
+ * 3. Finds the 3x3 window of neighbor cells.
+ * 4. Calculates the distorted pulse for the central cell by summing contributions from neighbors (XTalkTF).
+ * 5. Updates the central cell's pulse with the distorted version.
+ * 6. Runs downstream tools (e.g. OptimalFilter) on the modified cells.
+ */
 StatusCode CrossTalkMaker::execute( SG::EventContext &ctx , int /*evt*/ ) const
 {
   MSG_INFO("Executing CrossTalkMaker module...");

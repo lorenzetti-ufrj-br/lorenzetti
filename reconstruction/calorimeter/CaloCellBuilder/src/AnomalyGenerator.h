@@ -7,6 +7,13 @@
 #include "TRandom3.h"
 
 
+/**
+ * @class AnomalyGenerator
+ * @brief Tool to inject anomalies and defects into the calorimeter simulation.
+ * 
+ * This tool can simulate dead modules or add extra noise to specific cells
+ * to mimic realistic detector conditions.
+ */
 class AnomalyGenerator : public Gaugi::AlgTool
 {
 
@@ -18,7 +25,12 @@ class AnomalyGenerator : public Gaugi::AlgTool
     virtual StatusCode initialize() override;
     virtual StatusCode finalize() override;
 
-    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM * ) const override;
+    /**
+     * @brief Apply anomalies to the current cell.
+     * @param ctx Event context.
+     * @param edm Pointer to the CaloDetDescriptor (cell).
+     */
+    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM *edm ) const override;
 
 
   private:

@@ -20,6 +20,23 @@ using namespace Gaugi;
 using namespace SG;
 
 
+/**
+ * @class CaloCellMaker
+ * @brief Constructs calorimeter cells from simulated hits.
+ * 
+ * This algorithm is responsible for the digitization process. It reads
+ * energy deposits (hits), applies pulse shape simulation, noise, and 
+ * other electronic effects to produce digitized cells. It works on a 
+ * per-sampling basis (e.g., separate instance for ECAL Barrel Layer 1).
+ * 
+ * Properties:
+ * - InputHitsKey: StoreGate key for input energy deposits.
+ * - OutputCollectionKey: StoreGate key for output cells.
+ * - Eta/PhiBins: Binning definition for the readout segmentation.
+ * - ZMin/Max: Longitudinal extent of the calorimeter module.
+ * - Sampling: Calorimeter sampling ID (e.g., EMB1, Tile1).
+ * - BunchIdStart/End: Readout window in bunch crossings.
+ */
 CaloCellMaker::CaloCellMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -198,6 +215,14 @@ StatusCode CaloCellMaker::execute( EventContext &ctx , int /*evt*/ ) const
 
 //!=====================================================================
 
+/**
+ * @brief Post-execution step: Digitization loop.
+ * 
+ * Iterates over all hits associated with this sampling.
+ * 1. Accumulates energy deposits per bunch crossing.
+ * 2. Runs the PulseGenerator to simulate the electronic signal shape.
+ * 3. Runs other tools (e.g., OptimalFilter, CrossTalk) to produce the final cell object.
+ */
 StatusCode CaloCellMaker::post_execute( EventContext &ctx ) const 
 {
 

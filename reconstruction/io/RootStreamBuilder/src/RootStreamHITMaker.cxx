@@ -17,6 +17,17 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamHITMaker
+ * @brief Serializes simulation Hits to a ROOT file.
+ * 
+ * Saves `xAOD::CaloHit` objects. Useful for persisting the output of the
+ * Geant4 simulation step before full digitization.
+ * 
+ * Properties:
+ * - OnlyRoI: If true, only saves hits near TruthParticles.
+ * - KeepCells: List of specific cell hashes that must always be saved (e.g. for debugging defects).
+ */
 RootStreamHITMaker::RootStreamHITMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -151,6 +162,13 @@ void RootStreamHITMaker::InitBranch(TTree* fChain, std::string branch_name, T* p
 
 //!=====================================================================
 
+/**
+ * @brief Serializes Hits.
+ * 
+ * Iterates through the CaloHit container. If `OnlyRoI` is enabled, checks
+ * if each hit is within `EtaWindow` x `PhiWindow` of a TruthParticle OR if its
+ * hash is in the `KeepCells` list. Matched hits are converted and saved.
+ */
 StatusCode RootStreamHITMaker::serialize( EventContext &ctx ) const
 {
 

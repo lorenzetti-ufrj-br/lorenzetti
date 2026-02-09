@@ -23,7 +23,21 @@ datapath    = os.environ["LORENZETTI_EVTGEN_DATA_DIR"]
 JF17_FILE   = f'{datapath}/jet_config.cmnd'
 
 
+"""
+Script: gen_jets.py
+Purpose: Generates Jet simulation events using Pythia8 and the JF17 filter.
+Usage:
+    gen_jets.py -o output.root --nov 100 [options]
+"""
+
 def parse_args():
+    """
+    Parses command-line arguments for Jet event generation.
+
+    Returns:
+        argparse.Namespace: Parsed and merged arguments containing configuration
+                            for run number, energy ranges, eta limits, and file paths.
+    """
 
     parser = argparse.ArgumentParser(
         description='',
@@ -74,6 +88,25 @@ def main(events: List[int],
          energy_min: float,
          energy_max: float
         ):
+    """
+    Main execution logic for Jet generation.
+
+    Sets up the EventTape and JF17 filter (wrapping Pythia8) to generate
+    jet events within specified kinematic bins. A "Tape" acts as a stream
+    manager that writes generated events to an output file.
+
+    Args:
+        events (List[int]): List of event indices to proceed.
+        logging_level (str): Logging output verbosity.
+        output_file (str): Destination path for the output file.
+        run_number (int): Run identifier.
+        seed (int): Random seed for reproducibility.
+        jf17_file (str): Path to the Pythia8 configuration file (e.g., jet_config.cmnd).
+        eta_min (float): Minimum pseudorapidity for jet filtering.
+        eta_max (float): Maximum pseudorapidity for jet filtering.
+        energy_min (float): Minimum transverse energy (Pt) for the filter.
+        energy_max (float): Maximum transverse energy (Pt) for the filter.
+    """
 
     print(seed)
     outputLevel = LoggingLevel.toC(logging_level)

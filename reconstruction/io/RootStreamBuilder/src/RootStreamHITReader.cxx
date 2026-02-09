@@ -18,6 +18,13 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamHITReader
+ * @brief Reads Hit data from a ROOT file.
+ * 
+ * Reconstructs `xAOD::CaloHit`, `xAOD::EventInfo`, `xAOD::TruthParticle`, and
+ * `xAOD::Seed` objects from the persistent data and records them in StoreGate.
+ */
 RootStreamHITReader::RootStreamHITReader( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -101,6 +108,12 @@ StatusCode RootStreamHITReader::fillHistograms( EventContext &ctx ) const
 //!=====================================================================
 
 
+/**
+ * @brief Deserializes Hits and other objects.
+ * 
+ * Restores the full EventInfo, Seed, TruthParticle, and CaloHit containers
+ * from the TTree entry.
+ */
 StatusCode RootStreamHITReader::deserialize( int evt, EventContext &ctx ) const
 {
   std::vector<xAOD::CaloHit_t           > *collection_hits       = nullptr;

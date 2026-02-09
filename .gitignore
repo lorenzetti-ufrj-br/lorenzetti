@@ -38,3 +38,16 @@ production/*
 
 # scripts
 *.sh
+
+# Documentation
+doc/lorenzetti_docs_env/
+doc/venv/
+doc/build/
+doc/doxygen/
+doc/source/api/
+doc/source/cxx/
+doc/source/tutorials/*.ipynb
+doc/mock_site_packages/
+doc/get-pip.pydoc/venv*/
+doc/source/guides/*.ipynb
+doc/source/tutorials*

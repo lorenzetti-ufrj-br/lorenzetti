@@ -23,6 +23,21 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamAODMaker
+ * @brief Serializes reconstruction objects to a ROOT file (AOD format).
+ * 
+ * This algorithm gathers various EDM objects (EventInfo, TruthParticles,
+ * CaloClusters, CaloRings, Electrons, etc.) from StoreGate and writes them
+ * into a TTree. It uses "Converter" helper classes to translate transient
+ * xAOD objects into persistent struct-based representations.
+ * 
+ * Properties:
+ * - Input*Key: Keys for objects in StoreGate.
+ * - Output*Key: Branch names in the output TTree.
+ * - NtupleName: Name of the TTree.
+ * - DumpCells: If true, also dumps detailed cell information (heavy).
+ */
 RootStreamAODMaker::RootStreamAODMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -34,7 +49,6 @@ RootStreamAODMaker::RootStreamAODMaker( std::string name ) :
   declareProperty( "InputClusterKey"         , m_inputClusterKey="Clusters"           );
   declareProperty( "InputRingerKey"          , m_inputRingerKey="Rings"               );
   declareProperty( "InputElectronKey"        , m_inputElectronKey="Electrons"         );
-
   declareProperty( "OutputEventKey"          , m_outputEventKey="EventInfo"           );
   declareProperty( "OutputSeedsKey"          , m_outputSeedsKey="Seeds"               );
   declareProperty( "OutputTruthKey"          , m_outputTruthKey="Particles"           );
@@ -42,7 +56,6 @@ RootStreamAODMaker::RootStreamAODMaker( std::string name ) :
   declareProperty( "OutputClusterKey"        , m_outputClusterKey="Clusters"          );
   declareProperty( "OutputRingerKey"         , m_outputRingerKey="Rings"              );
   declareProperty( "OutputElectronKey"       , m_outputElectronKey="Electrons"        );
-
   declareProperty( "OutputLevel"             , m_outputLevel=1                        );
   declareProperty( "NtupleName"              , m_ntupleName="physics"                 );
   declareProperty( "DumpCells"               , m_dumpCells=false                      );
@@ -159,6 +172,14 @@ StatusCode RootStreamAODMaker::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Performs the serialization.
+ * 
+ * 1. Retrieves objects (EventInfo, Truth, Seeds, Clusters, Rings, Electrons) from StoreGate.
+ * 2. Converts them to their persistent structs using `xAOD::*Converter`.
+ * 3. Pushes the structs into the vectors linked to the TTree branches.
+ * 4. Fills the TTree.
+ */
 StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
 {
   

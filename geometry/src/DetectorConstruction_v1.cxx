@@ -35,6 +35,19 @@ template <typename T> int sign(T val) {
 G4ThreadLocal G4GlobalMagFieldMessenger* DetectorConstruction_v1::m_magFieldMessenger = nullptr;
 
 
+/**
+ * @class DetectorConstruction_v1
+ * @brief Defines the full detector geometry for the simulation.
+ * 
+ * This class implements the G4VUserDetectorConstruction interface to build the 
+ * Lorenzetti detector (calorimeters) using Geant4 geometry primitives.
+ * It manages materials, logical volumes, and placements for both horizontal 
+ * and vertical calorimeter plates.
+ * 
+ * Properties:
+ * - UseMagneticField: Toggle global magnetic field (2 Tesla).
+ * - CutOnPhi: Restrict the detector to a phi wedge (used for debugging/visualization).
+ */
 DetectorConstruction_v1::DetectorConstruction_v1(std::string name)
  : 
   IMsgService(name), 
@@ -220,6 +233,25 @@ void DetectorConstruction_v1::DefineMaterials()
 
 
 
+/**
+ * @brief Constructs the horizontal plates of a calorimeter module (Barrel).
+ * 
+ * Creates a "sandwich" structure of absorber, gap, and absorber layers arranged 
+ * radially (for cylindrical/barrel geometry).
+ * 
+ * @param worldLV Mother logical volume.
+ * @param name Unique name for the volume.
+ * @param defaultMaterial Envelope material (usually Vacuum).
+ * @param absorberMaterial Absorber material (e.g., Pb, Fe).
+ * @param gapMaterial Active material (e.g., LAr, Scintillator).
+ * @param nofLayers Number of repeating layers.
+ * @param absoThickness Thickness of the absorber plate.
+ * @param gapThickness Thickness of the active gap.
+ * @param calorRmin Inner radius.
+ * @param calorZ Total length in Z.
+ * @param center_pos Center position (displacement).
+ * @param region G4Region associated with this detector part.
+ */
 void DetectorConstruction_v1::CreateHorizontalPlates(  G4LogicalVolume *worldLV, 
                                                     std::string name,  
                                                     G4Material *defaultMaterial,

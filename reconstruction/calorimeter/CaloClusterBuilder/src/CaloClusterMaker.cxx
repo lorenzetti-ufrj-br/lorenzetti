@@ -14,6 +14,21 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class CaloClusterMaker
+ * @brief Reconstruction algorithm to perform Seeded-Clustering.
+ * 
+ * This algorithm groups calorimeter cells into clusters initiated by seed particles 
+ * (typically truth particles or reconstructed candidates). It scans for the "hottest" 
+ * cell near a seed and aggregates energy within a fixed rectangular window in eta-phi.
+ * 
+ * Properties:
+ * - InputCellsKey: Collection of calorimeter cells.
+ * - InputSeedsKey: Collection of seeds (positions).
+ * - OutputClusterKey: Output collection of reconstructed clusters.
+ * - Eta/PhiWindow: Size of the clustering window.
+ * - MinCenterEnergy: Minimum energy required for the central cell to seed a cluster.
+ */
 CaloClusterMaker::CaloClusterMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -108,6 +123,14 @@ StatusCode CaloClusterMaker::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Core clustering logic executed for each event.
+ * 
+ * 1. Retrieves seeds and cell containers.
+ * 2. Iterates over seeds to find the corresponding "hot cell" (maximum energy) in the Second Layer (EMB2/EMEC2).
+ * 3. Verifies if the energy in a 0.1x0.1 core is above threshold (MinCenterEnergy).
+ * 4. If qualified, creates a CaloCluster, collects all cells within the Eta/Phi window, and calculates shower shapes.
+ */
 StatusCode CaloClusterMaker::post_execute( EventContext &ctx ) const
 {
 

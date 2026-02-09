@@ -8,6 +8,14 @@
 
 
 
+/**
+ * @class ConstrainedOptimalFilter
+ * @brief AlgTool for signal reconstruction using a Constrained Optimal Filter.
+ * 
+ * Reconstructs the amplitude and time of the signal from the digitized
+ * samples using the Optimal Filtering technique with additional constraints
+ * (e.g., pedestal constraints).
+ */
 class ConstrainedOptimalFilter : public Gaugi::AlgTool
 {
 
@@ -20,7 +28,12 @@ class ConstrainedOptimalFilter : public Gaugi::AlgTool
     void ReadShaper( std::string filepath );
     void GeneratePulse(  std::vector<float> &pulse) const;
 
-    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM * ) const override;
+    /**
+     * @brief Apply the filter to the cell.
+     * @param ctx Event context.
+     * @param edm Pointer to the CaloDetDescriptor (cell).
+     */
+    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM *edm ) const override;
 
   private:
 

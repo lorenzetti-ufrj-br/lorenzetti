@@ -17,7 +17,25 @@ from RootStreamBuilder  import RootStreamAODMaker
 from reco.reco_job import merge_args, update_args, create_parallel_job
 
 
+from reco.reco_job import merge_args, update_args, create_parallel_job
+
+
+"""
+Script: reco_trf.py
+Purpose: Executes the offline reconstruction chain.
+         Reads digitized cells (ESD), builds calorimeter clusters, computes
+         ring variables (Rings), and reconstructs electron candidates.
+Usage:
+    reco_trf.py -i input.ESD.root -o output.AOD.root
+"""
+
 def parse_args():
+    """
+    Parses command-line arguments for the reconstruction job.
+
+    Returns:
+        argparse.Namespace: Arguments for reconstruction configuration.
+    """
     # create the top-level parser
     parser = argparse.ArgumentParser(
         description='',
@@ -41,6 +59,23 @@ def main(events : List[int],
          output_file: str | Path,
          command: str,
         ):
+    """
+    Main function for the reconstruction workflow.
+
+    Orchestrates the reconstruction sequence:
+    1. Reads ESD file (Cells, Particles, Seeds).
+    2. Runs CaloClusterMaker to group cells into clusters.
+    3. Runs CaloRingsBuilder to extract concentric ring energy sums.
+    4. Runs ElectronBuilder to create electron candidates.
+    5. Writes the results to an Analysis Object Data (AOD) file.
+
+    Args:
+        events (List[int]): List of event indices.
+        logging_level (str): Logging verbosity.
+        input_file (str | Path): Path to input ESD file.
+        output_file (str | Path): Path to output AOD file.
+        command (str): Optional command to execute before the sequence.
+    """
 
     if isinstance(input_file, Path):
         input_file = str(input_file)
