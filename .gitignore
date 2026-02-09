@@ -38,7 +38,7 @@ production/*
 
 # scripts
 *.sh
-
+.DS_Store
 # Documentation
 doc/lorenzetti_docs_env/
 doc/venv_doc/
