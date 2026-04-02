@@ -72,10 +72,10 @@ source build/lzt_setup.sh
 
 We provide several Jupyter Notebooks to help you get started:
 
-- 📘 **[Usage Guide](docs/notebooks/usage.ipynb)**: General introduction to using the framework.
-- ⚛️ **[Particle Generation](docs/notebooks/generation.ipynb)**: How to generate physics events (e.g., Z bosons, Jets).
-- 💥 **[Simulation](docs/notebooks/simulation.ipynb)**: Simulating detector response and interactions.
-- 🕵️ **[Anomaly Injection](docs/notebooks/anomaly.ipynb)**: Tutorial on injecting anomalies for study.
+- 📘 **[Usage Guide](notebooks/usage.ipynb)**: General introduction to using the framework.
+- ⚛️ **[Particle Generation](notebooks/generation.ipynb)**: How to generate physics events (e.g., Z bosons, Jets).
+- 💥 **[Simulation](notebooks/simulation.ipynb)**: Simulating detector response and interactions.
+- 🕵️ **[Anomaly Injection](notebooks/anomaly.ipynb)**: Tutorial on injecting anomalies for study.
 
 ## ⚡ Quick Example: Zee Event Chain
 
