@@ -31,8 +31,14 @@ def parse_args():
     parser.add_argument('-c', '--command', action='store',
                         dest='command', required=False, default="''",
                         help="The preexec command")
+    
+    parser.add_argument("-rt", '--ringer-topology', action='store',
+                        dest='ringer_topology', required=False,
+                        type=str, default='std',
+                        help="The ringer topology configuration.")
    
     return merge_args(parser)
+
 
 
 def main(events : List[int],
@@ -40,14 +46,15 @@ def main(events : List[int],
          input_file: str | Path,
          output_file: str | Path,
          command: str,
+         ringer_topology: str,
         ):
 
     if isinstance(input_file, Path):
         input_file = str(input_file)
     if isinstance(output_file, Path):
-        output_file = str(output_file)
+        output_file = str(object=output_file)
 
-
+    
     outputLevel = LoggingLevel.toC(logging_level)
 
 
@@ -84,7 +91,8 @@ def main(events : List[int],
                                 InputClusterKey    = recordable("Clusters"),
                                 OutputRingerKey    = recordable("Rings"),
                                 HistogramPath      = "Expert/Rings",
-                                OutputLevel        = outputLevel)
+                                OutputLevel        = outputLevel,
+                                RingerTopology     = ringer_topology,)
 
 
     hypo = ElectronBuilderCfg( "ElectronBuilder",
@@ -126,5 +134,6 @@ if __name__ == "__main__":
     pool = create_parallel_job(args)
     pool( main, 
          logging_level    = args.output_level,
-         command          = args.command
+         command          = args.command,
+         ringer_topology  = args.ringer_topology
          )

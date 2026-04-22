@@ -1,5 +1,6 @@
 
 #include "src/CaloRingsMaker.h"
+#include "src/CaloAsymRingsMaker.h"
 #include "src/CaloRingsMerge.h"
 
 #ifdef __CINT__
@@ -9,8 +10,8 @@
 #pragma link off all functions;
 #pragma link C++ nestedclass;
 
-
-#pragma link C++ class CaloRingsMaker+;
-#pragma link C++ class CaloRingsMerge+;
+#pragma link C++ class CaloRingsMaker + ;
+#pragma link C++ class CaloAsymRingsMaker + ;
+#pragma link C++ class CaloRingsMerge + ;
 
 #endif

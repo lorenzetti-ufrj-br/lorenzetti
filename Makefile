@@ -7,7 +7,7 @@ all:  build_sources
 
 build_sources:
 	mkdir -p build
-	cd build && cmake .. && make -j${nproc} && cp ${SETUP_SCRIPT} . && cd ..
+	cd build && cmake .. && make -j1 && cp ${SETUP_SCRIPT} . && cd ..
 
 test:
 	source .github/workflows/tests/test_local.sh tests

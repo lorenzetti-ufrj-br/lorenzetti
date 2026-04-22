@@ -22,10 +22,18 @@ class CaloRingsMaker( Cpp ):
                 HistogramPath    : str="Expert/Rings",
                 EtaRange         : List[float] = [0, 2.5],
                 DoSigmaCut       : bool = False,
-                SigmaCut         : float = 2.0
+                SigmaCut         : float = 2.0,
+                RingerTopology   : str="std",
               ):
 
-    Cpp.__init__(self, ROOT.CaloRingsMaker(name) )
+    if RingerTopology == "asym":
+        cpp_class = ROOT.CaloAsymRingsMaker(name)
+    elif RingerTopology == "std":
+        cpp_class = ROOT.CaloRingsMaker(name)
+    else: 
+       print("Topology not found!")
+
+    Cpp.__init__(self, cpp_class)
  
     self.setProperty( "OutputRingerKey"    , OutputRingerKey  )
     self.setProperty( "InputClusterKey"    , InputClusterKey  )
