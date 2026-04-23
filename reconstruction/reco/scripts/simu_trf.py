@@ -40,7 +40,7 @@ def parse_args():
                         dest='enable_magnetic_field', required=False,
                         help="Enable the magnetic field.")
     parser.add_argument('-t', '--timeout', action='store',
-                        dest='timeout', required=False, type=int, default=120,
+                        dest='timeout', required=False, type=int, default=240,
                         help="Event timeout in minutes")
     parser.add_argument('-l', '--output-level', action='store',
                         dest='output_level', required=False,
