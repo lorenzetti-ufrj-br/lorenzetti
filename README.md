@@ -2,9 +2,10 @@
 [![pages](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/pages.yml/badge.svg)](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/pages.yml)
 [![reco](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/reco_sequence.yml/badge.svg)](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/reco_sequence.yml)
 [![anomaly](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml/badge.svg)](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml)
-[![maestro](https://github.com/lps-ufrj-br/maestro-lightning/actions/workflows/flow.yml/badge.svg)](https://github.com/lps-ufrj-br/maestro-lighning/actions/workflows/flow.yml)
+[![maestro](https://github.com/lps-ufrj-br/maestro-lightning/actions/workflows/flow.yml/badge.svg)](https://github.com/lps-ufrj-br/maestro-lightning/actions/workflows/flow.yml)
 
 # Lorenzetti Simulator 
+
 
 Lorenzetti is a framework for the HEP community to freely exploit the full potential of calorimetry data. We expect to enable the community to mitigate bottlenecks for R&D in processing algorithms using calorimetry data by providing:
 
@@ -14,6 +15,21 @@ Lorenzetti is a framework for the HEP community to freely exploit the full poten
 In other words, it provides a way for the HEP community to work on proof-of-concepts (POCs) using simulated data that is currently difficult to obtain on experiments and to publish them independently. We believe that this possibility, i.e. to publish POCs apart from the experiments, can be a powerful way to foster scientific exchange within the HEP community, but also to facilitate the exchange of processing algorithms with the broader scientific community.
 
 We welcome everyone to contribute!
+
+
+## 🧪 CI Status
+
+| Test Job | Target | Status |
+| :--- | :--- | :--- |
+| **Core Build** | Compilation & Install | ![Build](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=build&label=build&branch=master) |
+| **Reco Sequence** | Full Event Chain | ![Reco](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=ntuple&label=reco&branch=master) |
+| **Anomaly Sequence** | Anomaly Injection | ![Anomaly](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/anomaly_sequence.yml?job=digitalization&label=anomaly&branch=master) |
+| **Gen Zee** | Zee Generator | ![Zee](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_zee&label=zee&branch=master) |
+| **Gen Jets** | Jets Generator | ![Jets](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_jets&label=jets&branch=master) |
+| **Gen Minbias** | Minbias Generator | ![Minbias](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_minbias&label=minbias&branch=master) |
+| **Gen Single** | Single Particle | ![Single](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_single_particle&label=single&branch=master) |
+| **Gen Overlapped** | Overlapped Zee | ![Overlapped](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_overlapped_zee&label=overlapped&branch=master) |
+| **Documentation** | GitHub Pages | ![Pages](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/pages.yml?label=pages&branch=master) |
 
 
 ## Citations
