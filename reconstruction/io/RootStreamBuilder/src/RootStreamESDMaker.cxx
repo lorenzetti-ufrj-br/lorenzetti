@@ -18,6 +18,17 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamESDMaker
+ * @brief Serializes reconstruction objects to a ROOT file (ESD format).
+ * 
+ * Similar to `RootStreamAODMaker`, but focuses on Event Summary Data (ESD),
+ * which typically includes calorimeter cells. It supports filtering cells
+ * within a Region of Interest (RoI) around truth particles to reduce file size.
+ * 
+ * Properties:
+ * - Eta/PhiWindow: Size of the RoI to save cells around truth particles.
+ */
 RootStreamESDMaker::RootStreamESDMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -142,6 +153,14 @@ void RootStreamESDMaker::InitBranch(TTree* fChain, std::string branch_name, T* p
 
 
 
+/**
+ * @brief Serializes the ESD content.
+ * 
+ * Saves EventInfo, Seeds, TruthParticles, and CaloCells.
+ * CaloCells are filtered: only cells within `EtaWindow` x `PhiWindow` of any
+ * TruthParticle are saved. It also saves the `CaloDetDescriptor` for each saved cell
+ * to allow full reconstruction geometry restoration.
+ */
 StatusCode RootStreamESDMaker::serialize( EventContext &ctx ) const
 {
   

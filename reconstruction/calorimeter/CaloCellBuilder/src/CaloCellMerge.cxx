@@ -16,6 +16,20 @@ using namespace Gaugi;
 using namespace SG;
 
 
+/**
+ * @class CaloCellMerge
+ * @brief Algorithm to merge multiple cell collections into a single container.
+ * 
+ * This algorithm gathers partial cell collections (e.g. from different samplings
+ * like EMB1, EMB2, Tile1, etc.) produced by separate CaloCellMaker instances
+ * and merges them into a single global CaloCellContainer. It handles both
+ * reconstructed cells and truth cells.
+ * 
+ * Properties:
+ * - InputCollectionKeys: List of keys for the partial collections.
+ * - OutputCellsKey: Key for the final merged reconstructed cell container.
+ * - OutputTruthCellsKey: Key for the final merged truth cell container.
+ */
 CaloCellMerge::CaloCellMerge( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -77,6 +91,13 @@ StatusCode CaloCellMerge::execute( EventContext &ctx , int /*evt*/ ) const
 
 //!=====================================================================
 
+/**
+ * @brief Core merge logic.
+ * 
+ * Iterates through all input keys, retrieves the corresponding `CaloDetDescriptorCollection`,
+ * creates new `xAOD::CaloCell` objects (copying info from descriptors), and pushes them
+ * into the output containers.
+ */
 StatusCode CaloCellMerge::post_execute( EventContext &ctx ) const
 {
 

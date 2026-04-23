@@ -22,6 +22,21 @@ using namespace SG;
 
 
 
+/**
+ * @class CaloHitMaker
+ * @brief Collects energy deposits (Hits) during Geant4 simulation.
+ * 
+ * This algorithm runs at every Geant4 step. It checks if the energy deposit
+ * occurred within the defined volume (Sampling) and integrates the energy
+ * into a CaloHit object. It maps geometric position (x,y,z) to readout 
+ * identifiers (eta, phi bins).
+ * 
+ * Properties:
+ * - OutputCollectionKey: StoreGate key for the collection of hits.
+ * - Eta/PhiBins: Readout segmentation.
+ * - RMin/Max, ZMin/Max: Spatial boundaries of the sensitive volume.
+ * - Sampling: Identifier for the calorimeter layer.
+ */
 CaloHitMaker::CaloHitMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -87,6 +102,13 @@ StatusCode CaloHitMaker::bookHistograms( SG::EventContext &ctx ) const
 
 //!=====================================================================
 
+/**
+ * @brief Prepare the hit collection before processing steps.
+ * 
+ * Initializes the CaloHitCollection in the event store. Pre-populates it with 
+ * empty hits for every defined readout cell (bin) to be ready for energy accumulation.
+ * This ensures that every cell has a corresponding object, even if empty.
+ */
 StatusCode CaloHitMaker::pre_execute( EventContext &ctx ) const
 {
   // Build the CaloHitCollection and attach into the EventContext
@@ -132,6 +154,15 @@ StatusCode CaloHitMaker::pre_execute( EventContext &ctx ) const
 
 //!=====================================================================
 
+/**
+ * @brief Execution per Geant4 Step.
+ * 
+ * Invoked by the framework for every particle step.
+ * 1. Checks if the step is within the geometric bounds of this calorimeter volume.
+ * 2. Calculates the corresponding eta/phi bin.
+ * 3. Retrieves the specific Hit object for that bin.
+ * 4. Adds the energy deposit to the Hit.
+ */
 StatusCode CaloHitMaker::execute( EventContext &ctx , const G4Step *step ) const
 {
   SG::ReadHandle<xAOD::CaloHitCollection> collection( m_collectionKey, ctx );

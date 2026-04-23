@@ -10,6 +10,13 @@
 #include <TVector3.h>
 #include <TMatrixD.h>
 #include <TMatrixDEigen.h>
+/**
+ * @class ShowerShapes
+ * @brief Tool to calculate shower shape variables.
+ * 
+ * Calculates discriminating variables used for particle identification
+ * (e.g., e/gamma separation) based on the energy distribution within a cluster.
+ */
 class ShowerShapes : public Gaugi::AlgTool
 {
 
@@ -21,6 +28,11 @@ class ShowerShapes : public Gaugi::AlgTool
     virtual StatusCode initialize() override;
     virtual StatusCode finalize() override;
     virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM *) const override;
+    
+    /**
+     * @brief Enable or disable calculation of forward moments.
+     * @param doForward Boolean flag.
+     */
     void setForwardMoments(bool doForward){m_doForwardMoments = doForward;}
   
   private:

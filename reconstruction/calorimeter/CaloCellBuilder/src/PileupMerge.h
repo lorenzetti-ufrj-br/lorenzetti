@@ -11,6 +11,14 @@
 #include "TRandom3.h"
 
 
+/**
+ * @class PileupMerge
+ * @brief Algorithm to overlay pileup events onto a hard-scatter event.
+ * 
+ * reads simulated hits from "minbias" events (pileup) and adds their
+ * energy contributions to the hits of the main signal event, simulating
+ * high-luminosity conditions.
+ */
 class PileupMerge : public Gaugi::Algorithm
 {
 

@@ -17,7 +17,18 @@ from CaloCellBuilder    import CaloFlags, CrossTalkFlags, AnomalyFlags
 # Calo cell builder
 #
 class CaloCellBuilder( Logger ):
+  """
+  A high-level configuration builder for the Calorimeter Digitization chain.
 
+  This class orchestrates the creation of algorithms that transform energy hits
+  into digital signals (cells). It handles:
+  - Pulse shape simulation (PulseGenerator)
+  - Electronic noise injection
+  - Optimal Filtering (OF) for energy/time reconstruction
+  - Cross-talk simulation
+  - Defect/Anomaly injection
+  - Merging of cell collections into a single container.
+  """
 
   def __init__( self, name, 
                       detector,
@@ -28,6 +39,19 @@ class CaloCellBuilder( Logger ):
                       InputEventKey        = "Events",
                       OutputLevel          = LoggingLevel.toC('INFO'),
                       ):
+    """
+    Initialize the CaloCellBuilder.
+
+    Args:
+        name (str): Name of the builder instance.
+        detector (DetectorConstruction): The detector geometry configuration object.
+        HistogramPath (str): Path in the output ROOT file for monitoring histograms.
+        InputHitsKey (str): StoreGate key for input hits.
+        OutputCellsKey (str): StoreGate key for output reconstructed cells.
+        OutputTruthCellsKey (str): StoreGate key for truth information of cells.
+        InputEventKey (str): StoreGate key for event headers.
+        OutputLevel (int): Logging verbosity level.
+    """
 
     Logger.__init__(self, name)
     self.__recoAlgs = []
@@ -42,6 +66,14 @@ class CaloCellBuilder( Logger ):
 
     
   def configure(self):
+    """
+    Internal method to instantiate and configure the digitization algorithms.
+    
+    Iterates over all calorimeter samplings defined in the detector geometry
+    and creates specific algorithms (CaloCellMaker) for each. Configures
+    pulse generation, optimal filtering, and optional effects like cross-talk
+    and anomalies.
+    """
 
     MSG_INFO(self, "Configure CaloCellBuilder.")
   
@@ -141,6 +173,12 @@ class CaloCellBuilder( Logger ):
 
 
   def merge( self, acc ):
+    """
+    Merges the configured algorithms into the main ComponentAccumulator.
+
+    Args:
+        acc (ComponentAccumulator): The master accumulator to add the algorithms to.
+    """
     # configure
     self.configure()
     for reco in self.__recoAlgs:

@@ -15,6 +15,17 @@ using namespace Gaugi;
 using namespace SG;
 
 
+/**
+ * @class CaloRingsMerge
+ * @brief Merges multiple CaloRings containers.
+ * 
+ * Reads multiple `xAOD::CaloRingsContainer` objects from StoreGate and
+ * consolidates them into a single output container.
+ * 
+ * Properties:
+ * - CollectionKeys: List of input keys.
+ * - OutputRingerKey: Output key.
+ */
 CaloRingsMerge::CaloRingsMerge( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -75,6 +86,12 @@ StatusCode CaloRingsMerge::execute( EventContext &ctx , int /*evt*/ ) const
 
 //!=====================================================================
 
+/**
+ * @brief Performs the merge.
+ * 
+ * Iterates through input keys, retrieves containers, and deep-copies rings
+ * into the new master container.
+ */
 StatusCode CaloRingsMerge::post_execute( EventContext &ctx ) const
 {
 

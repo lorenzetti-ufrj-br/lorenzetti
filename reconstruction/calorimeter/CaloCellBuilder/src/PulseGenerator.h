@@ -7,6 +7,14 @@
 #include "TRandom3.h"
 
 
+/**
+ * @class PulseGenerator
+ * @brief Tool to simulate the electronic pulse shape.
+ * 
+ * This tool takes the energy deposit in a cell and generates a time-sampled
+ * electronic pulse (using a shaper function). It also adds electronic noise
+ * and can simulate defects.
+ */
 class PulseGenerator : public Gaugi::AlgTool
 {
 
@@ -18,7 +26,13 @@ class PulseGenerator : public Gaugi::AlgTool
     virtual StatusCode initialize() override;
     virtual StatusCode finalize() override;
 
-    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM * ) const override;
+    /**
+     * @brief Execute the pulse generation for a specific cell.
+     * @param ctx Event context.
+     * @param edm Pointer to the CaloDetDescriptor (the cell).
+     * @return Status code indicating success or failure.
+     */
+    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM *edm ) const override;
 
     
 

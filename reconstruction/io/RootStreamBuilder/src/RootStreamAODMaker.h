@@ -16,6 +16,13 @@
 
 
 
+/**
+ * @class RootStreamAODMaker
+ * @brief Algorithm to stream AOD content to a ROOT file.
+ * 
+ * Serializes high-level reconstructed objects (Clusters, Electrons, Rings)
+ * into a ROOT TTree for permanent storage.
+ */
 class RootStreamAODMaker : public Gaugi::Algorithm
 {
 

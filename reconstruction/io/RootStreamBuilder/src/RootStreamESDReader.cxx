@@ -16,6 +16,13 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamESDReader
+ * @brief Reads ESD data from a ROOT file.
+ * 
+ * Reconstructs `xAOD::CaloCell` objects (and their descriptors) from the
+ * persistent data. It handles the restoration of cell-descriptor links.
+ */
 RootStreamESDReader::RootStreamESDReader( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -98,6 +105,13 @@ StatusCode RootStreamESDReader::fillHistograms( EventContext &ctx ) const
 
 //!=====================================================================
 
+/**
+ * @brief Deserializes ESD content.
+ * 
+ * 1. Reads Descriptors (Aux container) and builds a map.
+ * 2. Reads Cells and links them to the corresponding Descriptors.
+ * 3. Restores EventInfo, Truth, and Seeds.
+ */
 StatusCode RootStreamESDReader::deserialize( int evt, EventContext &ctx ) const
 {
   std::vector<xAOD::CaloDetDescriptor_t > *collection_descriptor = nullptr;

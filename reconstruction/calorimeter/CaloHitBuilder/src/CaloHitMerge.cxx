@@ -16,6 +16,18 @@ using namespace Gaugi;
 using namespace SG;
 
 
+/**
+ * @class CaloHitMerge
+ * @brief Merges multiple CaloHit collections.
+ * 
+ * Collects `xAOD::CaloHitCollection` objects (pointers to hits) from different
+ * sources and merges them into a single `xAOD::CaloHitContainer` (owning the hits).
+ * This is typically the final step of hit generation before digitization.
+ * 
+ * Properties:
+ * - InputCollectionKeys: Keys of collections to merge.
+ * - OutputHitsKey: Key of the output container.
+ */
 CaloHitMerge::CaloHitMerge( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -76,6 +88,12 @@ StatusCode CaloHitMerge::execute( EventContext &ctx, int /*evt*/ ) const
 
 //!=====================================================================
 
+/**
+ * @brief Merges the collections.
+ * 
+ * Iterates over all input collections, creates new specific Hit objects
+ * (copying data), and adds them to the output container.
+ */
 StatusCode CaloHitMerge::post_execute( EventContext &ctx ) const
 {
 

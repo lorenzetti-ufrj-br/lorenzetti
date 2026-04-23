@@ -11,6 +11,13 @@
 
 
 
+/**
+ * @class CrossTalkMaker
+ * @brief Algorithm to simulate cell-to-cell cross-talk.
+ * 
+ * Simulates the leakage of signal from one cell to its neighbors due to
+ * capacitive or inductive coupling in the readout electronics.
+ */
 class CrossTalkMaker : public Gaugi::Algorithm
 {
   public:
@@ -32,10 +39,15 @@ class CrossTalkMaker : public Gaugi::Algorithm
     virtual StatusCode post_execute( SG::EventContext &ctx ) const override;
 
     virtual StatusCode finalize() override;
+    
     /*! Fill all histograms into the current store gate */
     virtual StatusCode fillHistograms( SG::EventContext & /*ctx*/ ) const override;
-    /*! Add tools to be executed into the post execute step. The order is matter here */
-    void push_back( Gaugi::AlgTool *);
+    
+    /**
+     * @brief Add a tool to the post-processing chain.
+     * @param tool Pointer to the AlgTool.
+     */
+    void push_back( Gaugi::AlgTool *tool);
 
 
 

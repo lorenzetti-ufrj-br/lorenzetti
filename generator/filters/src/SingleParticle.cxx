@@ -9,6 +9,22 @@ using namespace Pythia8;
 using namespace generator;
 
 
+/**
+ * @class SingleParticle
+ * @brief A generator filter that injects single particles into the event.
+ *
+ * This algorithm allows generating single particles (e.g., electrons, pions)
+ * with configurable kinematics (energy, eta, phi) or ranges. It interfaces
+ * with Pythia8's particle gun to inject the defined particle into the 
+ * empty event record.
+ * 
+ * Properties:
+ * - Eta/Phi: Fixed direction.
+ * - Energy: Fixed energy.
+ * - EnergyMin/Max: Range for random energy generation.
+ * - Particle: PDG ID of the particle to generate (default: 11 for electron).
+ * - DoRangedEta/Phi: Enable random generation within Eta/Phi Min/Max.
+ */
 SingleParticle::SingleParticle(const std::string name, IGenerator *gen): 
   IMsgService(name),
   IAlgorithm(gen)
@@ -137,6 +153,18 @@ StatusCode SingleParticle::finalize()
 
 
 
+/**
+ * @brief Helper function to inject a particle into the Pythia8 event record.
+ * 
+ * @param gun Pointer to the Pythia8 instance.
+ * @param id PDG ID of the particle.
+ * @param energy Particle energy.
+ * @param etaIn Pseudorapidity.
+ * @param phiIn Azimuthal angle.
+ * @param atRest If true, sets momentum to zero.
+ * @param hasLifetime If true, applies decay time based on particle lifetime.
+ * @return int Index of the particle in the Pythia8 event record.
+ */
 int SingleParticle::fill(Pythia8::Pythia *gun, int id, double energy, double etaIn, double phiIn, bool atRest=false, bool hasLifetime=false)
 {
 

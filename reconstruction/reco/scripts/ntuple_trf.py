@@ -14,7 +14,24 @@ from RootStreamBuilder  import RootStreamNtupleMaker
 
 from reco.reco_job import merge_args, update_args, create_parallel_job
 
+from reco.reco_job import merge_args, update_args, create_parallel_job
+
+"""
+Script: ntuple_trf.py
+Purpose: Dumps reconstructed objects into a flat Ntuple (TTree) for analysis.
+         Converts the hierarchical AOD format into a simpler tabular format suitable
+         for ROOT macros or Python analysis (e.g., pandas/uproot).
+Usage:
+    ntuple_trf.py -i input.AOD.root -o output.NTUPLE.root
+"""
+
 def parse_args():
+    """
+    Parses command-line arguments for the ntuple dumping job.
+
+    Returns:
+        argparse.Namespace: Arguments for input/output files and logging.
+    """
     # create the top-level parser
     parser = argparse.ArgumentParser(
         description='',
@@ -34,6 +51,19 @@ def main(events : List[int],
          input_file: str | Path,
          output_file: str | Path,
         ):
+    """
+    Main function for Ntuple generation.
+
+    Reads the Analysis Object Data (AOD) containing reconstructed electrons,
+    clusters, and rings, and creates a "physics" TTree in the output file
+    where each entry corresponds to a reconstructed object or event.
+
+    Args:
+        events (List[int]): List of event indices to process.
+        logging_level (str): Logging verbosity.
+        input_file (str | Path): Path to input AOD file.
+        output_file (str | Path): Path to output Ntuple file.
+    """
 
     if isinstance(input_file, Path):
         input_file = str(input_file)

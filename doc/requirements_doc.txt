@@ -1,0 +1,15 @@
+sphinx<8
+nbsphinx
+ipykernel
+nbconvert
+sphinx-rtd-theme
+breathe
+beautifulsoup4
+soupsieve
+lxml
+pandoc
+rich_argparse
+numpy
+expand_folders
+joblib
+prettytable

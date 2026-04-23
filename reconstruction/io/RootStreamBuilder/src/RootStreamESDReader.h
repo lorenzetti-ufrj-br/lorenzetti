@@ -11,6 +11,13 @@
 
 
 
+/**
+ * @class RootStreamESDReader
+ * @brief Algorithm to read ESD (Event Summary Data) from a ROOT file.
+ * 
+ * Reads detailed cell-level data and reconstructed objects from disk.
+ * Typically used to replay events for re-reconstruction or detailed debugging.
+ */
 class RootStreamESDReader : public Gaugi::Algorithm
 {
 

@@ -16,7 +16,23 @@ from geometry import DetectorConstruction_v1
 from reco import update_args_from_file,merge_args_from_file
 
 
+"""
+Script: simu_trf.py
+Purpose: Runs the full Geant4 simulation step in the Lorenzetti framework.
+         Reads generated event files (EVT), simulates particle interactions with the detector,
+         and produces Hit files (HIT).
+Usage:
+    simu_trf.py -i input.EVT.root -o output.HIT.root -nt <threads>
+"""
+
 def parse_args():
+    """
+    Parses command-line arguments for the simulation job.
+
+    Returns:
+        argparse.Namespace: Arguments specifying inputs/outputs, thread count,
+                            magnetic field options, and execution hooks.
+    """
     parser = argparse.ArgumentParser(
         description='',
         add_help=False,
@@ -77,6 +93,29 @@ def main(logging_level: str,
          number_of_threads: int,
          dry_run: bool,
          ):
+    """
+    Main function to drive the Geant4 simulation.
+
+    Constructs the simulation environment using `ComponentAccumulator`:
+    1. Initializes Detector Construction (DetectorConstruction_v1).
+    2. Sets up the Event Reader to stream events from input.
+    3. Configures the CaloHitBuilder to collect energy deposits.
+    4. Merges components and executes the run loop.
+
+    Args:
+        logging_level (str): Verbosity level.
+        input_file (str | Path): Path to the input event file.
+        output_file (str | Path): Path to the output hit file.
+        pre_init (str): Python code to execute before initialization.
+        pre_exec (str): Python code to execute before the run loop.
+        post_exec (str): Python code to execute after the run loop.
+        enable_magnetic_field (bool): Toggle for the detector magnetic field.
+        save_all_hits (bool): If True, saves all hits regardless of Region of Interest (RoI).
+        timeout (int): Timeout in minutes.
+        number_of_events (int): Number of events to process.
+        number_of_threads (int): Number of Geant4 threads.
+        dry_run (bool): If True, sets up but does not execute the run.
+    """
 
     if isinstance(input_file, Path):
         input_file = str(input_file)

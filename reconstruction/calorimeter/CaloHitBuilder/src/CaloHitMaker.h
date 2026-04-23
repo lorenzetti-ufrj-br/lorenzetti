@@ -8,6 +8,13 @@
 
 
 
+/**
+ * @class CaloHitMaker
+ * @brief Algorithm to build calorimeter hits during simulation.
+ * 
+ * Collects energy deposits from Geant4 steps and integrates them into hits
+ * corresponding to readout cells.
+ */
 class CaloHitMaker : public Gaugi::Algorithm
 {
 
@@ -22,19 +29,25 @@ class CaloHitMaker : public Gaugi::Algorithm
     
     /*! initialize the algorithm **/
     virtual StatusCode initialize() override;
+    
     /*! Book all histograms into the current storegate **/
     virtual StatusCode bookHistograms( SG::EventContext &ctx ) const override;
+    
     /*! Execute in step action step from geant core **/
     virtual StatusCode execute( SG::EventContext &ctx , const G4Step *step) const override;
+    
     /*! Execute in ComponentAccumulator **/
     virtual StatusCode execute( SG::EventContext &ctx , int /*evt*/ ) const override;
+    
     /*! execute before start the step action **/
     virtual StatusCode pre_execute( SG::EventContext &ctx ) const override;
+    
     /*! execute after the step action **/ 
     virtual StatusCode post_execute( SG::EventContext &ctx ) const override;
-    /*! fill hisogram in the end **/
+    
+    /*! fill histogram in the end **/
     virtual StatusCode fillHistograms( SG::EventContext &ctx ) const override;
-    /*! finalize the algorithm **/ 
+    
     virtual StatusCode finalize() override;
 
   private:

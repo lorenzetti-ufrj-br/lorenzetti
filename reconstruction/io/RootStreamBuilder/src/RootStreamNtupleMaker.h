@@ -12,6 +12,14 @@
 
 
 
+/**
+ * @class RootStreamNtupleMaker
+ * @brief Algorithm to dump analysis-level variables into a flat Ntuple (TTree).
+ * 
+ * Reads reconstructed objects (Clusters, Rings, Electrons) and truth info
+ * and writes them into a simple TTree structure suitable for physics analysis
+ * (e.g., in Python/Pandas or ROOT).
+ */
 class RootStreamNtupleMaker : public Gaugi::Algorithm
 {
 

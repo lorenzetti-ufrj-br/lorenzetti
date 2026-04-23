@@ -5,6 +5,20 @@
 
 using namespace generator;
 
+/**
+ * @class Zee
+ * @brief Filter algorithm for selecting Z -> ee events.
+ *
+ * This filter inspects generated Pythia8 events and selects those containing 
+ * a Z boson decaying into an electron-positron pair. It applies kinematic 
+ * cuts (Pt, Eta) and writes the selected electrons to the event context (EventTape).
+ * 
+ * Properties:
+ * - EtaMax: Maximum |eta| acceptance for electrons.
+ * - MinPt: Minimum Transverse Momentum for electrons.
+ * - ZeroVertexParticles: Force production vertex to (0,0,0) for calibration.
+ * - ForceForwardElectron: Require at least one electron in the forward region (2.5 < |eta| < 3.2).
+ */
 Zee::Zee(const std::string name, IGenerator *gen):
   IAlgorithm(gen),
   IMsgService(name)

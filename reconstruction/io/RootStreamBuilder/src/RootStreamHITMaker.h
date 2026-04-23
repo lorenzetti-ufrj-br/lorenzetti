@@ -12,6 +12,13 @@
 
 
 
+/**
+ * @class RootStreamHITMaker
+ * @brief Algorithm to stream Geant4 Hits to a ROOT file.
+ * 
+ * Validates and writes energy deposits (Hits), truth particles, and seeds
+ * to a persistent file. This output serves as input for the Digitization step.
+ */
 class RootStreamHITMaker : public Gaugi::Algorithm
 {
 

@@ -23,6 +23,19 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamAODReader
+ * @brief Reads AOD data from a ROOT file and reconstructs xAOD objects.
+ * 
+ * This algorithm is the inverse of `RootStreamAODMaker`. It opens a ROOT file,
+ * reads the persistent structs from the TTree, and converts them back into
+ * transient `xAOD` objects (EventInfo, CaloClusters, Electrons, etc.), which
+ * are then recorded into StoreGate for downstream algorithms.
+ * 
+ * Properties:
+ * - InputFile: Path to the ROOT file.
+ * - Output*Key: Keys to record objects in StoreGate.
+ */
 RootStreamAODReader::RootStreamAODReader( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -108,6 +121,14 @@ StatusCode RootStreamAODReader::fillHistograms( EventContext &ctx ) const
 
 //!=====================================================================
 
+/**
+ * @brief Performs the deserialization.
+ * 
+ * 1. Reads the entry for the current event from the TTree.
+ * 2. deserializes structs into xAOD objects using `xAOD::*Converter`.
+ * 3. Re-establishes links (pointers) between objects (e.g. Cluster -> Seed, Rings -> Cluster).
+ * 4. Records the containers into StoreGate.
+ */
 StatusCode RootStreamAODReader::deserialize( int evt, EventContext &ctx ) const
 {
   std::vector<xAOD::CaloDetDescriptor_t > *collection_descriptor = nullptr;

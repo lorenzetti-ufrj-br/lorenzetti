@@ -4,6 +4,18 @@
 using namespace Gaugi;
 
 
+/**
+ * @class OptimalFilter
+ * @brief Reconstructs cell energy and time using fixed Optimal Filter weights.
+ * 
+ * Applies the standard Optimal Filtering technique (OF2 usually) where the
+ * energy and time are linear combinations of the digitized samples. The weights
+ * are pre-calculated to minimize noise and pileup.
+ * 
+ * Properties:
+ * - WeightsEnergy: Vector of weights for energy estimation.
+ * - WeightsTime: Vector of weights for time estimation.
+ */
 OptimalFilter::OptimalFilter( std::string name ) : 
   IMsgService(name),
   AlgTool()
@@ -35,6 +47,12 @@ StatusCode OptimalFilter::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Calculates Energy and Time.
+ * 
+ * Computes the dot product of the pulse samples with the energy/time weights.
+ * Sets the reconstructed Energy and Tau in the cell object.
+ */
 StatusCode OptimalFilter::execute( SG::EventContext &/*ctx*/, Gaugi::EDM *edm ) const
 {
 
