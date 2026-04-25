@@ -7,23 +7,25 @@ import ROOT
 class RootStreamESDReader( Cpp ):
 
   def __init__( self, name,
-                OutputEventKey   : str,
-                OutputTruthKey   : str,
-                OutputCellsKey   : str,
-                OutputSeedsKey   : str,
-                InputFile        : str,
-                OutputLevel      : int=0, 
-                NtupleName       : str="CollectionTree",
+                OutputEventKey      : str,
+                OutputTruthKey      : str,
+                OutputCellsKey      : str,
+                OutputCellsTruthKey : str,
+                OutputSeedsKey      : str,
+                InputFile           : str,
+                OutputLevel         : int=0, 
+                NtupleName          : str="CollectionTree",
               ): 
     
     Cpp.__init__(self, ROOT.RootStreamESDReader(name))
-    self.setProperty( "OutputEventKey"  , OutputEventKey   )
-    self.setProperty( "OutputTruthKey"  , OutputTruthKey   )
-    self.setProperty( "OutputCellsKey"  , OutputCellsKey   )
-    self.setProperty( "OutputSeedsKey"  , OutputSeedsKey   )
-    self.setProperty( "OutputLevel"     , OutputLevel      ) 
-    self.setProperty( "NtupleName"      , NtupleName       )
-    self.setProperty( "InputFile"       , InputFile        )
+    self.setProperty( "OutputEventKey"      , OutputEventKey      )
+    self.setProperty( "OutputTruthKey"      , OutputTruthKey      )
+    self.setProperty( "OutputCellsKey"      , OutputCellsKey      )
+    self.setProperty( "OutputCellsTruthKey" , OutputCellsTruthKey )
+    self.setProperty( "OutputSeedsKey"      , OutputSeedsKey      )
+    self.setProperty( "OutputLevel"         , OutputLevel         ) 
+    self.setProperty( "NtupleName"          , NtupleName          )
+    self.setProperty( "InputFile"           , InputFile           )
 
     f = ROOT.TFile( self.InputFile,"read")
     t = f.Get( self.NtupleName )

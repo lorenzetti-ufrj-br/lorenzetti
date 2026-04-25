@@ -57,6 +57,9 @@ class RootStreamAODReader : public Gaugi::Algorithm
     std::string m_ringerKey;
     std::string m_clusterKey;
     std::string m_electronKey;
+    std::string m_truthCellsKey;
+    std::string m_truthClusterKey;
+    std::string m_truthRingerKey;
     std::string m_ntupleName;
     std::string m_inputFile;
 

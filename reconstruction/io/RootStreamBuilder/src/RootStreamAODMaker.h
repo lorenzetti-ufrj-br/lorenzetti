@@ -66,6 +66,9 @@ class RootStreamAODMaker : public Gaugi::Algorithm
     std::string m_inputRingerKey;
     std::string m_inputTruthKey;
     std::string m_inputElectronKey;
+    std::string m_inputTruthCellsKey;
+    std::string m_inputTruthClusterKey;
+    std::string m_inputTruthRingerKey;
 
     std::string m_outputCellsKey;
     std::string m_outputEventKey;
@@ -74,6 +77,9 @@ class RootStreamAODMaker : public Gaugi::Algorithm
     std::string m_outputRingerKey;
     std::string m_outputTruthKey;
     std::string m_outputElectronKey;
+    std::string m_outputTruthCellsKey;
+    std::string m_outputTruthClusterKey;
+    std::string m_outputTruthRingerKey;
 
     bool m_dumpCells;
     int m_outputLevel;

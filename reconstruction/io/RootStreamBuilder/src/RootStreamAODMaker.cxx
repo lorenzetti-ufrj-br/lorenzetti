@@ -49,6 +49,9 @@ RootStreamAODMaker::RootStreamAODMaker( std::string name ) :
   declareProperty( "InputClusterKey"         , m_inputClusterKey="Clusters"           );
   declareProperty( "InputRingerKey"          , m_inputRingerKey="Rings"               );
   declareProperty( "InputElectronKey"        , m_inputElectronKey="Electrons"         );
+  declareProperty( "InputTruthCellsKey"      , m_inputTruthCellsKey="TruthCells"      );
+  declareProperty( "InputTruthClusterKey"    , m_inputTruthClusterKey="TruthClusters" );
+  declareProperty( "InputTruthRingerKey"     , m_inputTruthRingerKey="TruthRings"     );
   declareProperty( "OutputEventKey"          , m_outputEventKey="EventInfo"           );
   declareProperty( "OutputSeedsKey"          , m_outputSeedsKey="Seeds"               );
   declareProperty( "OutputTruthKey"          , m_outputTruthKey="Particles"           );
@@ -56,6 +59,9 @@ RootStreamAODMaker::RootStreamAODMaker( std::string name ) :
   declareProperty( "OutputClusterKey"        , m_outputClusterKey="Clusters"          );
   declareProperty( "OutputRingerKey"         , m_outputRingerKey="Rings"              );
   declareProperty( "OutputElectronKey"       , m_outputElectronKey="Electrons"        );
+  declareProperty( "OutputTruthCellsKey"     , m_outputTruthCellsKey="TruthCells"     );
+  declareProperty( "OutputTruthClusterKey"   , m_outputTruthClusterKey="TruthClusters");
+  declareProperty( "OutputTruthRingerKey"    , m_outputTruthRingerKey="TruthRings"    );
   declareProperty( "OutputLevel"             , m_outputLevel=1                        );
   declareProperty( "NtupleName"              , m_ntupleName="physics"                 );
   declareProperty( "DumpCells"               , m_dumpCells=false                      );
@@ -86,22 +92,30 @@ StatusCode RootStreamAODMaker::bookHistograms( SG::EventContext &ctx ) const
   std::vector<xAOD::CaloCluster_t         > container_clus;
   std::vector<xAOD::CaloRings_t           > container_rings;
   std::vector<xAOD::EventInfo_t           > container_event;
-  std::vector<xAOD::Seed_t           > container_seeds;
+  std::vector<xAOD::Seed_t                > container_seeds;
   std::vector<xAOD::TruthParticle_t       > container_truth;
   std::vector<xAOD::Electron_t            > container_electron;
+
+  std::vector<xAOD::CaloCell_t            > container_cells_truth;
+  std::vector<xAOD::CaloCluster_t         > container_clus_truth;
+  std::vector<xAOD::CaloRings_t           > container_rings_truth;
 
   store->cd();
   TTree *tree = new TTree(m_ntupleName.c_str(), "");
 
-  tree->Branch( ("EventInfoContainer_"     + m_outputEventKey).c_str()       , &container_event      );
-  tree->Branch( ("SeedContainer_"     + m_outputSeedsKey).c_str()       , &container_seeds      );
-  tree->Branch( ("TruthParticleContainer_" + m_outputTruthKey).c_str()       , &container_truth      );
-  tree->Branch( ("CaloRingsContainer_"     + m_outputRingerKey).c_str()      , &container_rings      );
-  tree->Branch( ("CaloClusterContainer_"   + m_outputClusterKey).c_str()     , &container_clus       );
-  tree->Branch( ("ElectronContainer_"      + m_outputElectronKey).c_str()     , &container_electron  );
+  tree->Branch( ("EventInfoContainer_"     + m_outputEventKey).c_str()          , &container_event      );
+  tree->Branch( ("SeedContainer_"          + m_outputSeedsKey).c_str()          , &container_seeds      );
+  tree->Branch( ("TruthParticleContainer_" + m_outputTruthKey).c_str()          , &container_truth      );
+  tree->Branch( ("CaloRingsContainer_"     + m_outputRingerKey).c_str()         , &container_rings      );
+  tree->Branch( ("CaloClusterContainer_"   + m_outputClusterKey).c_str()        , &container_clus       );
+  tree->Branch( ("ElectronContainer_"      + m_outputElectronKey).c_str()       , &container_electron   );
+  tree->Branch( ("CaloClusterContainer_"   + m_outputTruthClusterKey).c_str()   , &container_clus_truth );
+  tree->Branch( ("CaloRingsContainer_"     + m_outputTruthRingerKey).c_str()    , &container_rings_truth);
+  
   if(m_dumpCells){
-    tree->Branch(  ("CaloCellContainer_"          + m_outputCellsKey).c_str()   , &container_cells      );
-    tree->Branch(  ("CaloDetDescriptorContainer_" + m_outputCellsKey).c_str()   , &container_descriptor );
+    tree->Branch(  ("CaloCellContainer_"          + m_outputCellsKey).c_str()          , &container_cells                  );
+    tree->Branch(  ("CaloDetDescriptorContainer_" + m_outputCellsKey).c_str()          , &container_descriptor             );
+    tree->Branch(  ("CaloCellContainer_"          + m_outputTruthCellsKey).c_str()     , &container_cells_truth            );
   }
 
 
@@ -198,18 +212,26 @@ StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
   std::vector<xAOD::TruthParticle_t     > *container_truth      = nullptr;
   std::vector<xAOD::Electron_t          > *container_electron   = nullptr;
 
+  std::vector<xAOD::CaloCell_t          > *container_cells_truth      = nullptr;
+  std::vector<xAOD::CaloCluster_t       > *container_clus_truth       = nullptr;
+  std::vector<xAOD::CaloRings_t         > *container_rings_truth      = nullptr;
+
   MSG_DEBUG( "Link all branches..." );
 
-  InitBranch( tree, ("EventInfoContainer_"     + m_outputEventKey).c_str()       , &container_event      );
-  InitBranch( tree, ("SeedContainer_"     + m_outputSeedsKey).c_str()       , &container_seeds      );
-  InitBranch( tree, ("TruthParticleContainer_" + m_outputTruthKey).c_str()       , &container_truth      );
-  InitBranch( tree, ("CaloRingsContainer_"     + m_outputRingerKey).c_str()     , &container_rings       );
-  InitBranch( tree, ("CaloClusterContainer_"   + m_outputClusterKey).c_str()     , &container_clus       );
-  InitBranch( tree, ("ElectronContainer_"      + m_outputElectronKey).c_str()     , &container_electron  );
+  InitBranch( tree, ("EventInfoContainer_"     + m_outputEventKey).c_str()          , &container_event      );
+  InitBranch( tree, ("SeedContainer_"          + m_outputSeedsKey).c_str()          , &container_seeds      );
+  InitBranch( tree, ("TruthParticleContainer_" + m_outputTruthKey).c_str()          , &container_truth      );
+  InitBranch( tree, ("CaloRingsContainer_"     + m_outputRingerKey).c_str()         , &container_rings      );
+  InitBranch( tree, ("CaloClusterContainer_"   + m_outputClusterKey).c_str()        , &container_clus       );
+  InitBranch( tree, ("ElectronContainer_"      + m_outputElectronKey).c_str()       , &container_electron   );
+  InitBranch( tree, ("CaloRingsContainer_"     + m_outputTruthRingerKey).c_str()    , &container_rings_truth);
+  InitBranch( tree, ("CaloClusterContainer_"   + m_outputTruthClusterKey).c_str()   , &container_clus_truth );
   
+
   if(m_dumpCells){
-    InitBranch( tree,  ("CaloCellContainer_"          + m_outputCellsKey).c_str()   , &container_cells      );
-    InitBranch( tree,  ("CaloDetDescriptorContainer_" + m_outputCellsKey).c_str()   , &container_descriptor );
+    InitBranch( tree,  ("CaloCellContainer_"          + m_outputCellsKey).c_str()      , &container_cells      );
+    InitBranch( tree,  ("CaloDetDescriptorContainer_" + m_outputCellsKey).c_str()      , &container_descriptor );
+    InitBranch( tree,  ("CaloCellContainer_"          + m_outputTruthCellsKey).c_str() , &container_cells_truth);
   }
 
 
@@ -265,6 +287,8 @@ StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
   }
 
 
+  
+
 
   {// serialize cluster
     MSG_DEBUG("Serialize Cluster...");
@@ -275,8 +299,24 @@ StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
       MSG_WARNING("It's not possible to read the xAOD::CaloClusterContainer from this Context using this key " << m_inputClusterKey );
       return StatusCode::SUCCESS;
     }
+  
+
+    SG::ReadHandle<xAOD::CaloClusterContainer> container_truth( m_inputTruthClusterKey, ctx );
+  
+    if( !container_truth.isValid() )
+    {
+      MSG_WARNING("It's not possible to read the xAOD::CaloClusterContainer from this Context using this key " << m_inputTruthClusterKey );
+      return StatusCode::SUCCESS;
+    }
+
+    std::map<const xAOD::Seed* , const xAOD::CaloCluster*> cluster_truth_map;
+    for (const auto &clus : **container_truth.ptr() ){
+      cluster_truth_map[clus->seed()] = clus;
+    }
 
 
+    unsigned cluster_idx=0;
+    MSG_INFO("Dump cluster...");
     for (const auto &clus : **container.ptr() )
     {
 
@@ -290,7 +330,8 @@ StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
             cnv.convert(cell, cell_t);
             container_cells->push_back(cell_t);
           }
-          {
+          
+          { // serialize cell descriptor
             const xAOD::CaloDetDescriptor *det = cell->descriptor();
             xAOD::CaloDetDescriptor_t det_t;
             xAOD::CaloDetDescriptorConverter cnv;
@@ -301,10 +342,36 @@ StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
         }
       }
 
-      xAOD::CaloCluster_t clus_t;
-      xAOD::CaloClusterConverter cnv;
-      cnv.convert( clus , clus_t );
-      container_clus->push_back(clus_t);
+      { // serialize cluster
+        MSG_INFO("Cluster " << cluster_idx << " Number of cells: " << clus->cells().size());
+        xAOD::CaloCluster_t clus_t;
+        xAOD::CaloClusterConverter cnv;
+        cnv.convert( clus , clus_t );
+        container_clus->push_back(clus_t);
+      }
+
+      { // serialize truth cluster
+        if (cluster_truth_map.count(clus->seed())){
+          const xAOD::CaloCluster* clus_truth = cluster_truth_map[clus->seed()];
+          xAOD::CaloCluster_t clus_truth_t;
+          xAOD::CaloClusterConverter cnv_truth;
+          cnv_truth.convert( clus_truth , clus_truth_t );
+          container_clus_truth->push_back(clus_truth_t);
+        
+          if(m_dumpCells){
+            for(const auto&cell : clus_truth->cells()){
+              { // serialize truth cell
+                xAOD::CaloCell_t cell_t;
+                xAOD::CaloCellConverter cnv;
+                cnv.convert(cell, cell_t);
+                container_cells_truth->push_back(cell_t);
+              }
+            }
+          }
+        }
+      }
+
+      cluster_idx++;
     }
 
   }
@@ -332,6 +399,29 @@ StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
   }
 
   {
+    MSG_DEBUG("Serialize Truth Rings...");
+    SG::ReadHandle<xAOD::CaloRingsContainer> container( m_inputTruthRingerKey, ctx );
+
+    if( !container.isValid() )
+    {
+      MSG_WARNING("It's not possible to read the xAOD::CaloRingsContainer from this Context using this key " << m_inputTruthRingerKey );
+      return StatusCode::SUCCESS;
+
+    }
+
+    for (const auto rings : **container.ptr() ){
+      xAOD::CaloRings_t rings_t;
+      xAOD::CaloRingsConverter cnv;
+      cnv.convert( rings , rings_t);
+      container_rings_truth->push_back(rings_t);  
+    }
+
+  }
+
+
+
+
+  {
     MSG_DEBUG("Serialize Electrons...");
     SG::ReadHandle<xAOD::ElectronContainer> container( m_inputElectronKey, ctx );
     if (!container.isValid() )
@@ -354,6 +444,7 @@ StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
   if(m_dumpCells){
     delete container_descriptor;
     delete container_cells     ;
+    delete container_cells_truth;
   }
 
   delete container_clus      ;
@@ -362,6 +453,8 @@ StatusCode RootStreamAODMaker::serialize( EventContext &ctx ) const
   delete container_truth     ;
   delete container_seeds     ;
   delete container_electron  ;
+  delete container_rings_truth;
+  delete container_clus_truth;
 
   return StatusCode::SUCCESS;
  

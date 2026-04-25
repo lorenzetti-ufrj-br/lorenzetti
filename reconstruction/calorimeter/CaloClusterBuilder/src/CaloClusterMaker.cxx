@@ -60,7 +60,7 @@ CaloClusterMaker::~CaloClusterMaker()
 StatusCode CaloClusterMaker::initialize()
 {
   CHECK_INIT();
-  //setMsgLevel(m_outputLevel);
+  setMsgLevel(m_outputLevel);
   m_showerShapes = new ShowerShapes( "ShowerShapes" );
   m_showerShapes->setForwardMoments(m_doForwardMoments);
   return StatusCode::SUCCESS;
@@ -168,12 +168,12 @@ StatusCode CaloClusterMaker::post_execute( EventContext &ctx ) const
       
       // Must be EM2 cells layer
       if( (det->sampling() != CaloSampling::EMB2) && (det->sampling() != CaloSampling::EMEC2) ) continue;
-
       // Check if cell is inside 
       float deltaEta = std::abs( part->eta() - cell->eta() );
       float deltaPhi = std::abs( CaloPhiRange::diff( part->phi() , cell->phi() ));
       if (deltaEta < m_etaWindow/2 && deltaPhi < m_phiWindow/2 && cell->e() > emaxs2){
         hotcell=cell; emaxs2=cell->e();
+        MSG_DEBUG( "Hot cell found: " << cell->e() << " " << cell->eta() << " " << cell->phi() );
       }
     }
 
@@ -240,6 +240,8 @@ StatusCode CaloClusterMaker::fillHistograms(EventContext &ctx ) const
 
   store->cd(m_histPath);
 
+  unsigned cluster_idx=0;
+
   for( const auto& clus : **clusters.ptr() ){
   
     
@@ -304,7 +306,9 @@ StatusCode CaloClusterMaker::fillHistograms(EventContext &ctx ) const
     MSG_DEBUG( "f1       : " << clus->f1()     );
     MSG_DEBUG( "f3       : " << clus->f3()     );
     MSG_DEBUG( "Weta2    : " << clus->weta2()  );
+    MSG_INFO("Cluster " << cluster_idx << " Number of cells: " << clus->cells().size() );
     MSG_DEBUG("=================================================");
+    cluster_idx++;
   }
 
   return StatusCode::SUCCESS;

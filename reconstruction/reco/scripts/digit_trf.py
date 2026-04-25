@@ -122,6 +122,7 @@ def main(events : List[int],
 
     ESD = RootStreamESDMaker("RootStreamESDMaker",
                              InputCellsKey=recordable("Cells"),
+                             InputCellsTruthKey=recordable("TruthCells"),
                              InputEventKey=recordable("Events"),
                              InputTruthKey=recordable("Particles"),
                              InputSeedsKey=recordable("Seeds"),

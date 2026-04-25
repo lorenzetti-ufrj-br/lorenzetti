@@ -59,10 +59,12 @@ class RootStreamESDMaker : public Gaugi::Algorithm
     std::string m_inputEventKey;
     std::string m_inputTruthKey;
     std::string m_inputSeedsKey;
+    std::string m_inputCellsTruthKey;
     std::string m_outputCellsKey;
     std::string m_outputEventKey;
     std::string m_outputTruthKey;
     std::string m_outputSeedsKey;
+    std::string m_outputCellsTruthKey;
        
     float m_etaWindow, m_phiWindow;
 

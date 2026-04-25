@@ -93,12 +93,13 @@ def main(events : List[int],
 
 
     ESD = RootStreamESDReader("ESDReader", 
-                              InputFile       = input_file,
-                              OutputCellsKey  = recordable("Cells"),
-                              OutputEventKey  = recordable("Events"),
-                              OutputTruthKey  = recordable("Particles"),
-                              OutputSeedsKey  = recordable("Seeds"),
-                              OutputLevel     = outputLevel
+                              InputFile             = input_file,
+                              OutputCellsKey        = recordable("Cells"),
+                              OutputCellsTruthKey   = recordable("TruthCells"),
+                              OutputEventKey        = recordable("Events"),
+                              OutputTruthKey        = recordable("Particles"),
+                              OutputSeedsKey        = recordable("Seeds"),
+                              OutputLevel           = outputLevel
                               )
     ESD.merge(acc)
 
@@ -113,12 +114,27 @@ def main(events : List[int],
                                 HistogramPath        = "Expert/Clusters",
                                 OutputLevel          = outputLevel )
 
+    # build cluster for all seeds
+    cluster_truth = CaloClusterMaker( "CaloClusterMaker_Truth",
+                                InputCellsKey        = recordable("TruthCells"),
+                                InputSeedsKey        = recordable("Seeds"),
+                                # output as
+                                OutputClusterKey     = recordable("TruthClusters"),
+                                # other configs
+                                HistogramPath        = "Expert/TruthClusters",
+                                OutputLevel          = outputLevel )
 
 
     rings = CaloRingsBuilderCfg( "CaloRingsBuilder",
                                 InputClusterKey    = recordable("Clusters"),
                                 OutputRingerKey    = recordable("Rings"),
                                 HistogramPath      = "Expert/Rings",
+                                OutputLevel        = outputLevel)
+
+    rings_truth = CaloRingsBuilderCfg( "CaloRingsBuilder_Truth",
+                                InputClusterKey    = recordable("TruthClusters"),
+                                OutputRingerKey    = recordable("TruthRings"),
+                                HistogramPath      = "Expert/TruthRings",
                                 OutputLevel        = outputLevel)
 
 
@@ -130,18 +146,23 @@ def main(events : List[int],
 
 
     AOD = RootStreamAODMaker( "RootStreamAODMaker",
-                              InputEventKey    = recordable("Events"),
-                              InputSeedsKey    = recordable("Seeds"),
-                              InputTruthKey    = recordable("Particles"),
-                              InputCellsKey    = recordable("Cells"),
-                              InputClusterKey  = recordable("Clusters"),
-                              InputRingerKey   = recordable("Rings"),
-                              InputElectronKey = recordable("Electrons"),
-                              OutputLevel      = outputLevel)
+                              InputEventKey         = recordable("Events"),
+                              InputSeedsKey         = recordable("Seeds"),
+                              InputTruthKey         = recordable("Particles"),
+                              InputCellsKey         = recordable("Cells"),
+                              InputTruthCellsKey    = recordable("TruthCells"),
+                              InputClusterKey       = recordable("Clusters"),
+                              InputTruthClusterKey  = recordable("TruthClusters"),
+                              InputRingerKey        = recordable("Rings"),
+                              InputTruthRingerKey   = recordable("TruthRings"),
+                              InputElectronKey      = recordable("Electrons"),
+                              OutputLevel           = outputLevel)
 
     # sequence
     acc+= cluster
     acc+= rings
+    acc+= cluster_truth
+    acc+= rings_truth
     acc+= hypo
     acc+= AOD
 

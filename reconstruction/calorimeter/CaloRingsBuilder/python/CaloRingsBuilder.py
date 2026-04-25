@@ -56,7 +56,7 @@ def CaloRingsBuilderCfg( name             : str,
                                  EtaRange      = [2.5, 4.9],
                                  OutputLevel   = OutputLevel)
   
-    merge_rings = CaloRingsMerge( "CaloRingsMerge",   
+    merge_rings = CaloRingsMerge( name+"_Merge",   
                                   CollectionKeys = [rings.OutputRingerKey, fwd_rings.OutputRingerKey],
                                   OutputRingerKey = OutputRingerKey,  
                                   OutputLevel   = OutputLevel)
