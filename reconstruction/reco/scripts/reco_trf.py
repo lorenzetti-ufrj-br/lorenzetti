@@ -114,6 +114,32 @@ def main(events : List[int],
                                 HistogramPath        = "Expert/Clusters",
                                 OutputLevel          = outputLevel )
 
+
+
+
+    rings = CaloRingsBuilderCfg( "CaloRingsBuilder",
+                                InputClusterKey    = recordable("Clusters"),
+                                OutputRingerKey    = recordable("Rings"),
+                                HistogramPath      = "Expert/Rings",
+                                OutputLevel        = outputLevel)
+
+    ringsL0 = CaloRingsBuilderCfg( "CaloRingsBuilderL0",
+                                InputClusterKey    = recordable("Clusters"),
+                                OutputRingerKey    = recordable("RingsL0"),
+                                HistogramPath      = "Expert/RingsL0",
+                                OutputLevel        = outputLevel,
+                                DoSigmaCut         = True,
+                                SigmaCut           = 2.0
+                                )
+
+    hypo = ElectronBuilderCfg( "ElectronBuilder",
+                               InputClusterKey    = recordable("Clusters"),
+                               OutputElectronKey  = recordable("Electrons"),
+                               OutputLevel        = outputLevel) 
+
+
+
+
     # build cluster for all seeds
     cluster_truth = CaloClusterMaker( "CaloClusterMaker_Truth",
                                 InputCellsKey        = recordable("TruthCells"),
@@ -124,25 +150,16 @@ def main(events : List[int],
                                 HistogramPath        = "Expert/TruthClusters",
                                 OutputLevel          = outputLevel )
 
-
-    rings = CaloRingsBuilderCfg( "CaloRingsBuilder",
-                                InputClusterKey    = recordable("Clusters"),
-                                OutputRingerKey    = recordable("Rings"),
-                                HistogramPath      = "Expert/Rings",
-                                OutputLevel        = outputLevel)
-
     rings_truth = CaloRingsBuilderCfg( "CaloRingsBuilder_Truth",
                                 InputClusterKey    = recordable("TruthClusters"),
                                 OutputRingerKey    = recordable("TruthRings"),
                                 HistogramPath      = "Expert/TruthRings",
                                 OutputLevel        = outputLevel)
 
-
-    hypo = ElectronBuilderCfg( "ElectronBuilder",
-                               InputClusterKey    = recordable("Clusters"),
-                               OutputElectronKey  = recordable("Electrons"),
+    hypo_truth = ElectronBuilderCfg( "ElectronBuilder_Truth",
+                               InputClusterKey    = recordable("TruthClusters"),
+                               OutputElectronKey  = recordable("TruthElectrons"),
                                OutputLevel        = outputLevel) 
-
 
 
     AOD = RootStreamAODMaker( "RootStreamAODMaker",
@@ -156,14 +173,18 @@ def main(events : List[int],
                               InputRingerKey        = recordable("Rings"),
                               InputTruthRingerKey   = recordable("TruthRings"),
                               InputElectronKey      = recordable("Electrons"),
+                              InputTruthElectronKey = recordable("TruthElectrons"),
+                              InputRingerL0Key      = recordable("RingsL0"),
                               OutputLevel           = outputLevel)
 
     # sequence
     acc+= cluster
     acc+= rings
+    acc+= ringsL0
+    acc+= hypo
     acc+= cluster_truth
     acc+= rings_truth
-    acc+= hypo
+    acc+= hypo_truth
     acc+= AOD
 
     acc.run(events)

@@ -20,6 +20,9 @@ valid_keys = [
             "RingsSigmaNoise",
             "TruthRings",
             "Electrons",
+            "TruthElectrons",
+            "RingsL0",
+            "TruthRingsL0",
             ]
 
 def recordable( key ):

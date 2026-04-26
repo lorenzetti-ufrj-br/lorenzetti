@@ -9,25 +9,29 @@ class RootStreamAODMaker( Cpp ):
 
   def __init__( self, name,
                 InputEventKey         : str,
+                InputSeedsKey         : str,
                 InputTruthKey         : str,
                 InputCellsKey         : str,
                 InputClusterKey       : str,
                 InputRingerKey        : str,
-                InputSeedsKey         : str,
+                InputRingerL0Key      : str,
                 InputElectronKey      : str,
                 InputTruthCellsKey    : str,
                 InputTruthClusterKey  : str,
                 InputTruthRingerKey   : str,
+                InputTruthElectronKey : str,
                 OutputEventKey        : str=None,
                 OutputTruthKey        : str=None,
                 OutputCellsKey        : str=None,
                 OutputClusterKey      : str=None,
                 OutputRingerKey       : str=None,
+                OutputRingerL0Key     : str=None,
                 OutputSeedsKey        : str=None,
                 OutputElectronKey     : str=None,
                 OutputTruthCellsKey   : str=None,
                 OutputTruthClusterKey : str=None,
                 OutputTruthRingerKey  : str=None,
+                OutputTruthElectronKey: str=None,
                 OutputLevel           : int=0, 
                 NtupleName            : str="CollectionTree",
                 DumpCells             : bool=flags.DumpCells,
@@ -54,6 +58,8 @@ class RootStreamAODMaker( Cpp ):
     self.setProperty( "OutputTruthCellsKey"   , OutputTruthCellsKey if OutputTruthCellsKey else InputTruthCellsKey      )
     self.setProperty( "OutputTruthClusterKey" , OutputTruthClusterKey if OutputTruthClusterKey else InputTruthClusterKey)
     self.setProperty( "OutputTruthRingerKey"  , OutputTruthRingerKey if OutputTruthRingerKey else InputTruthRingerKey   )
+    self.setProperty( "OutputRingerL0Key"     , OutputRingerL0Key if OutputRingerL0Key else InputRingerL0Key            )
+    self.setProperty( "OutputTruthElectronKey", OutputTruthElectronKey if OutputTruthElectronKey else InputTruthElectronKey)
     self.setProperty( "OutputLevel"           , OutputLevel                                                             ) 
     self.setProperty( "NtupleName"            , NtupleName                                                              )
     self.setProperty( "DumpCells"             , DumpCells                                                               )
