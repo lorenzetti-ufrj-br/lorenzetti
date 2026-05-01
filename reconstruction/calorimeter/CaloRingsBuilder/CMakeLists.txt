@@ -2,6 +2,7 @@
 file(GLOB SOURCES src/*.cxx)
 file(GLOB_RECURSE HEADERS src/CaloRingsMaker.h )
 file(GLOB_RECURSE HEADERS src/CaloAsymRingsMaker.h )
+file(GLOB_RECURSE HEADERS src/CaloCornerRingsMaker.h )
 file(GLOB_RECURSE LINKDEF src/CaloRingsMerge.h )
 
 include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})

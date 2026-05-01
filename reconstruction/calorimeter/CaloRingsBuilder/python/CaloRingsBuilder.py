@@ -22,7 +22,7 @@ LAYERS_RINGS    = [
 ]
 
 DELTA_ETA_RINGS_FWD = [0.1, 0.1, 0.1, 0.2, 0.2, 0.2]
-DELTA_PHI_RINGS_FWD = [pi/32, pi/32, pi/32, pi/16, pi/16, pi/16],
+DELTA_PHI_RINGS_FWD = [pi/32, pi/32, pi/32, pi/16, pi/16, pi/16]
 N_RINGS_FWD         = [4, 4, 4, 2, 2, 2]
 ETA_RANGE_FWD       = [2.5, 4.9]
 LAYERS_RINGS_FWD    = [

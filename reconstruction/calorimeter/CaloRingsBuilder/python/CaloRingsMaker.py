@@ -28,6 +28,8 @@ class CaloRingsMaker( Cpp ):
 
     if RingerTopology == "asym":
         cpp_class = ROOT.CaloAsymRingsMaker(name)
+    elif RingerTopology == "corner":
+        cpp_class = ROOT.CaloCornerRingsMaker(name)
     elif RingerTopology == "std":
         cpp_class = ROOT.CaloRingsMaker(name)
     else: 
