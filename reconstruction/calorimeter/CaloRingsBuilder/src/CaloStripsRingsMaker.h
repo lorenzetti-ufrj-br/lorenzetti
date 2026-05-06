@@ -1,24 +1,28 @@
-#ifndef CaloAsymRingsMaker_h
-#define CaloAsymRingsMaker_h
+#ifndef CaloStripsRingsMaker_h
+#define CaloStripsRingsMaker_h
 
 #include "CaloRingsMaker.h"
 
-class RingSetAsym : public RingSet
+class RingSetStrips : public RingSet
 {
 public:
     using RingSet::RingSet;
+    RingSetStrips(std::vector<CaloSampling> &samplings, unsigned nrings, float deta, float dphi, int axis);
+    void push_back(const xAOD::CaloCell *cell, float eta_center, float phi_center);
 
-    void push_back(const xAOD::CaloCell *cell,
-                   float eta_center,
-                   float phi_center);
+private:
+    int m_axis;
 };
 
-class CaloAsymRingsMaker : public CaloRingsMaker
+class CaloStripsRingsMaker : public CaloRingsMaker
 {
 public:
-    CaloAsymRingsMaker(std::string name);
-    virtual ~CaloAsymRingsMaker() = default;
+    CaloStripsRingsMaker(std::string name);
+    virtual ~CaloStripsRingsMaker() = default;
     virtual StatusCode post_execute(SG::EventContext &ctx) const override;
+
+private:
+    int m_axis;
 };
 
 #endif

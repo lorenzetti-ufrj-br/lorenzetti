@@ -1,66 +1,76 @@
-#include "CaloAsymRingsMaker.h"
+#include "CaloStripsRingsMaker.h"
 #include "G4Kernel/CaloPhiRange.h"
 
-CaloAsymRingsMaker::CaloAsymRingsMaker(std::string name)
-    : CaloRingsMaker(name)
+CaloStripsRingsMaker::CaloStripsRingsMaker(std::string name)
+    : CaloRingsMaker(name), m_axis(0)
+{
+  declareProperty("Axis", m_axis);
+}
+
+RingSetStrips::RingSetStrips(std::vector<CaloSampling> &samplings, unsigned nrings, float deta, float dphi, int axis)
+    : RingSet(samplings, nrings, deta, dphi),
+      m_axis(axis)
 {
 }
 
-void RingSetAsym::push_back(const xAOD::CaloCell *cell,
-                            float eta_center,
-                            float phi_center)
+void RingSetStrips::push_back(const xAOD::CaloCell *cell, float eta_center, float phi_center)
 {
   if (isValid(cell))
   {
-    float deta = eta_center - cell->eta();
-    bool etaPositive = deta > 0;
-    deta = std::abs(deta) / m_deta;
+    int nStrips = (int)m_rings.size();
+    int midPoint = nStrips / 2;
 
     float dphi = CaloPhiRange::diff(phi_center, cell->phi());
     bool phiPositive = dphi > 0;
-    dphi = std::abs(dphi) / m_dphi;
 
-    float deltaGreater = std::max(deta, dphi);
-
-    int ringNumber = static_cast<unsigned int>(std::round(deltaGreater));
-
-    if (ringNumber > 0)
+    double delta = 0.0;
+    if (m_axis)
     {
-      if (etaPositive && phiPositive) // Q1
+      delta = dphi / m_dphi;
+    }
+    else
+    {
+      delta = (eta_center - cell->eta()) / m_deta;
+    }
+
+    int index = copysign(static_cast<int>(std::floor(delta + .5)), delta);
+    unsigned int stripIdx(0);
+
+    if (!phiPositive)
+    {
+      stripIdx = midPoint - (index * 2);
+      if (stripIdx > 100000)
       {
-        ringNumber = (ringNumber * 4) - 3;
+        stripIdx = 0;
       }
-      else if (etaPositive && !phiPositive) // Q2
+    }
+    else
+    {
+      stripIdx = midPoint - (index * 2 + 1);
+      if (stripIdx > 100000)
       {
-        ringNumber = (ringNumber * 4) - 1;
-      }
-      else if (!etaPositive && !phiPositive) // Q3
-      {
-        ringNumber = (ringNumber * 4);
-      }
-      else // Q4
-      {
-        ringNumber = (ringNumber * 4) - 2;
+        stripIdx = 0;
       }
     }
 
-    if (ringNumber < (int)m_rings.size())
+    if (stripIdx < nStrips)
     {
-      m_rings[ringNumber] += cell->e() / std::cosh(std::abs(eta_center));
+      m_rings[stripIdx] += cell->e() / std::cosh(std::abs(eta_center));
     }
   }
 }
 
 //!=====================================================================
 
-StatusCode CaloAsymRingsMaker::post_execute(SG::EventContext &ctx) const
+StatusCode CaloStripsRingsMaker::post_execute(SG::EventContext &ctx) const
 {
   SG::WriteHandle<xAOD::CaloRingsContainer> ringer(m_ringerKey, ctx);
   ringer.record(std::unique_ptr<xAOD::CaloRingsContainer>(new xAOD::CaloRingsContainer()));
 
   SG::ReadHandle<xAOD::CaloClusterContainer> clusters(m_clusterKey, ctx);
 
-  std::vector<RingSetAsym> vec_rs;
+  // Strips RingSet
+  std::vector<RingSetStrips> vec_rs;
 
   MSG_DEBUG("Creating all RingSets...");
   MSG_DEBUG("DoSigmaCut is " << m_DoSigmaCut);
@@ -73,12 +83,12 @@ StatusCode CaloAsymRingsMaker::post_execute(SG::EventContext &ctx) const
       samplings.push_back((CaloSampling)samp);
     }
 
-    vec_rs.push_back(RingSetAsym(samplings, m_nRings[rs], m_detaRings[rs], m_dphiRings[rs]));
+    vec_rs.push_back(RingSetStrips(samplings, m_nRings[rs], m_detaRings[rs], m_dphiRings[rs], m_axis));
   }
 
   for (auto *clus : **clusters.ptr())
   {
-    MSG_INFO("Creating the Asymetric CaloRings for this cluster...");
+    MSG_INFO("Creating the Stripsetric CaloRings for this cluster...");
 
     if ((std::abs(clus->eta()) < m_etaRange[0]) || (std::abs(clus->eta()) >= m_etaRange[1]))
     {

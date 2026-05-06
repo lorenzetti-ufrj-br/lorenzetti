@@ -8,9 +8,7 @@ class RingSetAsym : public RingSet
 public:
     using RingSet::RingSet;
 
-    void push_back(const xAOD::CaloCell *cell,
-                   float eta_center,
-                   float phi_center);
+    void push_back(const xAOD::CaloCell *cell, float eta_center, float phi_center);
 };
 
 class CaloAsymRingsMaker : public CaloRingsMaker

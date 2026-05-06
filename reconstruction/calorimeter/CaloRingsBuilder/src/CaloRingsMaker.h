@@ -26,6 +26,10 @@ public:
   bool isValid(const xAOD::CaloCell *) const;
   /*! Zeroize all energy values */
   void clear();
+  /*! Get Delta eta */
+  float deta() const { return m_deta; }
+  /*! Get Delta phi */
+  float dphi() const { return m_dphi; }
 
 protected:
   std::vector<float> m_rings;

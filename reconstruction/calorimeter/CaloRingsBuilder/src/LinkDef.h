@@ -1,6 +1,7 @@
 
 #include "src/CaloRingsMaker.h"
 #include "src/CaloAsymRingsMaker.h"
+#include "src/CaloStripsRingsMaker.h"
 #include "src/CaloCornerRingsMaker.h"
 #include "src/CaloRingsMerge.h"
 
@@ -13,6 +14,7 @@
 
 #pragma link C++ class CaloRingsMaker + ;
 #pragma link C++ class CaloAsymRingsMaker + ;
+#pragma link C++ class CaloStripsRingsMaker + ;
 #pragma link C++ class CaloCornerRingsMaker + ;
 #pragma link C++ class CaloRingsMerge + ;
 

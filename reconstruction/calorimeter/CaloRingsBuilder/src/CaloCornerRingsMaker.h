@@ -3,14 +3,18 @@
 
 #include "CaloRingsMaker.h"
 
+struct SeedPos
+{
+    float eta;
+    float phi;
+};
+
 class RingSetCorner : public RingSet
 {
 public:
     using RingSet::RingSet;
 
-    void push_back(const xAOD::CaloCell *cell,
-                   float eta_center,
-                   float phi_center);
+    void push_back(const xAOD::CaloCell *cell, float eta, float phi, int i);
 };
 
 class CaloCornerRingsMaker : public CaloRingsMaker
@@ -22,7 +26,7 @@ public:
 
 private:
     int m_cornerShift;
-    std::vector<xAOD::CaloCell> getCornerSeeds(const xAOD::CaloCell *) const;
+    std::vector<SeedPos> getSeeds(float c_eta, float c_phi, const RingSetCorner &rs) const;
 };
 
 #endif

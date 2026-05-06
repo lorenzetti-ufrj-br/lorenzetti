@@ -1,54 +1,50 @@
 #include "CaloCornerRingsMaker.h"
 #include "G4Kernel/CaloPhiRange.h"
+#include <memory>
 
-// Construtor repassando o nome para a classe base
 CaloCornerRingsMaker::CaloCornerRingsMaker(std::string name)
-    : CaloRingsMaker(name)
+    : CaloRingsMaker(name), m_cornerShift(1)
 {
+  declareProperty("CornerShift", m_cornerShift);
 }
 
-std::vector < xAOD::CaloCell CaloCornerRingsMaker::getSeeds(const xAOD::CaloCell *centerCell) const
+std::vector<SeedPos> CaloCornerRingsMaker::getSeeds(float c_eta, float c_phi, const RingSetCorner &rs) const
 {
-  std::vector < xAOD::CaloCell seeds;
+  std::vector<SeedPos> seeds;
 
-  float c_eta = centerCell->eta();
-  float c_phi = centerCell->phi();
+  MSG_DEBUG("Calculating shift ...")
+  float deltaEta = rs.deta() * m_cornerShift;
+  float deltaPhi = rs.dphi() * m_cornerShift;
+  MSG_DEBUG("Shift (eta,phi) (" << deltaEta << ", " << deltaPhi << ")");
 
-  float deltaEta = m_detaRings * m_cornerShift;
-  float deltaPhi = m_dphiRings * m_cornerShift;
+  seeds.push_back({c_eta, c_phi});                       // Center      [0]
+  seeds.push_back({c_eta + deltaEta, c_phi + deltaPhi}); // TopRight    [1]
+  seeds.push_back({c_eta + deltaEta, c_phi - deltaPhi}); // TopLeft     [2]
+  seeds.push_back({c_eta - deltaEta, c_phi - deltaPhi}); // BottomLeft  [3]
+  seeds.push_back({c_eta - deltaEta, c_phi + deltaPhi}); // BottomRight [4]
 
-  xAOD::CaloCell topRight, topLeft, bottomRight, bottomLeft;
-
-  topRight.setEta(c_eta + deltaEta);
-  topRight.setPhi(c_phi + deltaPhi);
-
-  topLeft.setEta(c_eta + deltaEta);
-  topLeft.setPhi(c_phi - deltaPhi);
-
-  bottomRight.setEta(c_eta - deltaEta);
-  bottomRight.setPhi(c_phi + deltaPhi);
-
-  bottomLeft.setEta(c_eta - deltaEta);
-  bottomLeft.setPhi(c_phi - deltaPhi);
-
-  seeds.push_back(center);
-  seeds.push_back(topRight);
-  seeds.push_back(topLeft);
-  seeds.push_back(bottomLeft);
-  seeds.push_back(bottomRight);
+  MSG_DEBUG("Calculating corners position...");
+  MSG_DEBUG("Center cell: (" << seeds[0].eta << ", " << seeds[0].phi << ")");
+  MSG_DEBUG("TopRight:    (" << seeds[1].eta << ", " << seeds[1].phi << ")");
+  MSG_DEBUG("TopLeft:     (" << seeds[2].eta << ", " << seeds[2].phi << ")");
+  MSG_DEBUG("BottomLeft:  (" << seeds[3].eta << ", " << seeds[3].phi << ")");
+  MSG_DEBUG("BottomRight: (" << seeds[4].eta << ", " << seeds[4].phi << ")");
 
   return seeds;
 }
 
-void RingSet::push_back(const xAOD::CaloCell *cell, float eta_center, float phi_center)
+void RingSetCorner::push_back(const xAOD::CaloCell *cell, float eta_center, float phi_center, int corner_idx)
 {
-
+  int total_rings = (int)m_rings.size();
+  int rings_per_corner = total_rings / 5;
+  int offset = corner_idx * rings_per_corner;
   if (isValid(cell))
   {
     float deta = std::abs(eta_center - cell->eta()) / m_deta;
     float dphi = std::abs(CaloPhiRange::diff(phi_center, cell->phi())) / m_dphi;
     float deltaGreater = std::max(deta, dphi);
     int i = static_cast<unsigned int>(std::round(deltaGreater));
+    i += offset;
     if (i < (int)m_rings.size())
     {
       m_rings[i] += cell->e() / std::cosh(std::abs(eta_center));
@@ -65,7 +61,6 @@ StatusCode CaloCornerRingsMaker::post_execute(SG::EventContext &ctx) const
 
   SG::ReadHandle<xAOD::CaloClusterContainer> clusters(m_clusterKey, ctx);
 
-  // Corner RingSet
   std::vector<RingSetCorner> vec_rs;
 
   MSG_DEBUG("Creating all RingSets...");
@@ -97,9 +92,12 @@ StatusCode CaloCornerRingsMaker::post_execute(SG::EventContext &ctx) const
     for (auto &rs : vec_rs)
     {
       rs.clear();
+      MSG_DEBUG("Retrieving hotcall ...")
       auto *hotCell = maxCell(clus, rs);
-
-      std::vector<xAOD::CaloCell> seeds = getSeeds(hotCell);
+      MSG_DEBUG("Retrieving seeds ...")
+      float base_eta = hotCell ? hotCell->eta() : clus->eta();
+      float base_phi = hotCell ? hotCell->phi() : clus->phi();
+      std::vector<SeedPos> seeds = getSeeds(base_eta, base_phi, rs); // Obtendo o 5 centroides (C,TR,TL,BL,BR)
       for (auto *cell : clus->cells())
       {
         if (m_DoSigmaCut)
@@ -110,17 +108,12 @@ StatusCode CaloCornerRingsMaker::post_execute(SG::EventContext &ctx) const
           if (cell->e() <= m_SigmaCut * cell->descriptor()->sigma())
             continue;
         }
+        std::vector<std::string> cornerNames = {"Center", "TopRight", "TopLeft", "BottomLeft", "BottomRight"};
+
         for (int i = 0; i < 5; ++i)
         {
-          xAOD::CaloCell seed = seeds[i];
-          if (hotCell)
-          {
-            rs.push_back(cell, hotCell->eta(), hotCell->phi());
-          }
-          else
-          {
-            rs.push_back(cell, clus->eta(), clus->phi());
-          }
+
+          rs.push_back(cell, seeds[i].eta, seeds[i].phi, i);
         }
       }
     }
