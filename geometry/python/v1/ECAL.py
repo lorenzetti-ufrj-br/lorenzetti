@@ -12,6 +12,15 @@ from .SensitiveDetector import SensitiveDetector
 
 
 def getLArBarrelCfg():
+  """
+  Defines the geometry and readout configuration for the Liquid Argon (LAr) Barrel Calorimeter.
+
+  Constructs the physical volumes (PreSampler, Back, Middle, Strips) and assigns
+  readout parameters such as pulse shapes, noise levels, and Optimal Filter weights.
+
+  Returns:
+      List[Calorimeter]: A list of configured Calorimeter detector objects for the LAr Barrel.
+  """
 
 
   basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']

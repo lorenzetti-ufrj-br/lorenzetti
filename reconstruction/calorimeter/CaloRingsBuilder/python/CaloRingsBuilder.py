@@ -111,7 +111,7 @@ def CaloRingsBuilderCfg(
     )
 
     merge_rings = CaloRingsMerge(
-        "CaloRingsMerge",
+        name + "_Merge",
         CollectionKeys=[rings.OutputRingerKey, fwd_rings.OutputRingerKey],
         OutputRingerKey=OutputRingerKey,
         OutputLevel=OutputLevel,

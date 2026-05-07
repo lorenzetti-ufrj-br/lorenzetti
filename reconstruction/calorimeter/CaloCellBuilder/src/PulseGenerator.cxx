@@ -8,6 +8,20 @@
 using namespace Gaugi;
 
 
+/**
+ * @class PulseGenerator
+ * @brief Generates electronic pulse shapes for calorimeter cells.
+ * 
+ * Simulates the response of the readout electronics to an energy deposit.
+ * It uses a reference shaper function (read from a file) to convolve the
+ * energy deposit in time. It also adds electronic noise and random deformations.
+ * 
+ * Properties:
+ * - ShaperFile: File containing the reference pulse shape points.
+ * - Pedestal: Baseline voltage.
+ * - NoiseMean/Std: Electronic noise parameters.
+ * - SamplingRate: Readout sampling rate (usually 25ns).
+ */
 PulseGenerator::PulseGenerator( std::string name ) : 
   IMsgService(name),
   AlgTool(),
@@ -51,6 +65,13 @@ StatusCode PulseGenerator::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Generates the pulse for a cell.
+ * 
+ * Loops over bunch crossings and sums the contribution of energy deposits
+ * from each BCID, weighted by the shaper function at the appropriate time lag.
+ * Adds noise and sets the final pulse in the cell object.
+ */
 StatusCode PulseGenerator::execute( SG::EventContext &ctx, Gaugi::EDM *edm ) const
 {
   auto *cell = static_cast<xAOD::CaloDetDescriptor*>(edm);

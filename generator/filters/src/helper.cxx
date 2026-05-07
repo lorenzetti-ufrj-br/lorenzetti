@@ -9,7 +9,7 @@ namespace generator{
 
       // particles with strong or electric charge, or composed of ones having it, which thereby 
       // should be considered visible in a normal detector.
-      bool isVisible(HepMC3::GenParticle *particle)
+      bool isVisible(const HepMC3::GenParticle *particle)
       {
         // Take from: https://github.com/lorenzetti-hep/pythia8/blob/main/src/ParticleData.cc
         // A particle is invisible if it has neither strong nor electric charge,

@@ -17,6 +17,15 @@ import os
 
 
 def getTileBarrelCfg():
+    """
+    Defines the geometry and readout configuration for the Tile Calorimeter (TileCal) Barrel.
+
+    Constructs the physical volumes (Iron absorber + Scintillator gap) for the
+    three longitudinal layers of the Tile Barrel and assigns readout parameters.
+
+    Returns:
+        List[Calorimeter]: A list of configured Calorimeter detector objects for the Tile Barrel.
+    """
 
     basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
 
@@ -132,6 +141,20 @@ def getTileBarrelCfg():
 
 
 def getTileExtendedCfg(left_side=False):
+    """
+    Defines the geometry and readout configuration for the Tile Calorimeter Extended Barrel.
+
+    Constructs the physical volumes and assigns readout parameters for the Extended Barrel.
+    Since the detector is symmetric but has distinct physical volumes for A-side and C-side,
+    this function allows configuring either side.
+
+    Args:
+        left_side (bool): If True, configures the C-side (negative z). 
+                          If False, configures the A-side (positive z).
+
+    Returns:
+        List[Calorimeter]: A list of configured Calorimeter detector objects for the Tile Extended Barrel.
+    """
 
 
     # TileExt Barrel

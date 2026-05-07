@@ -9,6 +9,21 @@
 using namespace Gaugi;
 
 
+/**
+ * @class AnomalyGenerator
+ * @brief Tool to inject anomalies and defects into the calorimeter simulation.
+ * 
+ * This tool allows the user to simulate dead modules (by zeroing out the pulse)
+ * or noisy cells (by adding extra gaussian noise) based on configuration properties
+ * and event numbers. This is useful for testing the robustness of reconstruction
+ * algorithms against detector defects.
+ * 
+ * Properties:
+ * - DeadModules: List of booleans indicating if a block of events/cells is dead.
+ * - Cells: List of cell hashes to apply the anomaly to.
+ * - NoiseMean/Std: Parameters for the gaussian noise injection.
+ * - EventNumberRange: Range of event numbers where the anomaly is active.
+ */
 AnomalyGenerator::AnomalyGenerator( std::string name ) : 
   IMsgService(name),
   AlgTool(),
@@ -48,6 +63,16 @@ StatusCode AnomalyGenerator::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Executes the anomaly injection.
+ * 
+ * Checks if the current event number and cell hash match any of the configured
+ * anomaly rules. If a match is found, it either zeros the pulse (dead module)
+ * or adds Gaussian noise.
+ * 
+ * @param ctx EventContext.
+ * @param edm Pointer to the xAOD::CaloDetDescriptor (cell).
+ */
 StatusCode AnomalyGenerator::execute( SG::EventContext &ctx, Gaugi::EDM *edm ) const
 {
   auto *cell = static_cast<xAOD::CaloDetDescriptor*>(edm);

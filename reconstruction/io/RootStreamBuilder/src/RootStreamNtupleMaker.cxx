@@ -29,6 +29,19 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamNtupleMaker
+ * @brief Dumps flat Ntuples for analysis (ML training, performance studies).
+ * 
+ * Unlike the AOD/ESD makers which serialize EDM objects, this algorithm flatterns
+ * the data into simple floating-point branches (e.g. `cl_et`, `cl_eta`, `cl_rings`, etc.).
+ * This is the standard format used for training neural networks (e.g. Ringer) or
+ * plotting variables in ROOT.
+ * 
+ * Properties:
+ * - Input*Key: Keys to retrieve objects to dump.
+ * - OutputNtupleName: Name of the output TTree.
+ */
 RootStreamNtupleMaker::RootStreamNtupleMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -38,6 +51,10 @@ RootStreamNtupleMaker::RootStreamNtupleMaker( std::string name ) :
   declareProperty( "InputSeedsKey"      , m_seedsKey="Seeds"              );
   declareProperty( "InputClusterKey"    , m_clusterKey="Clusters"         );
   declareProperty( "InputRingerKey"     , m_ringerKey="Rings"             );
+  declareProperty( "InputRingerL0Key"   , m_ringerL0Key="RingsL0"         );
+  declareProperty( "InputTruthClusterKey", m_truthClusterKey="TruthClusters");
+  declareProperty( "InputTruthRingerKey" , m_truthRingerKey="TruthRings"   );
+  declareProperty( "InputTruthElectronKey", m_truthElectronKey="TruthElectrons");
   declareProperty( "InputElectronKey"   , m_electronKey="Electrons"       );
   declareProperty( "OutputLevel"        , m_outputLevel=0                 );
   declareProperty( "OutputNtupleName"   , m_outputNtupleName="events"     );
@@ -66,6 +83,12 @@ StatusCode RootStreamNtupleMaker::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Books the analysis TTree.
+ * 
+ * Defines all branches: event info, cluster variables, shower shapes,
+ * rings, electron MC truth, etc.
+ */
 StatusCode RootStreamNtupleMaker::bookHistograms( EventContext &ctx ) const
 {
   MSG_INFO("Booking ttree...");
@@ -111,7 +134,52 @@ StatusCode RootStreamNtupleMaker::bookHistograms( EventContext &ctx ) const
   float cl_fracMax            = 0;
   float cl_lateralMom         = 0;
   float cl_longitudinalMom    = 0;
-  std::vector<float>*cl_rings = nullptr;
+  std::vector<float>*cl_rings   = nullptr;
+  std::vector<float>*cl_ringsL0 = nullptr;
+  float truth_cl_eta             = 0;
+  float truth_cl_phi             = 0;
+  float truth_cl_e               = 0;
+  float truth_cl_et              = 0;
+  float truth_cl_deta            = 0;
+  float truth_cl_dphi            = 0;
+  float truth_cl_e0              = 0;
+  float truth_cl_e1              = 0;
+  float truth_cl_e2              = 0;
+  float truth_cl_e3              = 0;
+  float truth_cl_ehad1           = 0;
+  float truth_cl_ehad2           = 0;
+  float truth_cl_ehad3           = 0;
+  float truth_cl_etot            = 0;
+  float truth_cl_e233            = 0;
+  float truth_cl_e237            = 0;
+  float truth_cl_e277            = 0;
+  float truth_cl_emaxs1          = 0;
+  float truth_cl_emaxs2          = 0;
+  float truth_cl_e2tsts1         = 0;
+  float truth_cl_reta            = 0;
+  float truth_cl_rphi            = 0;
+  float truth_cl_rhad            = 0;
+  float truth_cl_rhad1           = 0;
+  float truth_cl_eratio          = 0;
+  float truth_cl_f0              = 0;
+  float truth_cl_f1              = 0;
+  float truth_cl_f2              = 0;
+  float truth_cl_f3              = 0;
+  float truth_cl_weta2           = 0;
+  float truth_cl_secondR         = 0;
+  float truth_cl_lambdaCenter    = 0;
+  float truth_cl_secondLambda    = 0;
+  float truth_cl_fracMax         = 0;
+  float truth_cl_lateralMom      = 0;
+  float truth_cl_longitudinalMom = 0;
+  std::vector<float>*truth_cl_rings = nullptr;
+  float truth_el_eta                = -1;
+  float truth_el_et                 = -1;
+  float truth_el_phi                = -1;
+  bool truth_el_tight               = false;
+  bool truth_el_medium              = false;
+  bool truth_el_loose               = false;
+  bool truth_el_vloose              = false;
   float el_eta                = -1;
   float el_et                 = -1;
   float el_phi                = -1;
@@ -165,6 +233,7 @@ StatusCode RootStreamNtupleMaker::bookHistograms( EventContext &ctx ) const
   tree->Branch("cl_f3"                  , &cl_f3);
   tree->Branch("cl_weta2"               , &cl_weta2);
   tree->Branch("cl_rings"               , &cl_rings);
+  tree->Branch("cl_ringsL0"             , &cl_ringsL0);
   tree->Branch("cl_secondR"             , &cl_secondR);
   tree->Branch("cl_lambdaCenter"        , &cl_lambdaCenter);
   tree->Branch("cl_secondLambda"        , &cl_secondLambda);
@@ -178,6 +247,51 @@ StatusCode RootStreamNtupleMaker::bookHistograms( EventContext &ctx ) const
   tree->Branch("el_medium"              , &el_medium);
   tree->Branch("el_loose"               , &el_loose);
   tree->Branch("el_vloose"              , &el_vloose);
+
+  tree->Branch("truth_cl_eta"              , &truth_cl_eta);
+  tree->Branch("truth_cl_phi"              , &truth_cl_phi);
+  tree->Branch("truth_cl_e"                , &truth_cl_e);
+  tree->Branch("truth_cl_et"               , &truth_cl_et);
+  tree->Branch("truth_cl_deta"             , &truth_cl_deta);
+  tree->Branch("truth_cl_dphi"             , &truth_cl_dphi);
+  tree->Branch("truth_cl_e0"               , &truth_cl_e0);
+  tree->Branch("truth_cl_e1"               , &truth_cl_e1);
+  tree->Branch("truth_cl_e2"               , &truth_cl_e2);
+  tree->Branch("truth_cl_e3"               , &truth_cl_e3);
+  tree->Branch("truth_cl_ehad1"            , &truth_cl_ehad1);
+  tree->Branch("truth_cl_ehad2"            , &truth_cl_ehad2);
+  tree->Branch("truth_cl_ehad3"            , &truth_cl_ehad3);
+  tree->Branch("truth_cl_etot"             , &truth_cl_etot);
+  tree->Branch("truth_cl_e233"             , &truth_cl_e233);
+  tree->Branch("truth_cl_e237"             , &truth_cl_e237);
+  tree->Branch("truth_cl_e277"             , &truth_cl_e277);
+  tree->Branch("truth_cl_emaxs1"           , &truth_cl_emaxs1);
+  tree->Branch("truth_cl_emaxs2"           , &truth_cl_emaxs2);
+  tree->Branch("truth_cl_e2tsts1"          , &truth_cl_e2tsts1);
+  tree->Branch("truth_cl_reta"             , &truth_cl_reta);
+  tree->Branch("truth_cl_rphi"             , &truth_cl_rphi);
+  tree->Branch("truth_cl_rhad"             , &truth_cl_rhad);
+  tree->Branch("truth_cl_rhad1"            , &truth_cl_rhad1);
+  tree->Branch("truth_cl_eratio"           , &truth_cl_eratio);
+  tree->Branch("truth_cl_f0"               , &truth_cl_f0);
+  tree->Branch("truth_cl_f1"               , &truth_cl_f1);
+  tree->Branch("truth_cl_f2"               , &truth_cl_f2);
+  tree->Branch("truth_cl_f3"               , &truth_cl_f3);
+  tree->Branch("truth_cl_weta2"            , &truth_cl_weta2);
+  tree->Branch("truth_cl_rings"            , &truth_cl_rings);
+  tree->Branch("truth_cl_secondR"          , &truth_cl_secondR);
+  tree->Branch("truth_cl_lambdaCenter"     , &truth_cl_lambdaCenter);
+  tree->Branch("truth_cl_secondLambda"     , &truth_cl_secondLambda);
+  tree->Branch("truth_cl_fracMax"          , &truth_cl_fracMax);
+  tree->Branch("truth_cl_lateralMom"       , &truth_cl_lateralMom);
+  tree->Branch("truth_cl_longitudinalMom"  , &truth_cl_longitudinalMom);
+  tree->Branch("truth_el_eta"              , &truth_el_eta);
+  tree->Branch("truth_el_et"               , &truth_el_et);
+  tree->Branch("truth_el_phi"              , &truth_el_phi);
+  tree->Branch("truth_el_tight"            , &truth_el_tight);
+  tree->Branch("truth_el_medium"           , &truth_el_medium);
+  tree->Branch("truth_el_loose"            , &truth_el_loose);
+  tree->Branch("truth_el_vloose"           , &truth_el_vloose);
   tree->Branch("seed_eta"               , &seed_eta);
   tree->Branch("seed_phi"               , &seed_phi);
   tree->Branch("mc_pdgid"               , &mc_pdgid);
@@ -221,6 +335,13 @@ StatusCode RootStreamNtupleMaker::post_execute( EventContext &/*ctx*/ ) const
 
 //!=====================================================================
 
+/**
+ * @brief Fills the TTree.
+ * 
+ * For each electron in the container, it retrieves the associated cluster, rings, and truth particle.
+ * It flattens their properties into the linked variables and calls `tree->Fill()`.
+ * Thus, one entry in the tree corresponds to one Electron candidate.
+ */
 StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
 {
   MSG_INFO("fill ttree...");
@@ -254,6 +375,11 @@ StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
   {
     MSG_FATAL("It's not possible to read the xAOD::TruthParticleContainer from this Context using this key " << m_truthKey );
   }
+
+  SG::ReadHandle<xAOD::CaloRingsContainer> ringerL0_container( m_ringerL0Key, ctx );
+  SG::ReadHandle<xAOD::CaloClusterContainer> truth_cluster_container( m_truthClusterKey, ctx );
+  SG::ReadHandle<xAOD::CaloRingsContainer> truth_ringer_container( m_truthRingerKey, ctx );
+  SG::ReadHandle<xAOD::ElectronContainer> truth_electron_container( m_truthElectronKey, ctx );
 
   auto store = ctx.getStoreGateSvc();
   store->cd();  
@@ -316,6 +442,52 @@ StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
   std::vector<float> *mc_e= nullptr;
   std::vector<float> *mc_et= nullptr;
 
+  std::vector<float> *cl_ringsL0 = nullptr;
+  float truth_cl_eta             = 0;
+  float truth_cl_phi             = 0;
+  float truth_cl_e               = 0;
+  float truth_cl_et              = 0;
+  float truth_cl_deta            = 0;
+  float truth_cl_dphi            = 0;
+  float truth_cl_e0              = 0;
+  float truth_cl_e1              = 0;
+  float truth_cl_e2              = 0;
+  float truth_cl_e3              = 0;
+  float truth_cl_ehad1           = 0;
+  float truth_cl_ehad2           = 0;
+  float truth_cl_ehad3           = 0;
+  float truth_cl_etot            = 0;
+  float truth_cl_e233            = 0;
+  float truth_cl_e237            = 0;
+  float truth_cl_e277            = 0;
+  float truth_cl_emaxs1          = 0;
+  float truth_cl_emaxs2          = 0;
+  float truth_cl_e2tsts1         = 0;
+  float truth_cl_reta            = 0;
+  float truth_cl_rphi            = 0;
+  float truth_cl_rhad            = 0;
+  float truth_cl_rhad1           = 0;
+  float truth_cl_eratio          = 0;
+  float truth_cl_f0              = 0;
+  float truth_cl_f1              = 0;
+  float truth_cl_f2              = 0;
+  float truth_cl_f3              = 0;
+  float truth_cl_weta2           = 0;
+  float truth_cl_secondR         = 0;
+  float truth_cl_lambdaCenter    = 0;
+  float truth_cl_secondLambda    = 0;
+  float truth_cl_fracMax         = 0;
+  float truth_cl_lateralMom      = 0;
+  float truth_cl_longitudinalMom = 0;
+  std::vector<float> *truth_cl_rings = nullptr;
+  float truth_el_eta             = -1;
+  float truth_el_et              = -1;
+  float truth_el_phi             = -1;
+  bool truth_el_tight            = false;
+  bool truth_el_medium           = false;
+  bool truth_el_loose            = false;
+  bool truth_el_vloose           = false;
+
   
   InitBranch( tree, "avgmu"                   , &avgmu             );
   InitBranch( tree, "EventNumber"             , &eventNumber       );
@@ -371,6 +543,52 @@ StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
   InitBranch( tree, "mc_phi"                  , &mc_phi            );
   InitBranch( tree, "mc_e"                    , &mc_e              );
   InitBranch( tree, "mc_et"                   , &mc_et             );
+  
+  InitBranch( tree, "cl_ringsL0"              , &cl_ringsL0        );
+  InitBranch( tree, "truth_cl_eta"               , &truth_cl_eta         );
+  InitBranch( tree, "truth_cl_phi"               , &truth_cl_phi         );
+  InitBranch( tree, "truth_cl_e"                 , &truth_cl_e           );
+  InitBranch( tree, "truth_cl_et"                , &truth_cl_et          );
+  InitBranch( tree, "truth_cl_deta"             , &truth_cl_deta        );
+  InitBranch( tree, "truth_cl_dphi"             , &truth_cl_dphi        );
+  InitBranch( tree, "truth_cl_e0"               , &truth_cl_e0          );
+  InitBranch( tree, "truth_cl_e1"               , &truth_cl_e1          );
+  InitBranch( tree, "truth_cl_e2"               , &truth_cl_e2          );
+  InitBranch( tree, "truth_cl_e3"               , &truth_cl_e3          );
+  InitBranch( tree, "truth_cl_ehad1"            , &truth_cl_ehad1       );
+  InitBranch( tree, "truth_cl_ehad2"            , &truth_cl_ehad2       );
+  InitBranch( tree, "truth_cl_ehad3"            , &truth_cl_ehad3       );
+  InitBranch( tree, "truth_cl_etot"             , &truth_cl_etot        );
+  InitBranch( tree, "truth_cl_e233"             , &truth_cl_e233        );
+  InitBranch( tree, "truth_cl_e237"             , &truth_cl_e237        );
+  InitBranch( tree, "truth_cl_e277"             , &truth_cl_e277        );
+  InitBranch( tree, "truth_cl_emaxs1"           , &truth_cl_emaxs1      );
+  InitBranch( tree, "truth_cl_emaxs2"           , &truth_cl_emaxs2      );
+  InitBranch( tree, "truth_cl_e2tsts1"          , &truth_cl_e2tsts1     );
+  InitBranch( tree, "truth_cl_reta"             , &truth_cl_reta        );
+  InitBranch( tree, "truth_cl_rphi"             , &truth_cl_rphi        );
+  InitBranch( tree, "truth_cl_rhad"             , &truth_cl_rhad        );
+  InitBranch( tree, "truth_cl_rhad1"            , &truth_cl_rhad1       );
+  InitBranch( tree, "truth_cl_eratio"           , &truth_cl_eratio      );
+  InitBranch( tree, "truth_cl_f0"               , &truth_cl_f0          );
+  InitBranch( tree, "truth_cl_f1"               , &truth_cl_f1          );
+  InitBranch( tree, "truth_cl_f2"               , &truth_cl_f2          );
+  InitBranch( tree, "truth_cl_f3"               , &truth_cl_f3          );
+  InitBranch( tree, "truth_cl_weta2"            , &truth_cl_weta2       );
+  InitBranch( tree, "truth_cl_rings"             , &truth_cl_rings       );
+  InitBranch( tree, "truth_cl_secondR"          , &truth_cl_secondR     );
+  InitBranch( tree, "truth_cl_lambdaCenter"     , &truth_cl_lambdaCenter);
+  InitBranch( tree, "truth_cl_secondLambda"     , &truth_cl_secondLambda);
+  InitBranch( tree, "truth_cl_fracMax"          , &truth_cl_fracMax     );
+  InitBranch( tree, "truth_cl_lateralMom"       , &truth_cl_lateralMom  );
+  InitBranch( tree, "truth_cl_longitudinalMom"  , &truth_cl_longitudinalMom);
+  InitBranch( tree, "truth_el_eta"               , &truth_el_eta         );
+  InitBranch( tree, "truth_el_et"                , &truth_el_et          );
+  InitBranch( tree, "truth_el_phi"               , &truth_el_phi         );
+  InitBranch( tree, "truth_el_tight"            , &truth_el_tight       );
+  InitBranch( tree, "truth_el_medium"           , &truth_el_medium      );
+  InitBranch( tree, "truth_el_loose"            , &truth_el_loose       );
+  InitBranch( tree, "truth_el_vloose"           , &truth_el_vloose      );
 
 
   auto evt = (**event_container.ptr()).front();
@@ -385,6 +603,53 @@ StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
     mc_phi->clear();
     mc_e->clear();
     mc_et->clear();
+
+    cl_ringsL0->clear();
+    truth_cl_rings->clear();
+    truth_cl_eta = 0;
+    truth_cl_phi = 0;
+    truth_cl_e = 0;
+    truth_cl_et = 0;
+    truth_cl_deta = 0;
+    truth_cl_dphi = 0;
+    truth_cl_e0 = 0;
+    truth_cl_e1 = 0;
+    truth_cl_e2 = 0;
+    truth_cl_e3 = 0;
+    truth_cl_ehad1 = 0;
+    truth_cl_ehad2 = 0;
+    truth_cl_ehad3 = 0;
+    truth_cl_etot = 0;
+    truth_cl_e233 = 0;
+    truth_cl_e237 = 0;
+    truth_cl_e277 = 0;
+    truth_cl_emaxs1 = 0;
+    truth_cl_emaxs2 = 0;
+    truth_cl_e2tsts1 = 0;
+    truth_cl_reta = 0;
+    truth_cl_rphi = 0;
+    truth_cl_rhad = 0;
+    truth_cl_rhad1 = 0;
+    truth_cl_eratio = 0;
+    truth_cl_f0 = 0;
+    truth_cl_f1 = 0;
+    truth_cl_f2 = 0;
+    truth_cl_f3 = 0;
+    truth_cl_weta2 = 0;
+    truth_cl_secondR = 0;
+    truth_cl_lambdaCenter = 0;
+    truth_cl_secondLambda = 0;
+    truth_cl_fracMax = 0;
+    truth_cl_lateralMom = 0;
+    truth_cl_longitudinalMom = 0;
+
+    truth_el_eta = -1;
+    truth_el_et = -1;
+    truth_el_phi = -1;
+    truth_el_tight = false;
+    truth_el_medium = false;
+    truth_el_loose = false;
+    truth_el_vloose = false;
 
     auto clus = el->caloCluster();
 
@@ -403,6 +668,54 @@ StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
     {
       MSG_WARNING("No rings found for cluster");
       continue;
+    }
+
+    const xAOD::CaloRings* cl_ringerL0 = nullptr;
+    if (ringerL0_container.isValid()){
+      for (auto ring : **ringerL0_container.ptr() )
+      {
+        if (ring->caloCluster() == clus)
+        {
+          cl_ringerL0 = ring;
+          break;
+        } 
+      }
+    }
+
+    const xAOD::CaloCluster* truth_clus = nullptr;
+    if (truth_cluster_container.isValid()){
+      for (auto tr_cl : **truth_cluster_container.ptr() )
+      {
+        if (tr_cl->seed() == clus->seed())
+        {
+          truth_clus = tr_cl;
+          break;
+        } 
+      }
+    }
+
+    const xAOD::CaloRings* truth_ringer = nullptr;
+    if (truth_clus && truth_ringer_container.isValid()){
+      for (auto ring : **truth_ringer_container.ptr() )
+      {
+        if (ring->caloCluster() == truth_clus)
+        {
+          truth_ringer = ring;
+          break;
+        } 
+      }
+    }
+
+    const xAOD::Electron* truth_el = nullptr;
+    if (truth_electron_container.isValid()){
+      for (auto tr_el : **truth_electron_container.ptr() )
+      {
+        if (tr_el->caloCluster() && tr_el->caloCluster()->seed() == clus->seed())
+        {
+          truth_el = tr_el;
+          break;
+        } 
+      }
     }
 
 
@@ -447,6 +760,63 @@ StatusCode RootStreamNtupleMaker::fillHistograms( EventContext &ctx ) const
     cl_lateralMom      = clus->lateralMom();
     cl_longitudinalMom = clus->longitudinalMom();
     for (auto ring : cl_ringer->rings()) cl_rings->push_back(ring);
+    
+    if (cl_ringerL0) {
+      for (auto ring : cl_ringerL0->rings()) cl_ringsL0->push_back(ring);
+    }
+    
+    if (truth_clus) {
+      truth_cl_eta = truth_clus->eta();
+      truth_cl_phi = truth_clus->phi();
+      truth_cl_e   = truth_clus->e();
+      truth_cl_et  = truth_clus->et();
+      truth_cl_deta            = truth_clus->deltaEta();
+      truth_cl_dphi            = truth_clus->deltaPhi();
+      truth_cl_e0              = truth_clus->e0();
+      truth_cl_e1              = truth_clus->e1();
+      truth_cl_e2              = truth_clus->e2();
+      truth_cl_e3              = truth_clus->e3();
+      truth_cl_ehad1           = truth_clus->ehad1();
+      truth_cl_ehad2           = truth_clus->ehad2();
+      truth_cl_ehad3           = truth_clus->ehad3();
+      truth_cl_etot            = truth_clus->etot();
+      truth_cl_e233            = truth_clus->e233();
+      truth_cl_e237            = truth_clus->e237();
+      truth_cl_e277            = truth_clus->e277();
+      truth_cl_emaxs1          = truth_clus->emaxs1();
+      truth_cl_emaxs2          = truth_clus->emaxs2();
+      truth_cl_e2tsts1         = truth_clus->e2tsts1();
+      truth_cl_reta            = truth_clus->reta();
+      truth_cl_rphi            = truth_clus->rphi();
+      truth_cl_rhad            = truth_clus->rhad();
+      truth_cl_rhad1           = truth_clus->rhad1();
+      truth_cl_eratio          = truth_clus->eratio();
+      truth_cl_f0              = truth_clus->f0();
+      truth_cl_f1              = truth_clus->f1();
+      truth_cl_f2              = truth_clus->f2();
+      truth_cl_f3              = truth_clus->f3();
+      truth_cl_weta2           = truth_clus->weta2();
+      truth_cl_secondR         = truth_clus->secondR();
+      truth_cl_lambdaCenter    = truth_clus->lambdaCenter();
+      truth_cl_secondLambda    = truth_clus->secondLambda();
+      truth_cl_fracMax         = truth_clus->fracMax();
+      truth_cl_lateralMom      = truth_clus->lateralMom();
+      truth_cl_longitudinalMom = truth_clus->longitudinalMom();
+    }
+    
+    if (truth_ringer) {
+      for (auto ring : truth_ringer->rings()) truth_cl_rings->push_back(ring);
+    }
+    
+    if (truth_el) {
+      truth_el_eta = truth_el->eta();
+      truth_el_et  = truth_el->et();
+      truth_el_phi = truth_el->phi();
+      truth_el_tight  = truth_el->isTight();
+      truth_el_medium = truth_el->isMedium();
+      truth_el_loose  = truth_el->isLoose();
+      truth_el_vloose = truth_el->isVeryLoose();
+    }
     el_tight           = el->isTight();
     el_medium          = el->isMedium();
     el_loose           = el->isLoose();

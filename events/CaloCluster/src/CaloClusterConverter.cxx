@@ -1,6 +1,8 @@
 
 #include "CaloCluster/CaloClusterConverter.h"
 //#include "G4Kernel/macros.h"
+#include <iostream>
+
 using namespace xAOD;
 bool CaloClusterConverter::convert( const CaloCluster *clus, CaloCluster_t &clus_t )
 {
@@ -42,12 +44,14 @@ bool CaloClusterConverter::convert( const CaloCluster *clus, CaloCluster_t &clus
 	    clus_t.lateralMom  = clus->lateralMom();
 	    clus_t.longitudinalMom = clus->longitudinalMom();
       clus_t.seed_link   = clus->seed()->id();
-
+      //std::cout << "-----------------------------" << std::endl;
+      //std::cout << "Number of cells: " << clus->cells().size() << std::endl;
       for(auto &cell : clus->cells())
       {
+        //std::cout << cell->descriptor()->hash() << std::endl;
         clus_t.cell_links.push_back( cell->descriptor()->hash() );
       }
-      
+      //std::cout << "-----------------------------" << std::endl;
       return true;
   }
   return false;

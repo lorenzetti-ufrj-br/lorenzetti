@@ -8,6 +8,19 @@
 using namespace Pythia8;
 using namespace generator;
 
+/**
+ * @class OverlappedEvents
+ * @brief Algorithm to simulate event pileup by overlapping particles.
+ * 
+ * This class inherits from SingleParticle and injects additional particles
+ * around existing "seed" particles in the event. It mimics the effect of 
+ * overlapping interactions by generating secondary particles within a 
+ * standard DeltaR cone of the primary objects.
+ * 
+ * Properties:
+ * - DeltaR: Cone size for overlap injection.
+ * - RelEnergyMin/Max: Relative energy fraction range for the overlapped particle.
+ */
 OverlappedEvents::OverlappedEvents(const std::string name, IGenerator *gen) : IMsgService(name),
                                                                         SingleParticle(name, gen)
 {
@@ -38,6 +51,13 @@ StatusCode OverlappedEvents::initialize()
   return StatusCode::SUCCESS;
 }
 
+/**
+ * @brief Executes the overlap injection logic.
+ * 
+ * Iterates over existing event seeds (primary particles) and injects a new 
+ * particle nearby (within DeltaR) with a fraction of the seed's energy.
+ * Updates the context with the new "overlapped" seeds.
+ */
 StatusCode OverlappedEvents::execute(generator::Event &ctx)
 {
 

@@ -23,7 +23,21 @@ datapath    = os.environ["LORENZETTI_EVTGEN_DATA_DIR"]
 ZEE_FILE    = f'{datapath}/zee_config.cmnd'
 
 
+"""
+Script: gen_zee.py
+Purpose: Generates Z boson decay to electron-positron pair (Zee) events using Pythia8.
+Usage:
+    gen_zee.py -o output.root --nov 100 [options]
+"""
+
 def parse_args():
+    """
+    Parses command-line arguments for the Zee event generation script.
+
+    Returns:
+        argparse.Namespace: Parsed arguments including run number, output level,
+                            kinematic cuts (eta_max), and generation options.
+    """
 
     parser = argparse.ArgumentParser(
         description='',
@@ -69,6 +83,24 @@ def main(events: List[int],
          force_forward_electron: bool,
          eta_max: float
         ):
+    """
+    Main function to execute the Zee event generation.
+
+    Configures the EventTape and the Zee filter (wrapping Pythia8) to generate
+    Z -> ee events. Supports filtering for forward electrons and zeroing
+    vertex positions.
+
+    Args:
+        events (List[int]): List of event indices to generate in this job/chunk.
+        logging_level (str): Logging level (e.g., 'INFO', 'DEBUG').
+        output_file (str): Path to the output ROOT file.
+        run_number (int): The run number identifier.
+        seed (int): Random seed for Pythia8.
+        zee_file (str): Path to Pythia8 configuration file.
+        zero_vertex_particles (bool): If True, forces particle production vertex to (0,0,0).
+        force_forward_electron (bool): If True, filters for events with at least one forward electron.
+        eta_max (float): Maximum absolute pseudorapidity for electrons.
+    """
 
     outputLevel = LoggingLevel.toC(logging_level)
 

@@ -11,6 +11,13 @@
 
 
 
+/**
+ * @class RootStreamAODReader
+ * @brief Algorithm to read AOD (Analysis Object Data) from a ROOT file.
+ * 
+ * Restores reconstructed objects (Clusters, Rings, Electrons, etc) from disk
+ * to the memory (Event Store).
+ */
 class RootStreamAODReader : public Gaugi::Algorithm
 {
 
@@ -48,8 +55,13 @@ class RootStreamAODReader : public Gaugi::Algorithm
     std::string m_truthKey;
     std::string m_seedsKey;
     std::string m_ringerKey;
+    std::string m_ringerL0Key;
     std::string m_clusterKey;
     std::string m_electronKey;
+    std::string m_truthCellsKey;
+    std::string m_truthClusterKey;
+    std::string m_truthRingerKey;
+    std::string m_truthElectronKey;
     std::string m_ntupleName;
     std::string m_inputFile;
 

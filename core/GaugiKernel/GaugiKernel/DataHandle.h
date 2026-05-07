@@ -65,6 +65,11 @@ namespace SG{
         return keys;
       };
 
+      bool exist( std::string key ) const
+      {
+        return m_storable_ptr.count(key);
+      };
+
 
     private:
 

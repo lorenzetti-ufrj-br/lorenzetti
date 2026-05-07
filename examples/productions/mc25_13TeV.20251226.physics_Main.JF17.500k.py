@@ -6,7 +6,7 @@ from maestro_lightning import Flow, Task, Dataset, Image
 
 basepath         = os.getcwd()
 input_path       = f"{basepath}/mc25_13TeV.20251226.physics_Main.JF17.500k.jobs.json"
-number_of_events = 500000
+number_of_events = 10000
 number_of_jobs   = 500
 run_number       = 20251226
 image_path       = '/mnt/shared/storage03/projects/cern/data/images/lorenzetti_latest.sif'
@@ -35,9 +35,9 @@ with Flow(name="mc25_13TeV.20251226.physics_Main.JF17.500k", path=f"{basepath}/m
 
     input_dataset    = Dataset(name="jobs", path=input_path)
     image            = Image(name="lorenzetti", path=image_path)
-    partitions       = 'gpu,cpu-large,gpu-large'
+    partitions       = 'cpu'
 
-    pre_exec = f"source {repo_build_path}/lzt_setup.sh"
+    pre_exec = f"conda deactivate && source {repo_build_path}/lzt_setup.sh"
 
     command = f"{pre_exec} && gen_jets.py -o %OUT --job-file %IN -m"
 

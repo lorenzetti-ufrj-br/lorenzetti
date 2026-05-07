@@ -6,6 +6,14 @@
 #include "GaugiKernel/AlgTool.h"
 
 
+/**
+ * @class CaloCellMaker
+ * @brief Algorithm to build calorimeter cells from hits.
+ * 
+ * This algorithm is responsible for converting simulated hits (energy deposits)
+ * into calorimeter cells. It defines the readout geometry and applies the
+ * digitization steps (pulse shaping, noise, etc) by scheduling sub-tools.
+ */
 class CaloCellMaker : public Gaugi::Algorithm
 {
   public:
@@ -17,25 +25,39 @@ class CaloCellMaker : public Gaugi::Algorithm
     
     /*! initialize the algorithm **/
     virtual StatusCode initialize() override;
+    
     /*! Book all histograms into the current storegate **/
     virtual StatusCode bookHistograms( SG::EventContext &ctx ) const override;
+    
     /*! Execute in step action step from geant core **/
     virtual StatusCode execute( SG::EventContext &ctx , const G4Step *step) const override;
+    
     /*! Execute in ComponentAccumulator **/
     virtual StatusCode execute( SG::EventContext &ctx , int /*evt*/ ) const override;
+    
     /*! execute before start the step action **/
     virtual StatusCode pre_execute( SG::EventContext &ctx ) const override;
+    
     /*! execute after the step action **/ 
     virtual StatusCode post_execute( SG::EventContext &ctx ) const override;
-    /*! fill hisogram in the end **/
+    
+    /*! fill histogram in the end **/
     virtual StatusCode fillHistograms( SG::EventContext &ctx ) const override;
+    
     /*! finalize the algorithm **/ 
     virtual StatusCode finalize() override;
     
-    /*! Add tools to be executed into the post execute step. The order is matter here */
-    void push_back( Gaugi::AlgTool *);
-    /*! Set pulse generator */
-    void setPulseGenerator(Gaugi::AlgTool *);
+    /**
+     * @brief Add a tool to the execution list.
+     * @param tool Pointer to the AlgTool to be added.
+     */
+    void push_back( Gaugi::AlgTool *tool );
+    
+    /**
+     * @brief Set the pulse generator tool.
+     * @param tool Pointer to the PulseGenerator tool.
+     */
+    void setPulseGenerator(Gaugi::AlgTool *tool);
 
   private:
    
