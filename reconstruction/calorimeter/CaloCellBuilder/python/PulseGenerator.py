@@ -21,10 +21,10 @@ class PulseGenerator( Cpp ):
                 NoiseStd        : float=0,
                 SamplingRate    : float=0,
                 StartSamplingBC : float=0,
-                doDefects       : bool=False,  // argument passed through digit_trf
+                doDefects       : bool=False,  # argument passed through digit_trf
                 deadModules     : bool=flags.deadModules,
                 cellHash        : list=flags.cellHash,
-                noiseFactor     : list=[1],  // argument passed through digit_trf
+                noiseFactor     : list=[1],  # argument passed through digit_trf
                 noisyEvents     : list=flags.noisyEvents,
               ):
                 
