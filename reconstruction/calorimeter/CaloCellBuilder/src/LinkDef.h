@@ -4,10 +4,10 @@
 #include "src/PulseGenerator.h"
 #include "src/OptimalFilter.h"
 //#include "src/CrossTalkMaker.h"
-#include "src/CaloHitMaker.h"
-#include "src/CaloHitMerge.h"
+
 #include "src/PileupMerge.h"
 #include "src/ConstrainedOptimalFilter.h"
+#include "src/AnomalyGenerator.h"
 
 #ifdef __CINT__
 
@@ -20,8 +20,7 @@
 #pragma link C++ class PulseGenerator+;
 #pragma link C++ class OptimalFilter+;
 //#pragma link C++ class CrossTalkMaker+;
-#pragma link C++ class CaloHitMaker+;
-#pragma link C++ class CaloHitMerge+;
-#pragma link C++ class ConstrainedOptimalFilter++;
+#pragma link C++ class ConstrainedOptimalFilter+;
 #pragma link C++ class PileupMerge+;
+#pragma link C++ class AnomalyGenerator+;
 #endif

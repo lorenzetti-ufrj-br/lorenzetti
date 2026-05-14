@@ -23,6 +23,19 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class RootStreamAODReader
+ * @brief Reads AOD data from a ROOT file and reconstructs xAOD objects.
+ * 
+ * This algorithm is the inverse of `RootStreamAODMaker`. It opens a ROOT file,
+ * reads the persistent structs from the TTree, and converts them back into
+ * transient `xAOD` objects (EventInfo, CaloClusters, Electrons, etc.), which
+ * are then recorded into StoreGate for downstream algorithms.
+ * 
+ * Properties:
+ * - InputFile: Path to the ROOT file.
+ * - Output*Key: Keys to record objects in StoreGate.
+ */
 RootStreamAODReader::RootStreamAODReader( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -34,7 +47,11 @@ RootStreamAODReader::RootStreamAODReader( std::string name ) :
   declareProperty( "OutputTruthKey"         , m_truthKey="Particles"            );
   declareProperty( "OutputClusterKey"       , m_clusterKey="Clusters"           );
   declareProperty( "OutputRingerKey"        , m_ringerKey="Rings"               );
+  declareProperty( "OutputRingerL0Key"      , m_ringerL0Key="RingsL0"           );
   declareProperty( "OutputElectronKey"      , m_electronKey="Electrons"         );
+  declareProperty( "OutputTruthClusterKey"  , m_truthClusterKey="TruthClusters" );
+  declareProperty( "OutputTruthRingerKey"   , m_truthRingerKey="TruthRings"   );
+  declareProperty( "OutputTruthElectronKey" , m_truthElectronKey="TruthElectrons" );
   declareProperty( "OutputLevel"            , m_outputLevel=1                   );
   declareProperty( "NtupleName"             , m_ntupleName="CollectionTree"     );
   declareProperty( "InputFile"              , m_inputFile=""                    );
@@ -108,6 +125,14 @@ StatusCode RootStreamAODReader::fillHistograms( EventContext &ctx ) const
 
 //!=====================================================================
 
+/**
+ * @brief Performs the deserialization.
+ * 
+ * 1. Reads the entry for the current event from the TTree.
+ * 2. deserializes structs into xAOD objects using `xAOD::*Converter`.
+ * 3. Re-establishes links (pointers) between objects (e.g. Cluster -> Seed, Rings -> Cluster).
+ * 4. Records the containers into StoreGate.
+ */
 StatusCode RootStreamAODReader::deserialize( int evt, EventContext &ctx ) const
 {
   std::vector<xAOD::CaloDetDescriptor_t > *collection_descriptor = nullptr;
@@ -118,6 +143,10 @@ StatusCode RootStreamAODReader::deserialize( int evt, EventContext &ctx ) const
   std::vector<xAOD::CaloRings_t         > *collection_rings      = nullptr;
   std::vector<xAOD::CaloCluster_t       > *collection_clus       = nullptr;
   std::vector<xAOD::Electron_t          > *collection_el         = nullptr;
+  std::vector<xAOD::CaloCluster_t       > *collection_truth_clus = nullptr;
+  std::vector<xAOD::CaloRings_t         > *collection_truth_rings= nullptr;
+  std::vector<xAOD::CaloRings_t         > *collection_rings_l0   = nullptr;
+  std::vector<xAOD::Electron_t          > *collection_truth_el   = nullptr;
 
   MSG_DEBUG( "Link all branches..." );
 
@@ -131,8 +160,10 @@ StatusCode RootStreamAODReader::deserialize( int evt, EventContext &ctx ) const
   InitBranch( tree, ("CaloRingsContainer_"     + m_ringerKey).c_str()      , &collection_rings      );
   InitBranch( tree, ("CaloClusterContainer_"   + m_clusterKey).c_str()     , &collection_clus       );
   InitBranch( tree, ("ElectronContainer_"      + m_electronKey).c_str()    , &collection_el         );
-  
-
+  InitBranch( tree, ("CaloClusterContainer_"   + m_truthClusterKey).c_str(), &collection_truth_clus );
+  InitBranch( tree, ("CaloRingsContainer_"     + m_truthRingerKey).c_str() , &collection_truth_rings);
+  InitBranch( tree, ("CaloRingsContainer_"     + m_ringerL0Key).c_str()    , &collection_rings_l0   );
+  InitBranch( tree, ("ElectronContainer_"      + m_truthElectronKey).c_str(), &collection_truth_el  );
 
   tree->GetEntry( evt );
 
@@ -200,10 +231,29 @@ StatusCode RootStreamAODReader::deserialize( int evt, EventContext &ctx ) const
     SG::WriteHandle<xAOD::ElectronContainer> container_el(m_electronKey, ctx);
     container_el.record( std::unique_ptr<xAOD::ElectronContainer>(new xAOD::ElectronContainer()));
 
+    SG::WriteHandle<xAOD::CaloCellContainer> container_truth_cells(m_truthCellsKey, ctx);
+    container_truth_cells.record( std::unique_ptr<xAOD::CaloCellContainer>(new xAOD::CaloCellContainer()));
+
+    SG::WriteHandle<xAOD::CaloClusterContainer> container_truth_clus(m_truthClusterKey, ctx);
+    container_truth_clus.record( std::unique_ptr<xAOD::CaloClusterContainer>(new xAOD::CaloClusterContainer()));
+
+    SG::WriteHandle<xAOD::CaloRingsContainer> container_truth_rings(m_truthRingerKey, ctx);
+    container_truth_rings.record( std::unique_ptr<xAOD::CaloRingsContainer>(new xAOD::CaloRingsContainer()));
+
+    SG::WriteHandle<xAOD::CaloRingsContainer> container_rings_l0(m_ringerL0Key, ctx);
+    container_rings_l0.record( std::unique_ptr<xAOD::CaloRingsContainer>(new xAOD::CaloRingsContainer()));
+
+    SG::WriteHandle<xAOD::ElectronContainer> container_truth_el(m_truthElectronKey, ctx);
+    container_truth_el.record( std::unique_ptr<xAOD::ElectronContainer>(new xAOD::ElectronContainer()));
+
 
     xAOD::CaloClusterConverter clus_cnv;
     xAOD::CaloRingsConverter rings_cnv;
     xAOD::ElectronConverter el_cnv;
+
+    xAOD::CaloCellConverter truth_cells_cnv;
+    xAOD::CaloClusterConverter truth_clus_cnv;
+    xAOD::CaloRingsConverter truth_rings_cnv;
     
     xAOD::cluster_links_t clus_links;
 
@@ -231,16 +281,65 @@ StatusCode RootStreamAODReader::deserialize( int evt, EventContext &ctx ) const
       el->setCaloCluster( clus_links[el_t.cluster_link] );
       container_el->push_back(el);
     }
+
+    for( auto& rings_t : *collection_rings_l0)
+    {
+      xAOD::CaloRings  *rings=nullptr;
+      rings_cnv.convert(rings_t, rings);
+      if(clus_links.count(rings_t.cluster_link)){
+        rings->setCaloCluster( clus_links[rings_t.cluster_link] );
+      }
+      container_rings_l0->push_back(rings);
+    }
+
+    xAOD::cluster_links_t truth_clus_links;
+
+    for( auto& truth_clus_t : *collection_truth_clus)
+    {
+      xAOD::CaloCluster  *truth_clus=nullptr;
+      truth_clus_cnv.convert(truth_clus_t, truth_clus);
+
+      if(seed_links.count(truth_clus_t.seed_link)){
+        truth_clus->setSeed(seed_links[truth_clus_t.seed_link]);
+        truth_clus_links[truth_clus->seed()->id()] = truth_clus;
+      }
+
+      container_truth_clus->push_back(truth_clus);
+    }
+
+    for( auto& truth_rings_t : *collection_truth_rings)
+    {
+      xAOD::CaloRings  *truth_rings=nullptr;
+      truth_rings_cnv.convert(truth_rings_t, truth_rings);
+
+      if(truth_clus_links.count(truth_rings_t.cluster_link)){
+        truth_rings->setCaloCluster(truth_clus_links[truth_rings_t.cluster_link]);
+      }
+      container_truth_rings->push_back(truth_rings);
+    }
+
+    for( auto& el_t : *collection_truth_el)
+    {
+      xAOD::Electron  *el=nullptr;
+      el_cnv.convert(el_t, el);
+      if(truth_clus_links.count(el_t.cluster_link)){
+        el->setCaloCluster( truth_clus_links[el_t.cluster_link] );
+      }
+      container_truth_el->push_back(el);
+    }
   }
 
   delete collection_descriptor;
   delete collection_seeds     ;
-  delete collection_cells     ;
   delete collection_event     ;
   delete collection_truth     ;
   delete collection_rings     ;
   delete collection_clus      ;
   delete collection_el        ;
+  delete collection_truth_clus;
+  delete collection_truth_rings;
+  delete collection_rings_l0;
+  delete collection_truth_el;
 
 
   return StatusCode::SUCCESS;

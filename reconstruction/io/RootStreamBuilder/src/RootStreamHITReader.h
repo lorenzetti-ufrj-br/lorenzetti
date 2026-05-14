@@ -8,6 +8,13 @@
 #include "TruthParticle/TruthParticle.h"
 
 
+/**
+ * @class RootStreamHITReader
+ * @brief Algorithm to read Hit-level data from a ROOT file.
+ * 
+ * deserializes Hits, TruthParticles, and Seeds from a persistent ROOT format
+ * back into the transient Event Store (StoreGate) for further processing (e.g., Digitization).
+ */
 class RootStreamHITReader : public Gaugi::Algorithm
 {
 

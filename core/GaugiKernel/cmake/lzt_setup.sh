@@ -20,6 +20,11 @@ do
   ln -sf $file
 done
 
+for file in "`pwd`"/*/*.pcm
+do
+  echo "ln -sf $file"
+  ln -sf $file
+done
 
 # Link all libs
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -60,7 +65,7 @@ export PATH=$PWD/lib:$PATH:$PWD:$PWD/executables:$PWD/scripts/filters:$PWD/scrip
 export PYTHONPATH=$PWD/python:$PYTHONPATH
 export LORENZETTI_SCRIPTS_DIR=$PWD/scripts
 export LORENZETTI_EVTGEN_DATA_DIR=$PWD/data/evtgen
-export LORENZETTI_ATLAS_DATA_DIR=$PWD/data/ATLAS
+export LORENZETTI_GEOMETRY_DATA_DIR=$PWD/data/geometry
 export LC_ALL=''
 export RCM_NO_COLOR=0
 export RCM_GRID_ENV=0

@@ -3,12 +3,25 @@
 #include "PulseGenerator.h"
 #include "Randomize.hh"
 #include "TRandom.h"
-#include "EventInfo/EventInfoContainer.h"
-#include "EventInfo/EventInfoConverter.h"
+
 
 using namespace Gaugi;
 
 
+/**
+ * @class PulseGenerator
+ * @brief Generates electronic pulse shapes for calorimeter cells.
+ * 
+ * Simulates the response of the readout electronics to an energy deposit.
+ * It uses a reference shaper function (read from a file) to convolve the
+ * energy deposit in time. It also adds electronic noise and random deformations.
+ * 
+ * Properties:
+ * - ShaperFile: File containing the reference pulse shape points.
+ * - Pedestal: Baseline voltage.
+ * - NoiseMean/Std: Electronic noise parameters.
+ * - SamplingRate: Readout sampling rate (usually 25ns).
+ */
 PulseGenerator::PulseGenerator( std::string name ) : 
   IMsgService(name),
   AlgTool(),
@@ -26,13 +39,6 @@ PulseGenerator::PulseGenerator( std::string name ) :
   declareProperty( "NoiseStd"         , m_noiseStd=0            );
   declareProperty( "NSamples"         , m_nsamples=7            );
   declareProperty( "StartSamplingBC"  , m_startSamplingBC=0     );
-
-  // new for including cell defects
-  declareProperty( "doDefects"          , m_doDefects=false                 );
-  declareProperty( "deadModules"        , m_deadModules=false               );
-  declareProperty( "cellHash"           , m_cellHash={}                     );
-  declareProperty( "noiseFactor"        , m_noiseFactor={}                  );
-  declareProperty( "noisyEvents"        , m_noisyEvents={}                  );
 }
 
 //!=====================================================================
@@ -46,10 +52,6 @@ StatusCode PulseGenerator::initialize()
 {
   setMsgLevel( (MSG::Level)m_outputLevel );
   MSG_DEBUG( "Reading shaper values from: " << m_shaperFile << " and " << m_nsamples << " samples.");
-  MSG_DEBUG("doDefects "<<m_doDefects<<" cell hash "<<m_cellHash<<" noise factor "<<m_noiseFactor)
-  if (m_doDefects){
-    MSG_INFO("artificial anomalies will be applied to some cell signals")
-  }
   ReadShaper( m_shaperFile );
   return StatusCode::SUCCESS;
 }
@@ -63,6 +65,13 @@ StatusCode PulseGenerator::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Generates the pulse for a cell.
+ * 
+ * Loops over bunch crossings and sums the contribution of energy deposits
+ * from each BCID, weighted by the shaper function at the appropriate time lag.
+ * Adds noise and sets the final pulse in the cell object.
+ */
 StatusCode PulseGenerator::execute( SG::EventContext &ctx, Gaugi::EDM *edm ) const
 {
   auto *cell = static_cast<xAOD::CaloDetDescriptor*>(edm);
@@ -86,72 +95,8 @@ StatusCode PulseGenerator::execute( SG::EventContext &ctx, Gaugi::EDM *edm ) con
     cell->setPulse( bcid, pulse ); 
   }
 
-  // access event number of this specific event
-  SG::ReadHandle<xAOD::EventInfoContainer> event("Events", ctx);
-  xAOD::EventInfo_t event_t;
-  xAOD::EventInfoConverter cnv;
-  cnv.convert( (**event.ptr()).front(), event_t);
-  int eventNumber = event_t.eventNumber;
-
-  std::size_t index = 0;  // Initialize index
-
-  // only introduce defects if m_doDefects is true
-  bool anom_flag(false);
-  if (m_doDefects && m_deadModules){ 
-    for (auto group : m_cellHash ) {
-      for (auto hash : group){
-        unsigned long int detector_part = static_cast<unsigned long int>(cell->hash() / 1e7);
-        MSG_DEBUG("detector part: "<<detector_part<<" vs hash: "<<hash);
-        // only introduce defects for specific cells and specific events
-        if ((detector_part == static_cast<unsigned long int>(hash)) && 
-            (eventNumber >= m_noisyEvents[index][0]) && 
-            (eventNumber <= m_noisyEvents[index][1]))
-        {
-          MSG_INFO("perturbed event: "<<eventNumber)
-          MSG_INFO("events concerned by noise: "<<m_noisyEvents[index])
-          MSG_INFO("perturbed cell hash: "<<cell->hash()<<" vs "<<hash);
-          MSG_INFO("pulse sum : "<<pulse_sum << " with mean " << m_noiseMean << " and std " << m_noiseStd);
-          MSG_INFO("simulating dead cell, setting pulse to zero");
-          pulse_sum.assign(pulse_size, 0.0);
-          cell->edep(0, 0.0); // reset energy deposit
-          cell->setE(0.0); // reset estimated energy
-          anom_flag = true;
-          MSG_INFO("pulse sum after noise: "<<pulse_sum);
-          MSG_INFO("cell energy after noise: "<<cell->e());
-        }
-      }
-      ++index;
-    }
-  }
-  else if (m_doDefects && !m_deadModules){
-    for (auto group : m_cellHash ) {
-      for (auto hash : group){
-        // only introduce defects for specific cells and specific events
-        if ((cell->hash() == static_cast<unsigned long int>(hash)) &&
-         (eventNumber >= m_noisyEvents[index][0]) && 
-         (eventNumber <= m_noisyEvents[index][1])){
-            MSG_INFO("perturbed event: "<<eventNumber)
-            MSG_INFO("events concerned by noise: "<<m_noisyEvents[index])
-            MSG_INFO("increasing noise for cell with hash id: "<<cell->hash());
-            // Add gaussian noise with increased noiseStd
-            AddGaussianNoise(pulse_sum, m_noiseMean, m_noiseFactor[index]*m_noiseStd);  
-            anom_flag = true;
-            MSG_INFO("pulse sum after noise: "<<pulse_sum);
-            MSG_INFO("cell energy after noise: "<<cell->e());
-        }
-      }
-      ++index;
-    }
-
-  }  
-  else{
-    MSG_DEBUG("default noise")
-    // Add gaussian noise
-    AddGaussianNoise(pulse_sum, m_noiseMean, m_noiseStd);
-  }
- 
-  cell->setAnomalous(anom_flag);
-  MSG_DEBUG("local anomalous flag "<< anom_flag << " vs cell anomalous flag " << cell->anomalous() );
+  // Add gaussian noise
+  AddGaussianNoise(pulse_sum, m_noiseMean, m_noiseStd);
 
   // Add the integrated pulse centered in the bunch crossing zero
   cell->setPulse( pulse_sum );
