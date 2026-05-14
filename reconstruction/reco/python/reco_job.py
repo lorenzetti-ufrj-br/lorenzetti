@@ -51,6 +51,9 @@ def merge_args( parser, exclude_input_file : bool=False ):
     parser.add_argument('--overwrite', action='store_true',
                         dest='overwrite', required=False,
                         help='Rerun all jobs.')
+    parser.add_argument('--dry-run', action='store_true',
+                        dest='dry_run', required=False,
+                        help='Perform a dry run without executing jobs.')
    
     return merge_args_from_file(parser)
 
@@ -62,22 +65,13 @@ def normalize_input_files(x):
 
 def update_args( args ):
 
-    args.input_file = normalize_input_files(args.input_file)
-
-    missing = [p for p in args.input_file if not p.exists()]
-    if missing:
-        raise FileNotFoundError(f"Input file(s) not found: {missing}")
-
-    expanded_files = []
-
-    for p in args.input_file:
-        if p.is_dir():
-            expanded = expand_folders(os.path.abspath(p))
-            expanded_files.extend([Path(f) for f in expanded if f.endswith(".root")])
-        else:
-            expanded_files.append(p.resolve())
-
-    args.input_file = expanded_files
+    args.input_file = Path(args.input_file)
+    if not args.input_file.exists():
+        raise FileNotFoundError(f"Input file {args.input_file} not found.")
+    if args.input_file.is_dir():
+        args.input_file = expand_folders(os.path.abspath(args.input_file))
+    else:
+        args.input_file = [os.path.abspath(args.input_file)]
 
     return update_args_from_file(args)
 
@@ -86,15 +80,16 @@ def update_args( args ):
 class Parallel:
 
     def __init__(self,
-                 files: List[Path],
-                 output_file: str,
-                 number_of_threads: int = 1,
-                 number_of_events: int = -1,
-                 events_per_job: int = -1,
-                 merge: bool = False,
-                 ntuple_name: str = "CollectionTree",
-                 overwrite: bool = False,
-                ):
+                 files             : List[str],
+                 output_file       : str,
+                 number_of_threads : int=1,
+                 number_of_events  : int=-1,
+                 events_per_job    : int=-1,
+                 merge             : bool=False,
+                 ntuple_name       : str="CollectionTree",
+                 overwrite         : bool = False,
+                 dry_run           : bool = False,
+                ):  
 
         self.files = [Path(f) for f in files]
         self.number_of_events = number_of_events
@@ -103,7 +98,8 @@ class Parallel:
         self.merge_files = merge
         self.ntuple_name = ntuple_name
         self.output_file = output_file
-        self.overwrite = overwrite
+        self.overwrite=True#overwrite
+        self.dry_run=dry_run
 
 
     def build_plan(self) -> Dict:
@@ -160,14 +156,16 @@ class Parallel:
                 if not check_file_exists(output_per_file_per_job, self.ntuple_name) or self.overwrite :
                     jobs.append( (input_file, output_per_file_per_job, events) )
         pprint(jobs)
-        pool = joblib.Parallel(n_jobs=self.number_of_threads)
-        pool( joblib.delayed(function)(events=events, input_file=input_file, output_file=output_file, **args) for input_file, output_file, events in jobs)
         
-        files = []
-        for output_per_file in plan.keys():
-            files+=list(plan[output_per_file].keys())
-        if self.merge_files or len(files)==1:
-            merge( self.output_file , files)                    
+        if not self.dry_run:
+            pool = joblib.Parallel(n_jobs=self.number_of_threads)
+            pool( joblib.delayed(function)(events=events, input_file=input_file, output_file=output_file, **args) for input_file, output_file, events in jobs)
+
+            files = []
+            for output_per_file in plan.keys():
+                files+=list(plan[output_per_file].keys())
+            if self.merge_files or len(files)==1:
+                merge( self.output_file , files)                    
             
 
 
@@ -179,5 +177,6 @@ def create_parallel_job( args ):
                 number_of_events  = args.number_of_events,
                 events_per_job    = args.events_per_job,
                 merge             = args.merge,
-                overwrite         = args.overwrite
+                overwrite         = args.overwrite,
+                dry_run           = args.dry_run
             )   

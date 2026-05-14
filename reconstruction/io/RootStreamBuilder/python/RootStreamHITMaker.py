@@ -1,10 +1,12 @@
 __all__ = ["RootStreamHITMaker"]
 
+import ROOT
+
+from typing import List
 from GaugiKernel import Cpp
 from GaugiKernel.macros import *
 from RootStreamBuilder import RootStreamHITFlags as flags
 from RootStreamBuilder import RootStreamESDFlags as flags_ESD
-import ROOT
 
 class RootStreamHITMaker( Cpp ):
 
@@ -22,8 +24,7 @@ class RootStreamHITMaker( Cpp ):
                 OnlyRoI          : bool=flags.OnlyRoI,
                 EtaWindow        : float=flags.EtaWindow,
                 PhiWindow        : float=flags.PhiWindow,
-                doDefects        : bool=False,
-                cellHash         : list=flags_ESD.cellHash,
+                KeepCells        : List[int]=None,
               ): 
     
     Cpp.__init__(self, ROOT.RootStreamHITMaker(name))
@@ -32,18 +33,15 @@ class RootStreamHITMaker( Cpp ):
     self.setProperty( "InputTruthKey"   , InputTruthKey   )
     self.setProperty( "InputHitsKey"    , InputHitsKey    )
     self.setProperty( "InputSeedsKey"   , InputSeedsKey   )
-
     self.setProperty( "OutputEventKey"  , OutputEventKey if OutputEventKey else InputEventKey  )
     self.setProperty( "OutputTruthKey"  , OutputTruthKey if OutputTruthKey else InputTruthKey  )
     self.setProperty( "OutputHitsKey"   , OutputHitsKey if OutputHitsKey else InputHitsKey     )
     self.setProperty( "OutputSeedsKey"  , OutputSeedsKey if OutputSeedsKey else InputSeedsKey       )
-
     self.setProperty( "OutputLevel"     , OutputLevel     ) 
     self.setProperty( "NtupleName"      , NtupleName      )
     self.setProperty( "OnlyRoI"         , OnlyRoI         )
     self.setProperty( "EtaWindow"       , EtaWindow       )
     self.setProperty( "PhiWindow"       , PhiWindow       )
-
-    self.setProperty( "doDefects"       , doDefects       )
-    self.setProperty( "cellHash"        , cellHash        )
-
+    if KeepCells: 
+      self.setProperty( "KeepCells"       , KeepCells       )
+    

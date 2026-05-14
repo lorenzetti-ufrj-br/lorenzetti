@@ -1,1 +1,0 @@
-gen_single.py --nov 1 -p Electron -o electron.EVT.root

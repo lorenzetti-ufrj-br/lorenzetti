@@ -12,6 +12,21 @@ using namespace SG;
 using namespace Gaugi;
 
 
+/**
+ * @class CaloRingsMaker
+ * @brief Algorithm to build RingSets (Ringer variable) from CaloClusters.
+ * 
+ * "Rings" are concentric energy sums around the cluster center, calculated 
+ * per longitudinal layer. This compressed representation is often used for 
+ * fast electron identification (neural networks).
+ * 
+ * Properties:
+ * - InputClusterKey: Input clusters to calculate rings for.
+ * - OutputRingerKey: Output ring container.
+ * - DeltaEta/PhiRings: Segmentation step size for rings.
+ * - NRings: Number of rings per layer.
+ * - LayerRings: Definitions of which sampling layers belong to which RingSet.
+ */
 CaloRingsMaker::CaloRingsMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -88,6 +103,17 @@ StatusCode CaloRingsMaker::execute( EventContext &ctx, int /*evt*/ ) const
 
 //!=====================================================================
 
+/**
+ * @brief Core Rings calculation logic.
+ * 
+ * 1. Reads the CaloClusters.
+ * 2. Configures the RingSet objects based on layer definitions.
+ * 3. For each cluster:
+ *    - Identifies the max-energy cell to center the rings.
+ *    - Iterates over all cells associated with the cluster.
+ *    - Assigns cells to the appropriate RingSet and Ring index (radius).
+ * 4. Stores the resulting CaloRings object.
+ */
 StatusCode CaloRingsMaker::post_execute( EventContext &ctx ) const
 {
 
@@ -229,6 +255,17 @@ RingSet::RingSet( std::vector<CaloSampling> &samplings, unsigned nrings, float d
 
 //!=====================================================================
 
+/**
+ * @brief Adds a cell's energy to the appropriate ring.
+ * 
+ * calculates the distance (deta, dphi) from the center. If the cell
+ * falls within the ring acceptance, adds its energy normalized by cosh(eta)
+ * (Transverse Energy) to the ring sum.
+ * 
+ * @param cell The calorimeter cell.
+ * @param eta_center Center eta of the ring system.
+ * @param phi_center Center phi of the ring system.
+ */
 void RingSet::push_back( const xAOD::CaloCell *cell , float eta_center, float phi_center )
 {
   // This cell does not allow to this RingSet

@@ -1,0 +1,61 @@
+name: Test anomaly sequence
+
+on: [push]
+
+jobs:
+
+  build:
+    runs-on: self-hosted
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Compile
+        shell: bash
+        run: |
+          rm -rf *
+          git clone https://github.com/lorenzetti-ufrj-br/lorenzetti.git
+          export CPU_N=$(grep -c ^processor /proc/cpuinfo)
+          cd lorenzetti && make 
+                
+  generation:
+    runs-on: self-hosted
+    needs: build
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event Generation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          cd .github/workflows/tests/anomaly
+          gen_zee.py --nov 5 -o Zee.EVT.root
+          
+
+  simulation:
+    runs-on: self-hosted
+    needs: generation
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Event Simulation
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          cd .github/workflows/tests/anomaly
+          python create_brl.py
+          simu_trf.py -i Zee.EVT.root -o Zee.HIT.root -nt 5 --nov 5 --pre-exec "from CaloCellBuilder import get_cells_from_brl as reader;HIT.setProperty('KeepCells',reader('brl.json'))"
+
+  digitalization:
+    runs-on: self-hosted
+    needs: simulation
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Digit Events
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          cd .github/workflows/tests/anomaly
+          digit_trf.py -i Zee.HIT.root -o Zee.ESD.root --pre-init "from CaloCellBuilder import CaloFlags, AnomalyFlags; CaloFlags.DoDefects=True; AnomalyFlags.BadRunListFile='brl.json'"
+              
+  

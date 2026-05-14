@@ -3,7 +3,7 @@
 #define RunManager_h
 
 #include "G4VUserDetectorConstruction.hh"
-#include "G4Kernel/PrimaryGenerator.h"
+#include "G4Kernel/inputs/PrimaryGenerator.h"
 #include "GaugiKernel/Algorithm.h"
 #include "GaugiKernel/MsgStream.h"
 #include "GaugiKernel/Property.h"
@@ -18,7 +18,7 @@ class RunManager: public MsgService,
 {
   public:
 
-    RunManager( std::string name);
+    RunManager( std::string name );
     ~RunManager();
     
     void run( int evt=10000);
@@ -29,6 +29,9 @@ class RunManager: public MsgService,
 
     void setDetectorConstruction( G4VUserDetectorConstruction * );
 
+    void addUICommand( std::string cmd ){
+      m_uiCommands.push_back( cmd );
+    };
 
   private:
 
@@ -36,13 +39,13 @@ class RunManager: public MsgService,
     
     int         m_timeout;
     int         m_nThreads;
-    bool        m_runVis;
     float       m_seed;
-    std::string m_vis_mac;
+    bool        m_useGUI;
     std::string m_output;
 
     std::vector< Gaugi::Algorithm* >   m_acc;
     PrimaryGenerator                  *m_generator;
     G4VUserDetectorConstruction       *m_detector;
+    std::vector< std::string >         m_uiCommands;
 };
 #endif

@@ -14,6 +14,20 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class PileupMerge
+ * @brief Merges pileup events (minbias) into the signal event.
+ * 
+ * This algorithm simulates the effect of high-luminosity pileup by overlaying
+ * hits from pre-generated minimum bias events onto the current signal event.
+ * It handles the time window (bunch crossings) and uses Poisson statistics
+ * to determine the number of pileup interactions per bunch crossing.
+ * 
+ * Properties:
+ * - PileupAvg: Average number of pileup interactions (mu).
+ * - PileupSigma: Fluctuations in mu.
+ * - BunchIdStart/End: Time window in bunch crossings (-20 to 20 usually).
+ */
 PileupMerge::PileupMerge( std::string name ) : 
   IMsgService(name),
   Algorithm(),
@@ -97,6 +111,13 @@ StatusCode PileupMerge::execute( EventContext &ctx, int /*evt*/ ) const
 }
 
 //!=====================================================================
+/**
+ * @brief Executes the pileup merging process.
+ * 
+ * 1. Reads the signal event hits.
+ * 2. Attempts to merge the pileup hits (with retries in case of I/O errors).
+ * 3. Saves the merged hit container and updated EventInfo (with new avgMu).
+ */
 StatusCode PileupMerge::post_execute( EventContext &ctx ) const
 {
 
@@ -181,6 +202,17 @@ StatusCode PileupMerge::post_execute( EventContext &ctx ) const
 //!=====================================================================
 
 
+/**
+ * @brief Helper function to perform the actual merging.
+ * 
+ * Iterates through bunch crossings (BCID) from start to end.
+ * For each BCID, it determines the number of pileup interactions (Poisson)
+ * and randomly selects events from the low/high pileup input files/trees.
+ * It then reads the hits from those events and adds their energy to the
+ * corresponding signal hits.
+ * 
+ * @return The average number of pileup interactions added per bunch crossing.
+ */
 float PileupMerge::merge( EventContext &ctx, std::vector<xAOD::CaloHit*> &vec_hits ) const{
 
   MSG_INFO( "Link all branches..." );
