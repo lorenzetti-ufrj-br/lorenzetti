@@ -70,6 +70,8 @@ include_directories( ${HEPMC_INCLUDE_DIRS} )
 add_subdirectory( core/GaugiKernel )
 add_subdirectory( core/G4Kernel )
 
+
+
 # event packages
 add_subdirectory( events/CaloHit )
 add_subdirectory( events/CaloCell )
@@ -80,16 +82,24 @@ add_subdirectory( events/TruthParticle )
 add_subdirectory( events/CaloRings )
 add_subdirectory( events/Egamma)
 
+# detector definitions
+add_subdirectory( geometry )
+
+
+
 # reconstruction package
+
 add_subdirectory( reconstruction/calorimeter/CaloCellBuilder )
 add_subdirectory( reconstruction/calorimeter/CaloClusterBuilder )
 add_subdirectory( reconstruction/calorimeter/CaloRingsBuilder )
+add_subdirectory( reconstruction/calorimeter/CaloHitBuilder )
+
+
 add_subdirectory( reconstruction/io/RootStreamBuilder )
 add_subdirectory( reconstruction/physics/EgammaBuilder )
 add_subdirectory( reconstruction/reco )
 
-# detector definitions
-add_subdirectory( geometry/ATLAS )
+
 
 # generator package
 add_subdirectory( generator/genkernel )
@@ -97,7 +107,6 @@ add_subdirectory( generator/filters )
 add_subdirectory( generator/evtgen )
 
 
-add_subdirectory( scripts )
 
 
 
@@ -113,6 +122,8 @@ add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:CaloRings>
   $<TARGET_OBJECTS:Egamma>
   $<TARGET_OBJECTS:SpacePoint>
+  $<TARGET_OBJECTS:geometry>
+  $<TARGET_OBJECTS:CaloHitBuilder>
   $<TARGET_OBJECTS:CaloCellBuilder>
   $<TARGET_OBJECTS:CaloClusterBuilder>
   $<TARGET_OBJECTS:CaloRingsBuilder>

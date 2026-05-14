@@ -1,7 +1,7 @@
 
 
 #include "G4Kernel/RunManager.h"
-#include "G4Kernel/ActionInitialization.h"
+#include "G4Kernel/actions/ActionInitialization.h"
 #include "GaugiKernel/Algorithm.h"
 
 
@@ -30,19 +30,15 @@
 RunManager::RunManager( std::string name ): 
   IMsgService( name ),
   PropertyService(),
-  m_detector(nullptr)
+  m_detector(nullptr),
+  m_uiCommands()
 {
   
   declareProperty( "NumberOfThreads", m_nThreads=1              );
-#ifdef G4MULTITHREADED
-  //XInitThreads();
-#endif
   declareProperty( "OutputFile"     , m_output="Example.root"   );
   declareProperty( "Seed"           , m_seed=0                  );
-  declareProperty( "RunVis"         , m_runVis=false            );
-  declareProperty( "VisMac"         , m_vis_mac                 );
   declareProperty( "Timeout"        , m_timeout = 3*60          ); // 3 minutes as default
-
+  declareProperty( "UseGUI"         , m_useGUI=false            );
   MSG_INFO( "Run manager was created." );
 
 }
@@ -75,8 +71,9 @@ void RunManager::run( int evt )
   
   int argc=1;
   char* argv[1] = {"app"};
+
   G4UIExecutive* ui = 0;
-  if ( m_runVis ) {
+  if ( m_useGUI ) {
     ui = new G4UIExecutive(argc,argv);
   }
 
@@ -131,28 +128,19 @@ void RunManager::run( int evt )
   visManager->Initialize();
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
   
-  //UImanager->ApplyCommand("/globalField/setValue 0 0 2000000 tesla");
-
   std::stringstream runCommand; runCommand << "/run/beamOn " << evt ;
-
-
-
-  if (!m_runVis ) {
-    UImanager->ApplyCommand("/run/initialize");
-    UImanager->ApplyCommand("/run/printProgress 1");
-    UImanager->ApplyCommand("/run/verbose 2");
-    UImanager->ApplyCommand(runCommand.str());
-  } else  {
-    MSG_INFO("Applying /core/G4Kernel/data/vis.mac macro");
-    UImanager->ApplyCommand("/run/initialize");
-    UImanager->ApplyCommand("/run/printProgress 1");
-    UImanager->ApplyCommand("/run/verbose 2");
-    UImanager->ApplyCommand("/control/execute "+ m_vis_mac);
-    UImanager->ApplyCommand(runCommand.str());
+  m_uiCommands.push_back( runCommand.str() );
+  UImanager->ApplyCommand("/run/initialize");
+  UImanager->ApplyCommand("/run/printProgress 1");
+  UImanager->ApplyCommand("/run/verbose 2");
+  for ( auto cmd : m_uiCommands ){
+    UImanager->ApplyCommand( cmd );
+  }
+  if(m_useGUI){
     ui->SessionStart();
     delete ui;
-  
   }
+
 
   delete runManager;
   delete visManager;

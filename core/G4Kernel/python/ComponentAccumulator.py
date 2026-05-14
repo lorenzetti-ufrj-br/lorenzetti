@@ -16,13 +16,15 @@ class ComponentAccumulator(Cpp):
     Uses the G4Kernel RunManager as a backend.
     """
 
-    def __init__(self, name, detector,
+    def __init__(self, 
+                 name, 
+                 detector,
                  OutputFile: str = "output.root",
                  Seed: int = 512,
                  NumberOfThreads: int = 1,
-                 RunVis: bool = False,
                  Timeout: int = 120*MINUTES,
-                 OutputLevel: int = LoggingLevel.toC('INFO'),
+                 UseGUI: bool = False,
+                 #OutputLevel: int = LoggingLevel.toC('INFO'),
                  ):
 
         Cpp.__init__(self, ROOT.RunManager(name))
@@ -33,11 +35,13 @@ class ComponentAccumulator(Cpp):
         self._core.setDetectorConstruction(self.__detector.core())
         self.setProperty("OutputFile", OutputFile)
         #self.setProperty("OutputLevel", OutputLevel)
-        self.setProperty("VisMac", self.__detector.VisMac)
         self.setProperty("NumberOfThreads", NumberOfThreads)
         self.setProperty("Timeout", Timeout)
-        self.setProperty("RunVis", RunVis)
         self.setProperty("Seed", Seed)
+        self.setProperty("UseGUI", UseGUI)
+
+        if UseGUI:
+            [self._core.addUICommand(cmd) for cmd in detector.get_ui_commands()] 
         self.outputFiles = [ f"{self.OutputFile}.{thread}" for thread in range(self.NumberOfThreads)]
 
 
@@ -45,7 +49,6 @@ class ComponentAccumulator(Cpp):
         del self._core
         gc.collect()
         time.sleep(2)
-        self.merge()
 
     def run(self, evt: int = -1):
         """
@@ -61,6 +64,7 @@ class ComponentAccumulator(Cpp):
         if (evt > self.__numberOfEvents):
             evt = self.__numberOfEvents
         self._core.run(evt)
+        self.merge()
 
     def __add__(self, algs):
         if type(algs) is not list:

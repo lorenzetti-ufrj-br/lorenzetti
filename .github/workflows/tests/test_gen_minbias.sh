@@ -1,1 +1,0 @@
-gen_minbias.py --nov 1 --pileup-avg 1 -o mb.EVT.root

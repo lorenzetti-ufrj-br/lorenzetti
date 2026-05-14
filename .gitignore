@@ -38,3 +38,14 @@ production/*
 
 # scripts
 *.sh
+.DS_Store
+# Documentation
+doc/lorenzetti_docs_env/
+doc/venv_doc/
+doc/build/
+doc/doxygen/
+doc/source/api/
+doc/source/cxx/
+doc/mock_site_packages/
+doc/get-pip.pydoc/venv*/
+doc/source/guides/*.ipynb

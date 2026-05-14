@@ -12,6 +12,13 @@
 
 
 
+/**
+ * @class ElectronMaker
+ * @brief Algorithm to reconstruct electron candidates.
+ * 
+ * Creates electron objects from CaloClusters. It may apply selection criteria
+ * (ID cuts) such as Loose, Medium, Tight to flag the candidates.
+ */
 class ElectronMaker : public Gaugi::Algorithm
 {
 
@@ -39,6 +46,12 @@ class ElectronMaker : public Gaugi::Algorithm
     
     virtual StatusCode finalize() override;
 
+    /**
+     * @brief Check if a cluster passes the electron ID cuts.
+     * @param cluster The candidate cluster.
+     * @param workingPoint The operating point (Tight, Medium, Loose).
+     * @return true if accepted.
+     */
     bool compute(const xAOD::CaloCluster* cluster, std::string workingPoint) const;
 
 

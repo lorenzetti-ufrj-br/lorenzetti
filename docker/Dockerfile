@@ -99,6 +99,7 @@ RUN git clone https://github.com/Geant4/geant4.git && \
         -DGEANT4_BUILD_MULTITHREADED=ON \
         -DGEANT4_USE_SYSTEM_ZLIB=ON \
         -DGEANT4_USE_OPENGL_X11=ON \
+        -DGEANT4_BUILD_TLS_MODEL=global-dynamic \
         -DGEANT4_USE_QT=ON \
         -DGEANT4_USE_GDML=ON \
         -DGEANT4_INSTALL_DATA_TIMEOUT=999999 \
@@ -174,6 +175,31 @@ ENV FASTJET_LIBRARIES=/usr/local/lib
 ENV HEPMC_INCLUDE=/opt/optmc/include/
 ENV HEPMC_LIBRARIES=/usr/local/lib
 ENV LD_PRELOAD=/opt/geant4/build/BuildProducts/lib/libG4vis_management.so:/opt/geant4/build/BuildProducts/lib/libG4visHepRep.so:/opt/geant4/build/BuildProducts/lib/libG4tracking.so:/opt/geant4/build/BuildProducts/lib/libG4track.so:/opt/geant4/build/BuildProducts/lib/libG4run.so:/opt/geant4/build/BuildProducts/lib/libG4readout.so:/opt/geant4/build/BuildProducts/lib/libG4ptl.so:/opt/geant4/build/BuildProducts/lib/libG4processes.so:/opt/geant4/build/BuildProducts/lib/libG4physicslists.so:/opt/geant4/build/BuildProducts/lib/libG4particles.so:/opt/geant4/build/BuildProducts/lib/libG4parmodels.so:/opt/geant4/build/BuildProducts/lib/libG4modeling.so:/opt/geant4/build/BuildProducts/lib/libG4mctruth.so:/opt/geant4/build/BuildProducts/lib/libG4materials.so:/opt/geant4/build/BuildProducts/lib/libG4interfaces.so:/opt/geant4/build/BuildProducts/lib/libG4intercoms.so:/opt/geant4/build/BuildProducts/lib/libG4graphics_reps.so:/opt/geant4/build/BuildProducts/lib/libG4global.so:/opt/geant4/build/BuildProducts/lib/libG4geomtext.so:/opt/geant4/build/BuildProducts/lib/libG4geometry.so:/opt/geant4/build/BuildProducts/lib/libG4gdml.so:/opt/geant4/build/BuildProducts/lib/libG4event.so:/opt/geant4/build/BuildProducts/lib/libG4error_propagation.so:/opt/geant4/build/BuildProducts/lib/libG4digits_hits.so:/opt/geant4/build/BuildProducts/lib/libG4clhep.so:/opt/geant4/build/BuildProducts/lib/libG4analysis.so:/opt/geant4/build/BuildProducts/lib/libG4VRML.so:/opt/geant4/build/BuildProducts/lib/libG4Tree.so:/opt/geant4/build/BuildProducts/lib/libG4ToolsSG.so:/opt/geant4/build/BuildProducts/lib/libG4RayTracer.so:/opt/geant4/build/BuildProducts/lib/libG4OpenGL.so:/opt/geant4/build/BuildProducts/lib/libG4GMocren.so:/opt/geant4/build/BuildProducts/lib/libG4FR.so:
+
+
+
+RUN git clone https://github.com/iLCSoft/LCIO.git
+RUN cd LCIO && git checkout v02-15-01    
+RUN cd LCIO && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=../install && make -j$(nproc) install
+ENV LCIO_DIR=/opt/LCIO/build
+
+
+RUN git clone https://github.com/AIDASoft/DD4hep.git
+RUN cd DD4hep && git checkout v01-33
+RUN cd DD4hep && mkdir build && cd build && \
+    cmake -DDD4HEP_USE_GEANT4=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_TESTING=ON -DDD4HEP_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Release .. && \
+    make -j$(nproc) && make install
+ENV PATH=/opt/DD4hep/build:$PATH
+
+RUN git clone https://github.com/iLCSoft/lcgeo.git
+RUN cd lcgeo && mkdir build && cd build && \
+    cmake -DBoost_NO_BOOST_CMAKE=ON  .. && \
+    make -j$(nproc)
+
+
+
+
+
 
 #ARG LORENZETTI_BUILD_DIR=""
 #ENV LORENZETTI_BUILD_DIR=${LORENZETTI_BUILD_DIR}

@@ -14,6 +14,21 @@ using namespace Gaugi;
 
 
 
+/**
+ * @class CaloClusterMaker
+ * @brief Reconstruction algorithm to perform Seeded-Clustering.
+ * 
+ * This algorithm groups calorimeter cells into clusters initiated by seed particles 
+ * (typically truth particles or reconstructed candidates). It scans for the "hottest" 
+ * cell near a seed and aggregates energy within a fixed rectangular window in eta-phi.
+ * 
+ * Properties:
+ * - InputCellsKey: Collection of calorimeter cells.
+ * - InputSeedsKey: Collection of seeds (positions).
+ * - OutputClusterKey: Output collection of reconstructed clusters.
+ * - Eta/PhiWindow: Size of the clustering window.
+ * - MinCenterEnergy: Minimum energy required for the central cell to seed a cluster.
+ */
 CaloClusterMaker::CaloClusterMaker( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -45,7 +60,7 @@ CaloClusterMaker::~CaloClusterMaker()
 StatusCode CaloClusterMaker::initialize()
 {
   CHECK_INIT();
-  //setMsgLevel(m_outputLevel);
+  setMsgLevel(m_outputLevel);
   m_showerShapes = new ShowerShapes( "ShowerShapes" );
   m_showerShapes->setForwardMoments(m_doForwardMoments);
   return StatusCode::SUCCESS;
@@ -108,6 +123,14 @@ StatusCode CaloClusterMaker::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Core clustering logic executed for each event.
+ * 
+ * 1. Retrieves seeds and cell containers.
+ * 2. Iterates over seeds to find the corresponding "hot cell" (maximum energy) in the Second Layer (EMB2/EMEC2).
+ * 3. Verifies if the energy in a 0.1x0.1 core is above threshold (MinCenterEnergy).
+ * 4. If qualified, creates a CaloCluster, collects all cells within the Eta/Phi window, and calculates shower shapes.
+ */
 StatusCode CaloClusterMaker::post_execute( EventContext &ctx ) const
 {
 
@@ -145,12 +168,12 @@ StatusCode CaloClusterMaker::post_execute( EventContext &ctx ) const
       
       // Must be EM2 cells layer
       if( (det->sampling() != CaloSampling::EMB2) && (det->sampling() != CaloSampling::EMEC2) ) continue;
-
       // Check if cell is inside 
       float deltaEta = std::abs( part->eta() - cell->eta() );
       float deltaPhi = std::abs( CaloPhiRange::diff( part->phi() , cell->phi() ));
       if (deltaEta < m_etaWindow/2 && deltaPhi < m_phiWindow/2 && cell->e() > emaxs2){
         hotcell=cell; emaxs2=cell->e();
+        MSG_DEBUG( "Hot cell found: " << cell->e() << " " << cell->eta() << " " << cell->phi() );
       }
     }
 
@@ -217,6 +240,8 @@ StatusCode CaloClusterMaker::fillHistograms(EventContext &ctx ) const
 
   store->cd(m_histPath);
 
+  unsigned cluster_idx=0;
+
   for( const auto& clus : **clusters.ptr() ){
   
     
@@ -281,7 +306,9 @@ StatusCode CaloClusterMaker::fillHistograms(EventContext &ctx ) const
     MSG_DEBUG( "f1       : " << clus->f1()     );
     MSG_DEBUG( "f3       : " << clus->f3()     );
     MSG_DEBUG( "Weta2    : " << clus->weta2()  );
+    MSG_INFO("Cluster " << cluster_idx << " Number of cells: " << clus->cells().size() );
     MSG_DEBUG("=================================================");
+    cluster_idx++;
   }
 
   return StatusCode::SUCCESS;

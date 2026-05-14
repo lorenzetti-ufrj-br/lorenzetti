@@ -1,1 +1,0 @@
-gen_zee.py --nov 2 -o Zee.EVT.root
