@@ -9,39 +9,71 @@ from CaloCellBuilder    import CaloCellMaker
 from CaloCellBuilder    import CaloCellMerge
 from CaloCellBuilder    import CrossTalkMaker
 from CaloCellBuilder    import PulseGenerator
+from CaloCellBuilder    import AnomalyGenerator
 from CaloCellBuilder    import OptimalFilter, ConstrainedOptimalFilter
-from CaloCellBuilder    import CaloFlags
+from CaloCellBuilder    import CaloFlags, CrossTalkFlags, AnomalyFlags
 
 #
 # Calo cell builder
 #
 class CaloCellBuilder( Logger ):
+  """
+  A high-level configuration builder for the Calorimeter Digitization chain.
 
+  This class orchestrates the creation of algorithms that transform energy hits
+  into digital signals (cells). It handles:
+  - Pulse shape simulation (PulseGenerator)
+  - Electronic noise injection
+  - Optimal Filtering (OF) for energy/time reconstruction
+  - Cross-talk simulation
+  - Defect/Anomaly injection
+  - Merging of cell collections into a single container.
+  """
 
-  def __init__( self, name, detector,
+  def __init__( self, name, 
+                      detector,
                       HistogramPath        = "Expert", 
                       InputHitsKey         = "Hits",
                       OutputCellsKey       = "Cells",
                       OutputTruthCellsKey  = "TruthCells",
+                      InputEventKey        = "Events",
                       OutputLevel          = LoggingLevel.toC('INFO'),
-                      doDefects            = False,
-                      noiseFactor          = [1],
                       ):
+    """
+    Initialize the CaloCellBuilder.
 
-    Logger.__init__(self)
+    Args:
+        name (str): Name of the builder instance.
+        detector (DetectorConstruction): The detector geometry configuration object.
+        HistogramPath (str): Path in the output ROOT file for monitoring histograms.
+        InputHitsKey (str): StoreGate key for input hits.
+        OutputCellsKey (str): StoreGate key for output reconstructed cells.
+        OutputTruthCellsKey (str): StoreGate key for truth information of cells.
+        InputEventKey (str): StoreGate key for event headers.
+        OutputLevel (int): Logging verbosity level.
+    """
+
+    Logger.__init__(self, name)
     self.__recoAlgs = []
     self.HistogramPath       = HistogramPath
     self.OutputLevel         = OutputLevel
     self.InputHitsKey        = InputHitsKey
+    self.InputEventKey       = InputEventKey
     self.OutputCellsKey      = OutputCellsKey
     self.OutputTruthCellsKey = OutputTruthCellsKey
     self.Detector            = detector
     self.OutputCollectionKeys= []
-    self.doDefects           = doDefects
-    self.noiseFactor         = noiseFactor
 
     
   def configure(self):
+    """
+    Internal method to instantiate and configure the digitization algorithms.
+    
+    Iterates over all calorimeter samplings defined in the detector geometry
+    and creates specific algorithms (CaloCellMaker) for each. Configures
+    pulse generation, optimal filtering, and optional effects like cross-talk
+    and anomalies.
+    """
 
     MSG_INFO(self, "Configure CaloCellBuilder.")
   
@@ -63,11 +95,9 @@ class CaloCellBuilder( Logger ):
                               NoiseMean       = 0.0,
                               NoiseStd        = samp.Noise,
                               StartSamplingBC = samp.StartSamplingBC, 
-                              doDefects       = self.doDefects,
-                              noiseFactor     = self.noiseFactor,
                               )
      
-      if CaloFlags.HadEnergyEstimationCOF and samp.Detector == Detector.TILE: 
+      if CaloFlags.DoCOF and samp.Detector == Detector.TILE: 
         of = ConstrainedOptimalFilter("ConstrainedOptimalFiler",
                                       NSamples  = samp.Samples,
                                       PulsePath = samp.Shaper,
@@ -93,7 +123,18 @@ class CaloCellBuilder( Logger ):
                             )
   
       alg.PulseGenerator = pulse # for all cell
-      alg.Tools = [of] # for each cel
+      
+      if CaloFlags.DoDefects:
+          anomaly = AnomalyGenerator( "AnomalyGenerator_" + samp.CollectionKey,
+                                     InputEventKey = self.InputEventKey,
+                                     NoiseMean = pulse.NoiseMean,
+                                     NoiseStd = pulse.NoiseStd,
+                                     BadRunListFile = AnomalyFlags.BadRunListFile)
+          alg.Tools.append(anomaly) # for each cel
+      
+      alg.Tools.append( of )  # for each cell
+      
+      
       self.__recoAlgs.append( alg )
 
 
@@ -101,10 +142,10 @@ class CaloCellBuilder( Logger ):
           cx = CrossTalkMaker( "CrossTalkMaker_" + samp.CollectionKey,
                                 InputCollectionKey    = samp.CollectionKey + "_Aux",
                                 OutputCollectionKey   = samp.CollectionKey,
-                                MinEnergy             = CaloFlags.XTMinEnergy,
-                                XTAmpCapacitive       = CaloFlags.XTAmpCapacitive,
-                                XTAmpInductive        = CaloFlags.XTAmpInductive,
-                                XTAmpResistive        = CaloFlags.XTAmpResistive,
+                                MinEnergy             = CrossTalkFlags.MinEnergy,
+                                AmpCapacitive         = CaloFlags.AmpCapacitive,
+                                AmpInductive          = CaloFlags.AmpInductive,
+                                AmpResistive          = CaloFlags.AmpResistive,
                                 HistogramPath         = self.HistogramPath + '/CrossTalk',
                                 OutputLevel           = self.OutputLevel
                              )
@@ -132,6 +173,12 @@ class CaloCellBuilder( Logger ):
 
 
   def merge( self, acc ):
+    """
+    Merges the configured algorithms into the main ComponentAccumulator.
+
+    Args:
+        acc (ComponentAccumulator): The master accumulator to add the algorithms to.
+    """
     # configure
     self.configure()
     for reco in self.__recoAlgs:

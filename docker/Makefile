@@ -20,13 +20,14 @@ build:
 				 -t ${DOCKER_NAMESPACE}/lorenzetti:latest .
 
 build_singularity:
-	singularity build --sandbox lorenzetti_latest.sif docker://${DOCKER_NAMESPACE}/lorenzetti:latest
+	export SINGULARITY_CACHEDIR=${PWD}/cache && singularity build --sandbox lorenzetti_latest.sif docker://${DOCKER_NAMESPACE}/lorenzetti:latest
 
 clean:
 	docker system prune -a
 
 pull:
-	singularity pull docker://lorenzetti/lorenzetti:latest
+	mkdir -p cache
+	export SINGULARITY_CACHEDIR=${PWD}/cache && singularity pull --tmpdir ${PWD}/cache docker://lorenzetti/lorenzetti:latest
 
 push:
 	docker push lorenzetti/lorenzetti:latest

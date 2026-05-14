@@ -4,6 +4,20 @@
 using namespace Gaugi;
 
 
+/**
+ * @class ConstrainedOptimalFilter
+ * @brief Calculates energy and time using the Constrained Optimal Filtering method.
+ * 
+ * This tool reconstructs the cell energy from the digitized samples. Unlike the 
+ * standard OF, it calculates the weights dynamically or uses specific constraints
+ * (e.g. baseline restoration) to minimize noise and pileup effects. It builds the
+ * autocorrelation matrix and solves the linear system to find the amplitude.
+ * 
+ * Properties:
+ * - PulsePath: Path to the reference pulse shape file.
+ * - Threshold: Minimum amplitude threshold for processing.
+ * - NSamples: Number of samples used in the filter.
+ */
 ConstrainedOptimalFilter::ConstrainedOptimalFilter( std::string name ) : 
   IMsgService(name),
   AlgTool()
@@ -61,6 +75,15 @@ StatusCode ConstrainedOptimalFilter::finalize()
 
 //!=====================================================================
 
+/**
+ * @brief Executes the COF algorithm.
+ * 
+ * 1. Generates the reference pulse.
+ * 2. Builds the covariance matrix (H).
+ * 3. Inverts the matrix to solve for the amplitude (a_hat).
+ * 4. Applies an iterative procedure to select valid samples (passing threshold).
+ * 5. Re-calculates the final energy using the selected samples.
+ */
 StatusCode ConstrainedOptimalFilter::execute( SG::EventContext &/*ctx*/, Gaugi::EDM *edm ) const
 {
   std::vector<float> refpulse;

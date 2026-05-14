@@ -6,6 +6,13 @@
 
 
 
+/**
+ * @class OptimalFilter
+ * @brief AlgTool for signal reconstruction using standard Optimal Filtering (OF).
+ * 
+ * Uses pre-calculated weights to estimate the energy and time from the
+ * digitized samples.
+ */
 class OptimalFilter : public Gaugi::AlgTool
 {
 
@@ -16,7 +23,12 @@ class OptimalFilter : public Gaugi::AlgTool
     virtual StatusCode initialize() override;
     virtual StatusCode finalize() override;
 
-    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM * ) const override;
+    /**
+     * @brief Apply the optimal filter to the cell.
+     * @param ctx Event context.
+     * @param edm Pointer to the CaloDetDescriptor (cell).
+     */
+    virtual StatusCode execute( SG::EventContext &ctx, Gaugi::EDM *edm ) const override;
 
   private:
 

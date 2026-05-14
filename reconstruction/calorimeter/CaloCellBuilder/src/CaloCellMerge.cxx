@@ -16,6 +16,20 @@ using namespace Gaugi;
 using namespace SG;
 
 
+/**
+ * @class CaloCellMerge
+ * @brief Algorithm to merge multiple cell collections into a single container.
+ * 
+ * This algorithm gathers partial cell collections (e.g. from different samplings
+ * like EMB1, EMB2, Tile1, etc.) produced by separate CaloCellMaker instances
+ * and merges them into a single global CaloCellContainer. It handles both
+ * reconstructed cells and truth cells.
+ * 
+ * Properties:
+ * - InputCollectionKeys: List of keys for the partial collections.
+ * - OutputCellsKey: Key for the final merged reconstructed cell container.
+ * - OutputTruthCellsKey: Key for the final merged truth cell container.
+ */
 CaloCellMerge::CaloCellMerge( std::string name ) : 
   IMsgService(name),
   Algorithm()
@@ -77,6 +91,13 @@ StatusCode CaloCellMerge::execute( EventContext &ctx , int /*evt*/ ) const
 
 //!=====================================================================
 
+/**
+ * @brief Core merge logic.
+ * 
+ * Iterates through all input keys, retrieves the corresponding `CaloDetDescriptorCollection`,
+ * creates new `xAOD::CaloCell` objects (copying info from descriptors), and pushes them
+ * into the output containers.
+ */
 StatusCode CaloCellMerge::post_execute( EventContext &ctx ) const
 {
 
@@ -118,21 +139,20 @@ StatusCode CaloCellMerge::post_execute( EventContext &ctx ) const
       truth_cell->setDeltaPhi( descriptor->deltaPhi() );
       truth_cell->setE( descriptor->edep() ); // The truth will be the energy deposity
       truth_cell->setEt( truth_cell->e() / std::cosh( truth_cell->eta() ) );
-      truth_cell->setTau( descriptor->tof());
+      truth_cell->setTau( -1 );
       
       truth_cell->setDescriptor( descriptor );
       truthContainer->push_back( truth_cell );
 
       // Create the Reco cell
       auto cell = new xAOD::CaloCell();
-      truth_cell->setEta( descriptor->eta() );
       cell->setEta( descriptor->eta() );
       cell->setPhi( descriptor->phi() );
       cell->setDeltaEta( descriptor->deltaEta() );
       cell->setDeltaPhi( descriptor->deltaPhi() );
       cell->setE( descriptor->e() ); // Estimated energy from OF
-      cell->setTau( descriptor->tau());
       cell->setEt( cell->e() / std::cosh( cell->eta() ) );
+      cell->setTau( descriptor->tau());
 
       cell->setDescriptor( descriptor );
       recoContainer->push_back( cell );
