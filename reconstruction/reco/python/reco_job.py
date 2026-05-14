@@ -55,16 +55,29 @@ def merge_args( parser, exclude_input_file : bool=False ):
     return merge_args_from_file(parser)
 
 
+def normalize_input_files(x):
+    if isinstance(x, (str, Path)):
+        return [Path(x)]
+    return [Path(i) for i in x]
+
 def update_args( args ):
 
-    args.input_file = Path(args.input_file)
-    if not args.input_file.exists():
-        raise FileNotFoundError(f"Input file {args.input_file} not found.")
-    if args.input_file.is_dir():
-        args.input_file = expand_folders(os.path.abspath(args.input_file))
-        args.input_file = [Path(inp) for inp in args.input_file if inp.endswith('.root')]
-    else:
-        args.input_file = os.path.abspath(args.input_file)
+    args.input_file = normalize_input_files(args.input_file)
+
+    missing = [p for p in args.input_file if not p.exists()]
+    if missing:
+        raise FileNotFoundError(f"Input file(s) not found: {missing}")
+
+    expanded_files = []
+
+    for p in args.input_file:
+        if p.is_dir():
+            expanded = expand_folders(os.path.abspath(p))
+            expanded_files.extend([Path(f) for f in expanded if f.endswith(".root")])
+        else:
+            expanded_files.append(p.resolve())
+
+    args.input_file = expanded_files
 
     return update_args_from_file(args)
 
@@ -73,24 +86,24 @@ def update_args( args ):
 class Parallel:
 
     def __init__(self,
-                 files             : List[str],
-                 output_file       : str,
-                 number_of_threads : int=1,
-                 number_of_events  : int=-1,
-                 events_per_job    : int=-1,
-                 merge             : bool=False,
-                 ntuple_name       : str="CollectionTree",
-                 overwrite         : bool = False,
-                ):  
+                 files: List[Path],
+                 output_file: str,
+                 number_of_threads: int = 1,
+                 number_of_events: int = -1,
+                 events_per_job: int = -1,
+                 merge: bool = False,
+                 ntuple_name: str = "CollectionTree",
+                 overwrite: bool = False,
+                ):
 
-        self.files             = files
-        self.number_of_events  = number_of_events
+        self.files = [Path(f) for f in files]
+        self.number_of_events = number_of_events
         self.number_of_threads = number_of_threads
-        self.events_per_job    = events_per_job
-        self.merge_files       =  merge
+        self.events_per_job = events_per_job
+        self.merge_files = merge
         self.ntuple_name = ntuple_name
         self.output_file = output_file
-        self.overwrite=True#overwrite
+        self.overwrite = overwrite
 
 
     def build_plan(self) -> Dict:
@@ -109,8 +122,13 @@ class Parallel:
         print(self.files)
         for idx, path in tqdm( enumerate(self.files), desc="Loop over files...", total=len(self.files)):
             try:
-                f = ROOT.TFile( path,"read")
-                entries = f.Get( self.ntuple_name ).GetEntries()
+                f = ROOT.TFile(str(path), "read")
+                # entries = f.Get( self.ntuple_name ).GetEntries()
+                tree = f.Get(self.ntuple_name)
+                if not tree:
+                    print(f"Tree {self.ntuple_name} not found in {path}")
+                    continue
+                entries = tree.GetEntries()
                 f.Close()
             except:
                 traceback.print_exc()
