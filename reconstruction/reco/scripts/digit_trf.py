@@ -30,6 +30,16 @@ def parse_args():
     parser.add_argument('-c', '--command', action='store',
                         dest='command', required=False, default="''",
                         help="The preexec command")
+    parser.add_argument('--noiseFactor',
+                        dest='noiseFactor',
+                        type=float,
+                        default=1.0,
+                        help='Noise scaling factor')
+    parser.add_argument('--doDefects',
+                        dest='doDefects',
+                        action='store_true',
+                        default=False,
+                        help='Enable detector defects simulation')
 
     parser = merge_args(parser)
 
