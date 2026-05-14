@@ -4,6 +4,7 @@ import argparse
 import sys
 import traceback
 import multiprocessing
+from pathlib import Path
 
 from multiprocessing        import Process
 from pathlib                import Path
@@ -116,7 +117,9 @@ def run(args):
 
     if isinstance(args.input_file, list) and not isinstance(args.input_file[0], Path):
         args.input_file = [Path(inp) for inp in args.input_file if inp.endswith('.root')]
-
+    elif isinstance(args.input_file, str):
+        args.input_file = [Path(args.input_file)]
+        
     if not all(inp.exists() for inp in args.input_file):
         raise FileNotFoundError(f"Input file {args.input_file} not found.")
 
