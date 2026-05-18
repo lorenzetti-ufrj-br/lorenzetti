@@ -69,6 +69,7 @@ def parse_args():
         required=False,
         type=str,
         default="std",
+        choices=["std", "asym", "corner", "strips"],
         help="The ringer topology configuration.",
     )
 
