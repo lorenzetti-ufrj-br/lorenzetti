@@ -28,6 +28,8 @@ class CaloRingsMaker(Cpp):
         SigmaCut: float = 2.0,
         RingerTopology: str = "std",
         CornerShift: int = 3,
+        CrossShift: int = 3,
+        RingsShift: list = [(0, 0)],
         Axis: int = 0,
     ):
 
@@ -39,6 +41,10 @@ class CaloRingsMaker(Cpp):
             cpp_class = ROOT.CaloCornerRingsMaker(name)
         elif RingerTopology == "std":
             cpp_class = ROOT.CaloRingsMaker(name)
+        elif RingerTopology == "cross":
+            cpp_class = ROOT.CaloCrossRingsMaker(name)
+        elif RingerTopology == "custom":
+            cpp_class = ROOT.CaloCustomRingsMaker(name)
         else:
             print("Topology not found!")
 
@@ -59,3 +65,7 @@ class CaloRingsMaker(Cpp):
             self.setProperty("CornerShift", CornerShift)
         if RingerTopology == "strips":
             self.setProperty("Axis", Axis)
+        if RingerTopology == "cross":
+            self.setProperty("CrossShift", CrossShift)
+        if RingerTopology == "custom":
+            self.setProperty("RingsShift", RingsShift)
