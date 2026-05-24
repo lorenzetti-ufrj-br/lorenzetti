@@ -29,7 +29,8 @@ class CaloRingsMaker(Cpp):
         RingerTopology: str = "std",
         CornerShift: int = 3,
         CrossShift: int = 3,
-        RingsShift: list = [(0, 0)],
+        RingsShiftEta: list = [0],
+        RingsShiftPhi: list = [0],
         Axis: int = 0,
     ):
 
@@ -68,4 +69,5 @@ class CaloRingsMaker(Cpp):
         if RingerTopology == "cross":
             self.setProperty("CrossShift", CrossShift)
         if RingerTopology == "custom":
-            self.setProperty("RingsShift", RingsShift)
+            self.setProperty("RingsShiftEta", RingsShiftEta)
+            self.setProperty("RingsShiftPhi", RingsShiftPhi)

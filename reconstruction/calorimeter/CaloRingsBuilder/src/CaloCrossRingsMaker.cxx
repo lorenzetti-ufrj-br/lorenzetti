@@ -17,18 +17,16 @@ std::vector<SeedPosC> CaloCrossRingsMaker::getSeeds(float c_eta, float c_phi, co
   float deltaPhi = rs.dphi() * m_crossShift;
   MSG_DEBUG("Shift (eta,phi) (" << deltaEta << ", " << deltaPhi << ")");
 
-  seeds.push_back({c_eta, c_phi});            // Center  [0]
   seeds.push_back({c_eta + deltaEta, c_phi}); // Top     [1]
   seeds.push_back({c_eta - deltaEta, c_phi}); // Bottom  [2]
   seeds.push_back({c_eta, c_phi - deltaPhi}); // Left    [3]
   seeds.push_back({c_eta, c_phi + deltaPhi}); // Right   [4]
 
   MSG_DEBUG("Calculating crosss position...");
-  MSG_DEBUG("Center cell: (" << seeds[0].eta << ", " << seeds[0].phi << ")");
-  MSG_DEBUG("Top:   (" << seeds[1].eta << ", " << seeds[1].phi << ")");
-  MSG_DEBUG("Bottom:(" << seeds[2].eta << ", " << seeds[2].phi << ")");
-  MSG_DEBUG("Left:  (" << seeds[3].eta << ", " << seeds[3].phi << ")");
-  MSG_DEBUG("Right: (" << seeds[4].eta << ", " << seeds[4].phi << ")");
+  MSG_DEBUG("Top:   (" << seeds[0].eta << ", " << seeds[0].phi << ")");
+  MSG_DEBUG("Bottom:(" << seeds[1].eta << ", " << seeds[1].phi << ")");
+  MSG_DEBUG("Left:  (" << seeds[2].eta << ", " << seeds[2].phi << ")");
+  MSG_DEBUG("Right: (" << seeds[3].eta << ", " << seeds[3].phi << ")");
 
   return seeds;
 }
@@ -36,7 +34,7 @@ std::vector<SeedPosC> CaloCrossRingsMaker::getSeeds(float c_eta, float c_phi, co
 void RingSetCross::push_back(const xAOD::CaloCell *cell, float eta_center, float phi_center, int cross_idx)
 {
   int total_rings = (int)m_rings.size();
-  int rings_per_cross = total_rings / 5;
+  int rings_per_cross = total_rings / 4;
   int offset = cross_idx * rings_per_cross;
   if (isValid(cell))
   {
@@ -97,7 +95,7 @@ StatusCode CaloCrossRingsMaker::post_execute(SG::EventContext &ctx) const
       MSG_DEBUG("Retrieving seeds ...")
       float base_eta = hotCell ? hotCell->eta() : clus->eta();
       float base_phi = hotCell ? hotCell->phi() : clus->phi();
-      std::vector<SeedPosC> seeds = getSeeds(base_eta, base_phi, rs); // Obtendo o 5 centroides (C,TR,TL,BL,BR)
+      std::vector<SeedPosC> seeds = getSeeds(base_eta, base_phi, rs);
       for (auto *cell : clus->cells())
       {
         if (m_DoSigmaCut)
@@ -108,9 +106,9 @@ StatusCode CaloCrossRingsMaker::post_execute(SG::EventContext &ctx) const
           if (cell->e() <= m_SigmaCut * cell->descriptor()->sigma())
             continue;
         }
-        std::vector<std::string> crossNames = {"Center", "Top", "Bottom", "Left", "Right"};
+        std::vector<std::string> crossNames = {"Top", "Bottom", "Left", "Right"};
 
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < 4; ++i)
         {
 
           rs.push_back(cell, seeds[i].eta, seeds[i].phi, i);

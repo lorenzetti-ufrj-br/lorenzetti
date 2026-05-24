@@ -59,12 +59,16 @@ caloStripsRingsArgs = caloRingsArgs | {
     "Axis": 0,
 }
 caloCornerRingsArgs = caloRingsArgs | {
-    "NRings": [n * 5 for n in N_RINGS],
+    "NRings": [n * 4 for n in N_RINGS],
     "CornerShift": 3,
 }
 caloCrossRingsArgs = caloRingsArgs | {
-    "NRings": [n * 5 for n in N_RINGS],
+    "NRings": [n * 4 for n in N_RINGS],
     "CrossShift": 3,
+}
+caloCustomRingsArgs = caloRingsArgs | {
+    "RingsShiftEta": [3, 3, -3, -3],
+    "RingsShiftPhi": [3, -3, -3, 3],
 }
 caloRingsFwdArgs = {
     "DeltaEtaRings": DELTA_ETA_RINGS_FWD,
@@ -80,6 +84,7 @@ caloRingerTopologies = {
     "strips": caloStripsRingsArgs,
     "corner": caloCornerRingsArgs,
     "cross": caloCrossRingsArgs,
+    "custom": caloCustomRingsArgs,
 }
 
 
