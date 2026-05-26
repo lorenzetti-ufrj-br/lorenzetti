@@ -1,6 +1,5 @@
 __all__ = ["CaloRingsBuilderCfg"]
 
-
 from CaloRingsBuilder import CaloRingsMaker, CaloRingsMerge
 from CaloCell.CaloDefs import CaloSampling
 import numpy as np
@@ -31,7 +30,14 @@ LAYERS_RINGS = [
 ]
 
 DELTA_ETA_RINGS_FWD = [0.1, 0.1, 0.1, 0.2, 0.2, 0.2]
-DELTA_PHI_RINGS_FWD = [pi / 32, pi / 32, pi / 32, pi / 16, pi / 16, pi / 16]
+DELTA_PHI_RINGS_FWD = [
+    pi / 32,
+    pi / 32,
+    pi / 32,
+    pi / 16,
+    pi / 16,
+    pi / 16,
+]
 N_RINGS_FWD = [4, 4, 4, 2, 2, 2]
 ETA_RANGE_FWD = [2.5, 4.9]
 LAYERS_RINGS_FWD = [
@@ -51,40 +57,21 @@ caloRingsArgs = {
     "EtaRange": ETA_RANGE,
 }
 
-caloAsymRingsArgs = caloRingsArgs | {
-    "NRings": [(rings - 1) * 4 + 1 for rings in N_RINGS]
+caloRingerTopologies = {
+    "std": caloRingsArgs,
+    "asym": caloRingsArgs | {"NRings": [(n - 1) * 4 + 1 for n in N_RINGS]},
+    "strips": caloRingsArgs | {"NRings": [28, 252, 28, 14, 8, 8, 4], "Axis": 0},
+    "corner": caloRingsArgs | {"CornerShift": 3, "NRings": [n * 4 for n in N_RINGS]},
+    "cross": caloRingsArgs | {"CrossShift": 3, "NRings": [n * 4 for n in N_RINGS]},
+    "custom": caloRingsArgs | {"RingsShiftEta": [0], "RingsShiftPhi": [0]},
 }
-caloStripsRingsArgs = caloRingsArgs | {
-    "NRings": [28, 252, 28, 14, 8, 8, 4],
-    "Axis": 0,
-}
-caloCornerRingsArgs = caloRingsArgs | {
-    "NRings": [n * 4 for n in N_RINGS],
-    "CornerShift": 3,
-}
-caloCrossRingsArgs = caloRingsArgs | {
-    "NRings": [n * 4 for n in N_RINGS],
-    "CrossShift": 3,
-}
-caloCustomRingsArgs = caloRingsArgs | {
-    "RingsShiftEta": [3, 3, -3, -3],
-    "RingsShiftPhi": [3, -3, -3, 3],
-}
+
 caloRingsFwdArgs = {
     "DeltaEtaRings": DELTA_ETA_RINGS_FWD,
     "DeltaPhiRings": DELTA_PHI_RINGS_FWD,
     "NRings": N_RINGS_FWD,
     "LayerRings": LAYERS_RINGS_FWD,
     "EtaRange": ETA_RANGE_FWD,
-}
-
-caloRingerTopologies = {
-    "std": caloRingsArgs,
-    "asym": caloAsymRingsArgs,
-    "strips": caloStripsRingsArgs,
-    "corner": caloCornerRingsArgs,
-    "cross": caloCrossRingsArgs,
-    "custom": caloCustomRingsArgs,
 }
 
 
@@ -97,8 +84,25 @@ def CaloRingsBuilderCfg(
     DoSigmaCut: bool = False,
     SigmaCut: float = 2.0,
     RingerTopology: str = "std",
+    CornerShift: int = None,
+    CrossShift: int = None,
+    RingsShiftEta: list = None,
+    RingsShiftPhi: list = None,
+    Axis: int = None,
 ):
+    topology_args = dict(caloRingerTopologies[RingerTopology])
 
+    if CornerShift is not None:
+        topology_args["CornerShift"] = CornerShift
+    if CrossShift is not None:
+        topology_args["CrossShift"] = CrossShift
+    if Axis is not None:
+        topology_args["Axis"] = Axis
+    if RingsShiftEta is not None:
+        topology_args["RingsShiftEta"] = RingsShiftEta
+    if RingsShiftPhi is not None:
+        topology_args["RingsShiftPhi"] = RingsShiftPhi
+    print(topology_args)
     rings = CaloRingsMaker(
         name,
         InputClusterKey=InputClusterKey,
@@ -108,7 +112,7 @@ def CaloRingsBuilderCfg(
         DoSigmaCut=DoSigmaCut,
         SigmaCut=SigmaCut,
         RingerTopology=RingerTopology,
-        **caloRingerTopologies[RingerTopology]
+        **topology_args,
     )
 
     fwd_rings = CaloRingsMaker(
@@ -117,7 +121,7 @@ def CaloRingsBuilderCfg(
         OutputRingerKey=OutputRingerKey + "_Fwd_Aux",
         HistogramPath=HistogramPath + "_Fwd",
         OutputLevel=OutputLevel,
-        **caloRingsFwdArgs
+        **caloRingsFwdArgs,
     )
 
     merge_rings = CaloRingsMerge(

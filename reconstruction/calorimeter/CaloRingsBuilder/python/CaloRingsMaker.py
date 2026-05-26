@@ -34,22 +34,22 @@ class CaloRingsMaker(Cpp):
         Axis: int = 0,
     ):
 
-        if RingerTopology == "asym":
-            cpp_class = ROOT.CaloAsymRingsMaker(name)
-        elif RingerTopology == "strips":
-            cpp_class = ROOT.CaloStripsRingsMaker(name)
-        elif RingerTopology == "corner":
-            cpp_class = ROOT.CaloCornerRingsMaker(name)
-        elif RingerTopology == "std":
-            cpp_class = ROOT.CaloRingsMaker(name)
-        elif RingerTopology == "cross":
-            cpp_class = ROOT.CaloCrossRingsMaker(name)
-        elif RingerTopology == "custom":
-            cpp_class = ROOT.CaloCustomRingsMaker(name)
-        else:
-            print("Topology not found!")
+        topology_map = {
+            "std": ROOT.CaloRingsMaker,
+            "asym": ROOT.CaloAsymRingsMaker,
+            "strips": ROOT.CaloStripsRingsMaker,
+            "corner": ROOT.CaloCornerRingsMaker,
+            "cross": ROOT.CaloCrossRingsMaker,
+            "custom": ROOT.CaloCustomRingsMaker,
+        }
 
-        Cpp.__init__(self, cpp_class)
+        if RingerTopology not in topology_map:
+            raise ValueError(
+                f"Unknown RingerTopology '{RingerTopology}'. "
+                f"Valid options: {list(topology_map)}"
+            )
+
+        Cpp.__init__(self, topology_map[RingerTopology](name))
 
         self.setProperty("OutputRingerKey", OutputRingerKey)
         self.setProperty("InputClusterKey", InputClusterKey)
@@ -62,6 +62,7 @@ class CaloRingsMaker(Cpp):
         self.setProperty("EtaRange", EtaRange)
         self.setProperty("DoSigmaCut", DoSigmaCut)
         self.setProperty("SigmaCut", SigmaCut)
+
         if RingerTopology == "corner":
             self.setProperty("CornerShift", CornerShift)
         if RingerTopology == "strips":

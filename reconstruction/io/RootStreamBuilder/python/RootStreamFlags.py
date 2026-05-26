@@ -20,3 +20,13 @@ class RootStreamESDFlags(EnumStringification):
 class RootStreamAODFlags(EnumStringification):
 
     DumpCells = True
+
+    RingerTopology = "std"  # "std", "asym", "strips", "corner", "cross", "custom"
+
+    DoSigmaCut = False
+    SigmaCut = 2.0
+    CornerShift = 3
+    CrossShift = 3
+    CustomRingsShiftEta: list = [0]
+    CustomRingsShiftPhi: list = [0]
+    StripsAxis = 0

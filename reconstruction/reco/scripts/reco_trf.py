@@ -13,9 +13,7 @@ from CaloClusterBuilder import CaloClusterMaker
 from CaloRingsBuilder import CaloRingsBuilderCfg
 from EgammaBuilder import ElectronBuilderCfg
 from RootStreamBuilder import RootStreamAODMaker
-
-from reco.reco_job import merge_args, update_args, create_parallel_job
-
+from RootStreamBuilder.RootStreamFlags import RootStreamAODFlags as flags
 
 from reco.reco_job import merge_args, update_args, create_parallel_job
 
@@ -61,18 +59,6 @@ def parse_args():
         help="The preexec command",
     )
 
-    parser.add_argument(
-        "-rt",
-        "--ringer-topology",
-        action="store",
-        dest="ringer_topology",
-        required=False,
-        type=str,
-        default="std",
-        choices=["std", "asym", "corner", "strips", "cross", "custom"],
-        help="The ringer topology configuration.",
-    )
-
     return merge_args(parser)
 
 
@@ -82,7 +68,6 @@ def main(
     input_file: str | Path,
     output_file: str | Path,
     command: str,
-    ringer_topology: str,
 ):
     """
     Main function for the reconstruction workflow.
@@ -101,7 +86,6 @@ def main(
         output_file (str | Path): Path to output AOD file.
         command (str): Optional command to execute before the sequence.
     """
-
     if isinstance(input_file, Path):
         input_file = str(input_file)
     if isinstance(output_file, Path):
@@ -125,7 +109,6 @@ def main(
     )
     ESD.merge(acc)
 
-    # build cluster for all seeds
     cluster = CaloClusterMaker(
         "CaloClusterMaker",
         InputCellsKey=recordable("Cells"),
@@ -137,33 +120,6 @@ def main(
         OutputLevel=outputLevel,
     )
 
-    rings = CaloRingsBuilderCfg(
-        "CaloRingsBuilder",
-        InputClusterKey=recordable("Clusters"),
-        OutputRingerKey=recordable("Rings"),
-        HistogramPath="Expert/Rings",
-        OutputLevel=outputLevel,
-        RingerTopology=ringer_topology,
-    )
-
-    ringsL0 = CaloRingsBuilderCfg(
-        "CaloRingsBuilderL0",
-        InputClusterKey=recordable("Clusters"),
-        OutputRingerKey=recordable("RingsL0"),
-        HistogramPath="Expert/RingsL0",
-        OutputLevel=outputLevel,
-        DoSigmaCut=True,
-        SigmaCut=2.0,
-    )
-
-    hypo = ElectronBuilderCfg(
-        "ElectronBuilder",
-        InputClusterKey=recordable("Clusters"),
-        OutputElectronKey=recordable("Electrons"),
-        OutputLevel=outputLevel,
-    )
-
-    # build cluster for all seeds
     cluster_truth = CaloClusterMaker(
         "CaloClusterMaker_Truth",
         InputCellsKey=recordable("TruthCells"),
@@ -174,12 +130,20 @@ def main(
         HistogramPath="Expert/TruthClusters",
         OutputLevel=outputLevel,
     )
+    ringsL0 = CaloRingsBuilderCfg(
+        "CaloRingsBuilderL0",
+        InputClusterKey=recordable("Clusters"),
+        OutputRingerKey=recordable("RingsL0"),
+        HistogramPath="Expert/RingsL0",
+        OutputLevel=outputLevel,
+        DoSigmaCut=True,
+        SigmaCut=flags.SigmaCut,
+    )
 
-    rings_truth = CaloRingsBuilderCfg(
-        "CaloRingsBuilder_Truth",
-        InputClusterKey=recordable("TruthClusters"),
-        OutputRingerKey=recordable("TruthRings"),
-        HistogramPath="Expert/TruthRings",
+    hypo = ElectronBuilderCfg(
+        "ElectronBuilder",
+        InputClusterKey=recordable("Clusters"),
+        OutputElectronKey=recordable("Electrons"),
         OutputLevel=outputLevel,
     )
 
@@ -188,6 +152,41 @@ def main(
         InputClusterKey=recordable("TruthClusters"),
         OutputElectronKey=recordable("TruthElectrons"),
         OutputLevel=outputLevel,
+    )
+
+    extra = {}
+    topology = flags.RingerTopology.lower()
+    if topology == "corner":
+        extra["CornerShift"] = flags.CornerShift
+    elif topology == "cross":
+        extra["CrossShift"] = flags.CrossShift
+    elif topology == "custom":
+        extra["RingsShiftEta"] = flags.CustomRingsShiftEta
+        extra["RingsShiftPhi"] = flags.CustomRingsShiftPhi
+    elif topology == "strips":
+        extra["Axis"] = flags.StripsAxis
+
+    rings = CaloRingsBuilderCfg(
+        "CaloRingsBuilder",
+        InputClusterKey=recordable("Clusters"),
+        OutputRingerKey=recordable("Rings"),
+        HistogramPath="Expert/Rings",
+        OutputLevel=outputLevel,
+        RingerTopology=topology,
+        DoSigmaCut=flags.DoSigmaCut,
+        SigmaCut=flags.SigmaCut,
+        **extra,
+    )
+    rings_truth = CaloRingsBuilderCfg(
+        "CaloRingsBuilder_Truth",
+        InputClusterKey=recordable("TruthClusters"),
+        OutputRingerKey=recordable("TruthRings"),
+        HistogramPath="Expert/TruthRings",
+        OutputLevel=outputLevel,
+        RingerTopology=flags.RingerTopology,
+        DoSigmaCut=flags.DoSigmaCut,
+        SigmaCut=flags.SigmaCut,
+        **extra,
     )
 
     AOD = RootStreamAODMaker(
@@ -232,5 +231,4 @@ if __name__ == "__main__":
         main,
         logging_level=args.output_level,
         command=args.command,
-        ringer_topology=args.ringer_topology,
     )
