@@ -1,14 +1,12 @@
 #include "CaloCustomRingsMaker.h"
 #include "G4Kernel/CaloPhiRange.h"
 #include <memory>
-
-// ---------------------------------------------------------------------------
-// RingSetCustom::push_back
-// ---------------------------------------------------------------------------
-void RingSetCustom::push_back(const xAOD::CaloCell *cell,
-                              float eta_center,
-                              float phi_center,
-                              int shift_idx)
++
+    void
+    RingSetCustom::push_back(const xAOD::CaloCell *cell,
+                             float eta_center,
+                             float phi_center,
+                             int shift_idx)
 {
     if (!isValid(cell))
         return;
@@ -27,15 +25,11 @@ void RingSetCustom::push_back(const xAOD::CaloCell *cell,
         m_rings[i] += cell->e() / std::cosh(std::abs(eta_center));
 }
 
-// ---------------------------------------------------------------------------
-// CaloCustomRingsMaker
-// ---------------------------------------------------------------------------
 CaloCustomRingsMaker::CaloCustomRingsMaker(std::string name)
     : CaloRingsMaker(name),
       m_ringsShiftEta({0.f}),
       m_ringsShiftPhi({0.f})
 {
-    // GaugiKernel suporta vector<float> — usamos dois vetores paralelos
     declareProperty("RingsShiftEta", m_ringsShiftEta);
     declareProperty("RingsShiftPhi", m_ringsShiftPhi);
 }
@@ -66,12 +60,6 @@ StatusCode CaloCustomRingsMaker::post_execute(SG::EventContext &ctx) const
     {
         MSG_ERROR("RingsShiftEta e RingsShiftPhi devem ter o mesmo tamanho! ("
                   << m_ringsShiftEta.size() << " vs " << m_ringsShiftPhi.size() << ")");
-        return StatusCode::FAILURE;
-    }
-
-    if (m_ringsShiftEta.empty())
-    {
-        MSG_ERROR("RingsShiftEta está vazio. Informe ao menos um par.");
         return StatusCode::FAILURE;
     }
 
