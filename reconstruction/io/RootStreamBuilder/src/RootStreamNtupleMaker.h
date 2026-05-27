@@ -9,13 +9,10 @@
 #include "CaloRings/CaloRings.h"
 #include "Egamma/Electron.h"
 
-
-
-
 /**
  * @class RootStreamNtupleMaker
  * @brief Algorithm to dump analysis-level variables into a flat Ntuple (TTree).
- * 
+ *
  * Reads reconstructed objects (Clusters, Rings, Electrons) and truth info
  * and writes them into a simple TTree structure suitable for physics analysis
  * (e.g., in Python/Pandas or ROOT).
@@ -23,49 +20,45 @@
 class RootStreamNtupleMaker : public Gaugi::Algorithm
 {
 
-  public:
-    /** Constructor **/
-    RootStreamNtupleMaker( std::string );
-    
-    virtual ~RootStreamNtupleMaker();
+public:
+  /** Constructor **/
+  RootStreamNtupleMaker(std::string);
 
-    virtual StatusCode initialize() override;
+  virtual ~RootStreamNtupleMaker();
 
-    virtual StatusCode bookHistograms( SG::EventContext &ctx ) const override;
-    
-    virtual StatusCode pre_execute( SG::EventContext &ctx ) const override;
-    
-    virtual StatusCode execute( SG::EventContext &ctx , const G4Step *step) const override;
-    
-    virtual StatusCode execute( SG::EventContext &ctx , int evt ) const override;
+  virtual StatusCode initialize() override;
 
-    virtual StatusCode post_execute( SG::EventContext &ctx ) const override;
-    
-    virtual StatusCode fillHistograms( SG::EventContext &ctx ) const override;
-    
-    virtual StatusCode finalize() override;
+  virtual StatusCode bookHistograms(SG::EventContext &ctx) const override;
 
-  private:
- 
-    template <class T> void InitBranch(TTree* fChain, std::string branch_name, T* param) const;
-    
+  virtual StatusCode pre_execute(SG::EventContext &ctx) const override;
 
-    std::string m_seedsKey;
-    std::string m_eventKey;
-    std::string m_truthKey;
-    std::string m_clusterKey;
-    std::string m_ringerKey;
-    std::string m_electronKey;
-    std::string m_ringerL0Key;
-    std::string m_truthClusterKey;
-    std::string m_truthRingerKey;
-    std::string m_truthElectronKey;
-    std::string m_outputNtupleName;
-  
+  virtual StatusCode execute(SG::EventContext &ctx, const G4Step *step) const override;
 
-    int m_outputLevel;
+  virtual StatusCode execute(SG::EventContext &ctx, int evt) const override;
 
+  virtual StatusCode post_execute(SG::EventContext &ctx) const override;
+
+  virtual StatusCode fillHistograms(SG::EventContext &ctx) const override;
+
+  virtual StatusCode finalize() override;
+
+private:
+  template <class T>
+  void InitBranch(TTree *fChain, std::string branch_name, T *param) const;
+
+  std::string m_seedsKey;
+  std::string m_eventKey;
+  std::string m_truthKey;
+  std::string m_clusterKey;
+  std::string m_ringerKey;
+  std::string m_electronKey;
+  std::string m_ringerL0Key;
+  std::string m_truthClusterKey;
+  std::string m_truthRingerKey;
+  std::string m_truthElectronKey;
+  std::string m_outputNtupleName;
+
+  int m_outputLevel;
 };
 
 #endif
-
