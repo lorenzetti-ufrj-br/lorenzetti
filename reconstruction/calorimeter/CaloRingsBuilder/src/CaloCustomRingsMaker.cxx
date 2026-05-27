@@ -1,12 +1,11 @@
 #include "CaloCustomRingsMaker.h"
 #include "G4Kernel/CaloPhiRange.h"
 #include <memory>
-+
-    void
-    RingSetCustom::push_back(const xAOD::CaloCell *cell,
-                             float eta_center,
-                             float phi_center,
-                             int shift_idx)
+
+void RingSetCustom::push_back(const xAOD::CaloCell *cell,
+                              float eta_center,
+                              float phi_center,
+                              int shift_idx)
 {
     if (!isValid(cell))
         return;

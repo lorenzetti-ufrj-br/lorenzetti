@@ -95,15 +95,17 @@ private:
   std::string m_inputEventKey;
   std::string m_inputSeedsKey;
   std::string m_inputClusterKey;
+
   std::string m_inputRingerKey;
   std::string m_inputRingerL0Key;
   std::string m_inputTruthKey;
-  std::string m_inputElectronKey;
+
   std::string m_inputTruthCellsKey;
   std::string m_inputTruthClusterKey;
   std::string m_inputTruthRingerKey;
-  std::string m_inputTruthElectronKey;
 
+  std::string m_inputElectronKey;
+  std::string m_inputTruthElectronKey;
   std::string m_outputCellsKey;
   std::string m_outputEventKey;
   std::string m_outputSeedsKey;
@@ -116,6 +118,11 @@ private:
   std::string m_outputTruthClusterKey;
   std::string m_outputTruthRingerKey;
   std::string m_outputTruthElectronKey;
+
+  std::vector<std::string> m_inputRingerKeys;
+  std::vector<std::string> m_outputRingerKeys;
+  std::vector<std::string> m_inputTruthRingerKeys;
+  std::vector<std::string> m_outputTruthRingerKeys;
 
   bool m_dumpCells;
   int m_outputLevel;

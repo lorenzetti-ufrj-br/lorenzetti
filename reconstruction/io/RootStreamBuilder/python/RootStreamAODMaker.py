@@ -16,24 +16,24 @@ class RootStreamAODMaker(Cpp):
         InputTruthKey: str,
         InputCellsKey: str,
         InputClusterKey: str,
-        InputRingerKey: str,
+        InputRingerKeys: list,  # all enabled topologies
         InputRingerL0Key: str,
         InputElectronKey: str,
         InputTruthCellsKey: str,
         InputTruthClusterKey: str,
-        InputTruthRingerKey: str,
+        InputTruthRingerKeys: list,  # all enabled topologies (truth)
         InputTruthElectronKey: str,
         OutputEventKey: str = None,
         OutputTruthKey: str = None,
         OutputCellsKey: str = None,
         OutputClusterKey: str = None,
-        OutputRingerKey: str = None,
+        OutputRingerKeys: list = None,
         OutputRingerL0Key: str = None,
         OutputSeedsKey: str = None,
         OutputElectronKey: str = None,
         OutputTruthCellsKey: str = None,
         OutputTruthClusterKey: str = None,
-        OutputTruthRingerKey: str = None,
+        OutputTruthRingerKeys: list = None,
         OutputTruthElectronKey: str = None,
         OutputLevel: int = 0,
         NtupleName: str = "CollectionTree",
@@ -45,12 +45,12 @@ class RootStreamAODMaker(Cpp):
         self.setProperty("InputTruthKey", InputTruthKey)
         self.setProperty("InputCellsKey", InputCellsKey)
         self.setProperty("InputClusterKey", InputClusterKey)
-        self.setProperty("InputRingerKey", InputRingerKey)
+        self.setProperty("InputRingerKeys", InputRingerKeys)
         self.setProperty("InputSeedsKey", InputSeedsKey)
         self.setProperty("InputElectronKey", InputElectronKey)
         self.setProperty("InputTruthCellsKey", InputTruthCellsKey)
         self.setProperty("InputTruthClusterKey", InputTruthClusterKey)
-        self.setProperty("InputTruthRingerKey", InputTruthRingerKey)
+        self.setProperty("InputTruthRingerKeys", InputTruthRingerKeys)
         self.setProperty(
             "OutputEventKey", OutputEventKey if OutputEventKey else InputEventKey
         )
@@ -64,9 +64,7 @@ class RootStreamAODMaker(Cpp):
             "OutputClusterKey",
             OutputClusterKey if OutputClusterKey else InputClusterKey,
         )
-        self.setProperty(
-            "OutputRingerKey", OutputRingerKey if OutputRingerKey else InputRingerKey
-        )
+        self.setProperty("OutputRingerKeys", OutputRingerKeys or InputRingerKeys)
         self.setProperty(
             "OutputSeedsKey", OutputSeedsKey if OutputSeedsKey else InputSeedsKey
         )
@@ -83,8 +81,7 @@ class RootStreamAODMaker(Cpp):
             OutputTruthClusterKey if OutputTruthClusterKey else InputTruthClusterKey,
         )
         self.setProperty(
-            "OutputTruthRingerKey",
-            OutputTruthRingerKey if OutputTruthRingerKey else InputTruthRingerKey,
+            "OutputTruthRingerKeys", OutputTruthRingerKeys or InputTruthRingerKeys
         )
         self.setProperty(
             "OutputRingerL0Key",

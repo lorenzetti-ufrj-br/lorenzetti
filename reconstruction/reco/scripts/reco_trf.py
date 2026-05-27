@@ -25,6 +25,14 @@ Purpose: Executes the offline reconstruction chain.
 Usage:
     reco_trf.py -i input.ESD.root -o output.AOD.root
 """
+TOPOLOGY_MAP = {
+    "doStdRings": ("std", "Rings"),
+    "doCornerRings": ("corner", "CornerRings"),
+    "doAsymRings": ("asym", "AsymRings"),
+    "doStripsRings": ("strips", "StripsRings"),
+    "doCrossRings": ("cross", "CrossRings"),
+    "doCustomRings": ("custom", "CustomRings"),
+}
 
 
 def parse_args():
@@ -154,40 +162,52 @@ def main(
         OutputLevel=outputLevel,
     )
 
-    extra = {}
-    topology = flags.RingerTopology.lower()
-    if topology == "corner":
-        extra["CornerShift"] = flags.CornerShift
-    elif topology == "cross":
-        extra["CrossShift"] = flags.CrossShift
-    elif topology == "custom":
-        extra["RingsShiftEta"] = flags.CustomRingsShiftEta
-        extra["RingsShiftPhi"] = flags.CustomRingsShiftPhi
-    elif topology == "strips":
-        extra["Axis"] = flags.StripsAxis
+    ring_keys = []
+    truth_ring_keys = []
+    acc_rings = []
+    acc_rings_truth = []
 
-    rings = CaloRingsBuilderCfg(
-        "CaloRingsBuilder",
-        InputClusterKey=recordable("Clusters"),
-        OutputRingerKey=recordable("Rings"),
-        HistogramPath="Expert/Rings",
-        OutputLevel=outputLevel,
-        RingerTopology=topology,
-        DoSigmaCut=flags.DoSigmaCut,
-        SigmaCut=flags.SigmaCut,
-        **extra,
-    )
-    rings_truth = CaloRingsBuilderCfg(
-        "CaloRingsBuilder_Truth",
-        InputClusterKey=recordable("TruthClusters"),
-        OutputRingerKey=recordable("TruthRings"),
-        HistogramPath="Expert/TruthRings",
-        OutputLevel=outputLevel,
-        RingerTopology=flags.RingerTopology,
-        DoSigmaCut=flags.DoSigmaCut,
-        SigmaCut=flags.SigmaCut,
-        **extra,
-    )
+    for flag_name, (topology, key_suffix) in TOPOLOGY_MAP.items():
+        if not getattr(flags, flag_name):
+            continue
+
+        extra = {}
+        if topology == "corner":
+            extra["CornerShift"] = flags.CornerShift
+        elif topology == "cross":
+            extra["CrossShift"] = flags.CrossShift
+        elif topology == "custom":
+            extra["RingsShiftEta"] = flags.CustomRingsShiftEta
+            extra["RingsShiftPhi"] = flags.CustomRingsShiftPhi
+        elif topology == "strips":
+            extra["Axis"] = flags.StripsAxis
+
+        acc_rings.append(
+            CaloRingsBuilderCfg(
+                f"CaloRingsBuilder_{topology}",
+                InputClusterKey=recordable("Clusters"),
+                OutputRingerKey=recordable(key_suffix),
+                HistogramPath=f"Expert/{key_suffix}",
+                OutputLevel=outputLevel,
+                RingerTopology=topology,
+                **extra,
+            )
+        )
+
+        acc_rings_truth.append(
+            CaloRingsBuilderCfg(
+                f"CaloRingsBuilder_Truth_{topology}",
+                InputClusterKey=recordable("TruthClusters"),
+                OutputRingerKey=recordable(f"Truth{key_suffix}"),
+                HistogramPath=f"Expert/Truth{key_suffix}",
+                OutputLevel=outputLevel,
+                RingerTopology=topology,
+                **extra,
+            )
+        )
+
+        ring_keys.append(recordable(key_suffix))
+        truth_ring_keys.append(recordable(f"Truth{key_suffix}"))
 
     AOD = RootStreamAODMaker(
         "RootStreamAODMaker",
@@ -198,8 +218,8 @@ def main(
         InputTruthCellsKey=recordable("TruthCells"),
         InputClusterKey=recordable("Clusters"),
         InputTruthClusterKey=recordable("TruthClusters"),
-        InputRingerKey=recordable("Rings"),
-        InputTruthRingerKey=recordable("TruthRings"),
+        InputRingerKeys=ring_keys,
+        InputTruthRingerKeys=truth_ring_keys,
         InputElectronKey=recordable("Electrons"),
         InputTruthElectronKey=recordable("TruthElectrons"),
         InputRingerL0Key=recordable("RingsL0"),
@@ -208,11 +228,13 @@ def main(
 
     # sequence
     acc += cluster
-    acc += rings
+    for rings in acc_rings:
+        acc += rings
     acc += ringsL0
     acc += hypo
     acc += cluster_truth
-    acc += rings_truth
+    for rings_truth in acc_rings_truth:
+        acc += rings_truth
     acc += hypo_truth
     acc += AOD
 

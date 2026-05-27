@@ -21,7 +21,12 @@ class RootStreamAODFlags(EnumStringification):
 
     DumpCells = True
 
-    RingerTopology = "std"  # "std", "asym", "strips", "corner", "cross", "custom"
+    doStdRings = True
+    doCornerRings = True
+    doAsymRings = False
+    doStripsRings = False
+    doCrossRings = False
+    doCustomRings = False
 
     DoSigmaCut = False
     SigmaCut = 2.0
