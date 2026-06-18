@@ -6,12 +6,18 @@
 #include "TMatrixD.h"
 #include "TVectorD.h"
 
+// Forward declaration of the CPS reference pulse shape. The full header is included
+// only in the .cxx so the ROOT dictionary generator never parses it.
+namespace cps {
+  class TextFilePulseShape;
+}
+
 
 
 /**
  * @class ConstrainedOptimalFilter
  * @brief AlgTool for signal reconstruction using a Constrained Optimal Filter.
- * 
+ *
  * Reconstructs the amplitude and time of the signal from the digitized
  * samples using the Optimal Filtering technique with additional constraints
  * (e.g., pedestal constraints).
@@ -25,7 +31,6 @@ class ConstrainedOptimalFilter : public Gaugi::AlgTool
     virtual ~ConstrainedOptimalFilter();
     virtual StatusCode initialize() override;
     virtual StatusCode finalize() override;
-    void ReadShaper( std::string filepath );
     void GeneratePulse(  std::vector<float> &pulse) const;
 
     /**
@@ -40,11 +45,9 @@ class ConstrainedOptimalFilter : public Gaugi::AlgTool
     /*! optimal filter weights */
     int m_startSamplingBC;
     std::string m_pulsepath;
-    std::vector<float> m_shaper;
-    float m_shaperResolution;
-    std::vector<float> m_timeSeries;
+    /*! Reference pulse shape, provided by the CPS library */
+    cps::TextFilePulseShape *m_pulseShape;
     float m_threshold;
-    int m_shaperZeroIndex;
     int m_nsamples;
     float m_samplingRate;
 };

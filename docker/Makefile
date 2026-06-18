@@ -6,6 +6,7 @@ GEANT4_VERSION=v11.2.2
 FASTJET_VERSION=3.4.0
 HEPMC_VERSION=3.3.0
 PYTHIA8_VERSION=8313
+CPS_VERSION=v1.1.0
 
 
 all:  build
@@ -17,6 +18,7 @@ build:
 				 --build-arg FASTJET_VERSION=${FASTJET_VERSION} \
 				 --build-arg PYTHIA8_VERSION=${PYTHIA8_VERSION} \
 				 --build-arg HEPMC_VERSION=${HEPMC_VERSION} \
+				 --build-arg CPS_VERSION=${CPS_VERSION} \
 				 -t ${DOCKER_NAMESPACE}/lorenzetti:latest .
 
 build_singularity:

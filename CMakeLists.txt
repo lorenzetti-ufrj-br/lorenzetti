@@ -15,6 +15,12 @@ file(GLOB FASTJET_LIBRARIES $ENV{FASTJET_LIBRARIES}/*.dylib $ENV{FASTJET_LIBRARI
 file(GLOB PYTHIA8_LIBRARIES $ENV{PYTHIA8_LIBRARIES}/*.a $ENV{PYTHIA8_LIBRARIES}/*.so)
 
 
+# CPS (Calorimetry Pulse Simulator): provides the calorimeter pulse-shaping logic
+# consumed by reconstruction/calorimeter/CaloCellBuilder. Installed under /usr/local
+# (libcps + headers in cps/) by the base Docker image.
+find_library(CPS_LIBRARY NAMES cps)
+
+
 find_package(OpenMP)
 if(OpenMP_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -144,10 +150,11 @@ target_link_Libraries(lorenzetti ${ROOT_LIBRARIES}
                                  ${PYTHON_LIBRARIES} 
                                  #${Boost_FILESYSTEM_LIBRARY} 
                                  #${Boost_SYSTEM_LIBRARY} 
-                                 ${Geant4_LIBRARIES} 
-                                 ${FASTJET_LIBRARIES} 
+                                 ${Geant4_LIBRARIES}
+                                 ${FASTJET_LIBRARIES}
                                  ${HEPMC_LIBRARIES}
-                                 ${PYTHIA8_LIBRARIES} )
+                                 ${PYTHIA8_LIBRARIES}
+                                 ${CPS_LIBRARY} )
 
 
 

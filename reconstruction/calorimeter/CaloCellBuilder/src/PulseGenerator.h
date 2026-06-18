@@ -6,14 +6,24 @@
 #include "GaugiKernel/EDM.h"
 #include "TRandom3.h"
 
+// Forward declarations of the CPS (Calorimetry Pulse Simulator) types. The full
+// headers are included only in the .cxx so the ROOT dictionary generator never
+// parses them.
+namespace cps {
+  class TextFilePulseShape;
+  class Digitizer;
+}
+
 
 /**
  * @class PulseGenerator
  * @brief Tool to simulate the electronic pulse shape.
- * 
+ *
  * This tool takes the energy deposit in a cell and generates a time-sampled
- * electronic pulse (using a shaper function). It also adds electronic noise
- * and can simulate defects.
+ * electronic pulse. The pulse shape sampling and digitization are delegated to
+ * the CPS library (cps::TextFilePulseShape + cps::Digitizer); this tool keeps the
+ * bunch-crossing accumulation and adds electronic noise/deformation using ROOT's
+ * TRandom3 to preserve reproducibility against previous results.
  */
 class PulseGenerator : public Gaugi::AlgTool
 {
@@ -39,7 +49,6 @@ class PulseGenerator : public Gaugi::AlgTool
 
   private:
 
-    void ReadShaper( std::string );
     void GenerateDeterministicPulse(  std::vector<float> &pulse,  float amplitude, float phase, float lag) const;
     void AddGaussianNoise( std::vector<float> &pulse, float noiseMean, float noiseStddev) const;
 
@@ -47,25 +56,24 @@ class PulseGenerator : public Gaugi::AlgTool
     /*! Number of samples to be generated */
     int m_nsamples;
     int m_startSamplingBC;
-    int m_shaperZeroIndex;
     float m_pedestal;
     float m_deformationMean;
     float m_deformationStd;
     float m_samplingRate;
-    float m_shaperResolution;
-    float m_noiseMean;    
-    float m_noiseStd;    
+    float m_noiseMean;
+    float m_noiseStd;
 
     // new for including cell defects
-    bool m_doDefects; 
+    bool m_doDefects;
     bool m_deadModules;
     std::vector<std::vector<int>> m_cellHash;
     std::vector<float> m_noiseFactor;
     std::vector<std::vector<int>> m_noisyEvents;
-    
-    std::vector<float> m_shaper;
-    std::vector<float> m_timeSeries;
-    
+
+    /*! Reference pulse shape and digitizer, provided by the CPS library */
+    cps::TextFilePulseShape *m_pulseShape;
+    cps::Digitizer *m_digitizer;
+
     /*! The shaper configuration path */
     std::string m_shaperFile;
     /*! Output level message */

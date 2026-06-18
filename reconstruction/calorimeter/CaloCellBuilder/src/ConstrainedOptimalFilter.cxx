@@ -1,6 +1,10 @@
 #include "ConstrainedOptimalFilter.h"
 #include "CaloCell/CaloDetDescriptor.h"
 
+#include "cps/TextFilePulseShape.h"
+#include "cps/AnalogPulse.h"
+#include "cps/Digitizer.h"
+
 using namespace Gaugi;
 
 
@@ -18,51 +22,32 @@ using namespace Gaugi;
  * - Threshold: Minimum amplitude threshold for processing.
  * - NSamples: Number of samples used in the filter.
  */
-ConstrainedOptimalFilter::ConstrainedOptimalFilter( std::string name ) : 
+ConstrainedOptimalFilter::ConstrainedOptimalFilter( std::string name ) :
   IMsgService(name),
-  AlgTool()
+  AlgTool(),
+  m_pulseShape(nullptr)
 {
   declareProperty( "PulsePath"        , m_pulsepath       );
   declareProperty( "Threshold"        , m_threshold=0.0   );
   declareProperty( "NSamples"         , m_nsamples=0      );
   declareProperty( "StartSamplingBC"  , m_startSamplingBC );
-  declareProperty( "SamplingRate"     , m_samplingRate=25 ); 
+  declareProperty( "SamplingRate"     , m_samplingRate=25 );
   declareProperty( "OutputLevel"      , m_outputLevel=1   );
 }
 
-void ConstrainedOptimalFilter::ReadShaper( std::string filepath )
-{
-  std::ifstream file;
-  m_timeSeries.clear();
-  m_shaper.clear();
-  file.open(filepath);
-  if (file) {
-     int i=0;
-     float a, b;
-     while (file >> a >> b) // loop on the input operation, not eof
-     {
-        m_timeSeries.push_back(a);
-        m_shaper.push_back(b);
-        if (a == 0.0) m_shaperZeroIndex = i;
-        i++;
-     }
-  } else {
-    MSG_FATAL( "Invalid shaper path: " << filepath );
-  }
-  file.close();
-  m_shaperResolution = m_shaper.size() > 2 ? m_timeSeries[1] - m_timeSeries[0] : m_timeSeries[0];
-}
 //!=====================================================================
 
 ConstrainedOptimalFilter::~ConstrainedOptimalFilter()
-{}
+{
+  delete m_pulseShape;
+}
 
 //!=====================================================================
 
 StatusCode ConstrainedOptimalFilter::initialize()
 {
   setMsgLevel(m_outputLevel);
-  ReadShaper(m_pulsepath);
+  m_pulseShape = new cps::TextFilePulseShape( m_pulsepath.c_str() );
   return StatusCode::SUCCESS;
 }
 
@@ -144,18 +129,30 @@ StatusCode ConstrainedOptimalFilter::execute( SG::EventContext &/*ctx*/, Gaugi::
   return StatusCode::SUCCESS;
 }
 
+/**
+ * @brief Builds the reference (unit-amplitude, zero-phase) pulse used by the filter.
+ *
+ * The shape sampling is delegated to CPS; samples whose shape time falls outside the
+ * reference pulse are set to zero (matching the original behavior).
+ */
 void ConstrainedOptimalFilter::GeneratePulse(  std::vector<float> &pulse) const
 {
   pulse.resize( m_nsamples );
-  float shr    = m_shaperResolution;  
-  float shzi   = m_shaperZeroIndex; 
+
+  cps::AnalogPulse analogPulse( m_pulseShape, /*amplitude*/ 1.0, /*pedestal*/ 0.0,
+                                /*phase*/ 0.0, /*deformationLevel*/ 0, /*noiseMean*/ 0, /*noiseStdDev*/ 0 );
+  cps::Digitizer digitizer( m_nsamples, m_samplingRate, m_startSamplingBC * m_samplingRate );
+  std::vector<double> samples = digitizer.Digitize( &analogPulse );
+
+  const double tMin = m_pulseShape->GetTMin();
+  const double tMax = m_pulseShape->GetTMax();
 
   for (int i = 0; i < m_nsamples; i++) {
-    int shaperIndex = int(shzi) + (i + m_startSamplingBC) * (m_samplingRate / shr);
-    if (shaperIndex < 0 || shaperIndex > (int)m_shaper.size() - 1){
+    double shapeTime = (i + m_startSamplingBC) * m_samplingRate;
+    if (shapeTime < tMin || shapeTime > tMax){
       pulse[i] = 0;
       continue;
     }
-    pulse[i] += m_shaper[shaperIndex];
+    pulse[i] = (float)samples[i];
   }
 }
