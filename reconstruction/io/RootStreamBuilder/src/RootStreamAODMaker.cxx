@@ -324,7 +324,7 @@ StatusCode RootStreamAODMaker::serialize(EventContext &ctx) const
   delete container_clus_truth;
   delete container_electron_truth;
 
-    for (auto *c : containers_rings)
+  for (auto *c : containers_rings)
     delete c;
   for (auto *c : containers_rings_truth)
     delete c;

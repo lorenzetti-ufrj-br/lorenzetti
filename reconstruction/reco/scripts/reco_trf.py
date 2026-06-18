@@ -26,7 +26,7 @@ Usage:
     reco_trf.py -i input.ESD.root -o output.AOD.root
 """
 TOPOLOGY_MAP = {
-    "doStdRings": ("std", "Rings"),
+    "doStdRings": ("std", "StandardRings"),
     "doCornerRings": ("corner", "CornerRings"),
     "doAsymRings": ("asym", "AsymRings"),
     "doStripsRings": ("strips", "StripsRings"),

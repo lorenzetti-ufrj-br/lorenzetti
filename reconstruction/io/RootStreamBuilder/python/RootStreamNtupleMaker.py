@@ -14,10 +14,10 @@ class RootStreamNtupleMaker(Cpp):
         InputTruthKey: str,
         InputSeedsKey: str,
         InputClusterKey: str,
-        InputRingerKey: str,
+        InputRingerKeys: str,
         InputRingerL0Key: str,
         InputTruthClusterKey: str,
-        InputTruthRingerKey: str,
+        InputTruthRingerKeys: str,
         InputTruthElectronKey: str,
         InputElectronKey: str,
         OutputLevel: int = 0,
@@ -29,10 +29,10 @@ class RootStreamNtupleMaker(Cpp):
         self.setProperty("InputTruthKey", InputTruthKey)
         self.setProperty("InputSeedsKey", InputSeedsKey)
         self.setProperty("InputClusterKey", InputClusterKey)
-        self.setProperty("InputRingerKey", InputRingerKey)
+        self.setProperty("InputRingerKeys", InputRingerKeys)
         self.setProperty("InputRingerL0Key", InputRingerL0Key)
         self.setProperty("InputTruthClusterKey", InputTruthClusterKey)
-        self.setProperty("InputTruthRingerKey", InputTruthRingerKey)
+        self.setProperty("InputTruthRingerKeys", InputTruthRingerKeys)
         self.setProperty("InputTruthElectronKey", InputTruthElectronKey)
         self.setProperty("InputElectronKey", InputElectronKey)
         self.setProperty("OutputNtupleName", OutputNtupleName)

@@ -16,12 +16,12 @@ class RootStreamAODMaker(Cpp):
         InputTruthKey: str,
         InputCellsKey: str,
         InputClusterKey: str,
-        InputRingerKeys: list,  # all enabled topologies
+        InputRingerKeys: list,
         InputRingerL0Key: str,
         InputElectronKey: str,
         InputTruthCellsKey: str,
         InputTruthClusterKey: str,
-        InputTruthRingerKeys: list,  # all enabled topologies (truth)
+        InputTruthRingerKeys: list,
         InputTruthElectronKey: str,
         OutputEventKey: str = None,
         OutputTruthKey: str = None,

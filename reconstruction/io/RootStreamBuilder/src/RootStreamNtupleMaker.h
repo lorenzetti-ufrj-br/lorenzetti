@@ -58,6 +58,9 @@ private:
   std::string m_truthElectronKey;
   std::string m_outputNtupleName;
 
+  std::vector<std::string> m_ringerKeys;
+  std::vector<std::string> m_truthRingerKeys;
+
   int m_outputLevel;
 };
 
