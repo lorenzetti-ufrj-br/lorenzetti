@@ -13,8 +13,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../core/GaugiKernel)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../core/G4Kernel)
 
 # CPS (Calorimetry Pulse Simulator): pulse-shaping logic used by PulseGenerator and
-# ConstrainedOptimalFilter. Headers live in <prefix>/include/cps, libcps in <prefix>/lib.
-find_path(CPS_INCLUDE_DIR NAMES cps/AnalogPulse.h)
+# ConstrainedOptimalFilter. CPS_INCLUDE_DIR is resolved by the top-level CMakeLists
+# (either the installed <prefix>/include or a fetched-source include dir).
 include_directories(${CPS_INCLUDE_DIR})
 
 
