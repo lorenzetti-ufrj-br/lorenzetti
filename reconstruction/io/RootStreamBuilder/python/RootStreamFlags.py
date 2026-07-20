@@ -22,7 +22,7 @@ class RootStreamAODFlags(EnumStringification):
     DumpCells = True
 
     doStdRings = True
-    doCornerRings = True
+    doCornerRings = False
     doAsymRings = False
     doStripsRings = False
     doCrossRings = False
@@ -35,3 +35,4 @@ class RootStreamAODFlags(EnumStringification):
     CustomRingsShiftEta: list = [0]
     CustomRingsShiftPhi: list = [0]
     StripsAxis = 0
+
