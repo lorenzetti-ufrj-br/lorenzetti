@@ -63,7 +63,8 @@ private:
                             std::string key,
                             std::vector<xAOD::CaloCluster_t> *container_t,
                             std::vector<xAOD::CaloCell_t> *container_cells_t,
-                            std::vector<xAOD::CaloDetDescriptor_t> *container_descriptor_t) const;
+                            std::vector<xAOD::CaloDetDescriptor_t> *container_descriptor_t,
+                            bool dump_descriptor = true) const;
 
   void serializeCaloRings(SG::EventContext &ctx,
                           std::string key,
@@ -87,7 +88,9 @@ private:
 
   void serializeCells(const xAOD::CaloCluster *clus,
                       std::vector<xAOD::CaloCell_t> *container_t,
-                      std::vector<xAOD::CaloDetDescriptor_t> *container_descriptor_t) const;
+                      std::vector<xAOD::CaloDetDescriptor_t> *container_descriptor_t,
+                      std::map<unsigned long int, const xAOD::CaloCell *> &cell_map,
+                      bool dump_descriptor = true) const;
 
   std::string m_ntupleName;
 
@@ -95,17 +98,15 @@ private:
   std::string m_inputEventKey;
   std::string m_inputSeedsKey;
   std::string m_inputClusterKey;
-
   std::string m_inputRingerKey;
   std::string m_inputRingerL0Key;
   std::string m_inputTruthKey;
-
   std::string m_inputTruthCellsKey;
   std::string m_inputTruthClusterKey;
   std::string m_inputTruthRingerKey;
-
   std::string m_inputElectronKey;
   std::string m_inputTruthElectronKey;
+
   std::string m_outputCellsKey;
   std::string m_outputEventKey;
   std::string m_outputSeedsKey;
