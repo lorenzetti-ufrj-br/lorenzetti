@@ -8,66 +8,63 @@
 
 #include "TruthParticle/TruthParticle.h"
 
-
-
-
 /**
  * @class RootStreamAODReader
  * @brief Algorithm to read AOD (Analysis Object Data) from a ROOT file.
- * 
+ *
  * Restores reconstructed objects (Clusters, Rings, Electrons, etc) from disk
  * to the memory (Event Store).
  */
 class RootStreamAODReader : public Gaugi::Algorithm
 {
 
-  public:
-    /** Constructor **/
-    RootStreamAODReader( std::string );
-    
-    virtual ~RootStreamAODReader();
+public:
+  /** Constructor **/
+  RootStreamAODReader(std::string);
 
-    virtual StatusCode initialize() override;
+  virtual ~RootStreamAODReader();
 
-    virtual StatusCode bookHistograms( SG::EventContext &ctx ) const override;
-    
-    virtual StatusCode pre_execute( SG::EventContext &ctx ) const override;
-    
-    virtual StatusCode execute( SG::EventContext &ctx , const G4Step *step) const override;
-    
-    virtual StatusCode execute( SG::EventContext &ctx , int evt ) const override;
+  virtual StatusCode initialize() override;
 
-    virtual StatusCode post_execute( SG::EventContext &ctx ) const override;
-    
-    virtual StatusCode fillHistograms( SG::EventContext &ctx ) const override;
-    
-    virtual StatusCode finalize() override;
+  virtual StatusCode bookHistograms(SG::EventContext &ctx) const override;
 
+  virtual StatusCode pre_execute(SG::EventContext &ctx) const override;
 
-  private:
- 
-    StatusCode deserialize( int evt, SG::EventContext &ctx ) const;
+  virtual StatusCode execute(SG::EventContext &ctx, const G4Step *step) const override;
 
-    template <class T> void InitBranch(TTree* fChain, std::string branch_name, T* param) const;
-    
-    //std::string m_cellsKey;
-    std::string m_eventKey;
-    std::string m_truthKey;
-    std::string m_seedsKey;
-    std::string m_ringerKey;
-    std::string m_ringerL0Key;
-    std::string m_clusterKey;
-    std::string m_electronKey;
-    std::string m_truthCellsKey;
-    std::string m_truthClusterKey;
-    std::string m_truthRingerKey;
-    std::string m_truthElectronKey;
-    std::string m_ntupleName;
-    std::string m_inputFile;
+  virtual StatusCode execute(SG::EventContext &ctx, int evt) const override;
 
-    int m_outputLevel;
+  virtual StatusCode post_execute(SG::EventContext &ctx) const override;
 
+  virtual StatusCode fillHistograms(SG::EventContext &ctx) const override;
+
+  virtual StatusCode finalize() override;
+
+private:
+  StatusCode deserialize(int evt, SG::EventContext &ctx) const;
+
+  template <class T>
+  void InitBranch(TTree *fChain, std::string branch_name, T *param) const;
+
+  // std::string m_cellsKey;
+  std::string m_eventKey;
+  std::string m_truthKey;
+  std::string m_seedsKey;
+  std::string m_ringerKey;
+  std::string m_ringerL0Key;
+  std::string m_clusterKey;
+  std::string m_electronKey;
+  std::string m_truthCellsKey;
+  std::string m_truthClusterKey;
+  std::string m_truthRingerKey;
+  std::string m_truthElectronKey;
+  std::string m_ntupleName;
+  std::string m_inputFile;
+
+  std::vector<std::string> m_ringerKeys;
+  std::vector<std::string> m_truthRingerKeys;
+
+  int m_outputLevel;
 };
 
 #endif
-

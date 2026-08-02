@@ -6,35 +6,69 @@ from GaugiKernel.macros import *
 from typing import List
 import ROOT
 import numpy as np
+
 pi = np.pi
 
 
-class CaloRingsMaker( Cpp ):
-  
-  def __init__( self, name,
-                InputClusterKey  : str, 
-                OutputRingerKey  : str, 
-                DeltaEtaRings    : list,
-                DeltaPhiRings    : list,
-                NRings           : list,
-                LayerRings       : list,
-                OutputLevel      : int=0, 
-                HistogramPath    : str="Expert/Rings",
-                EtaRange         : List[float] = [0, 2.5],
-                DoSigmaCut       : bool = False,
-                SigmaCut         : float = 2.0
-              ):
+class CaloRingsMaker(Cpp):
 
-    Cpp.__init__(self, ROOT.CaloRingsMaker(name) )
- 
-    self.setProperty( "OutputRingerKey"    , OutputRingerKey  )
-    self.setProperty( "InputClusterKey"    , InputClusterKey  )
-    self.setProperty( "DeltaEtaRings"      , DeltaEtaRings    )
-    self.setProperty( "DeltaPhiRings"      , DeltaPhiRings    )
-    self.setProperty( "NRings"             , NRings           )
-    self.setProperty( "LayerRings"         , LayerRings       )
-    self.setProperty( "HistogramPath"      , HistogramPath    )
-    self.setProperty( "OutputLevel"        , OutputLevel      )
-    self.setProperty( "EtaRange"           , EtaRange         )
-    self.setProperty( "DoSigmaCut"         , DoSigmaCut       )
-    self.setProperty( "SigmaCut"           , SigmaCut         )
+    def __init__(
+        self,
+        name,
+        InputClusterKey: str,
+        OutputRingerKey: str,
+        DeltaEtaRings: list,
+        DeltaPhiRings: list,
+        NRings: list,
+        LayerRings: list,
+        OutputLevel: int = 0,
+        HistogramPath: str = "Expert/Rings",
+        EtaRange: List[float] = [0, 2.5],
+        DoSigmaCut: bool = False,
+        SigmaCut: float = 2.0,
+        RingerTopology: str = "std",
+        CornerShift: int = 3,
+        CrossShift: int = 3,
+        RingsShiftEta: list = [0],
+        RingsShiftPhi: list = [0],
+        Axis: int = 0,
+    ):
+
+        topology_map = {
+            "std": ROOT.CaloRingsMaker,
+            "asym": ROOT.CaloAsymRingsMaker,
+            "strips": ROOT.CaloStripsRingsMaker,
+            "corner": ROOT.CaloCornerRingsMaker,
+            "cross": ROOT.CaloCrossRingsMaker,
+            "custom": ROOT.CaloCustomRingsMaker,
+        }
+
+        if RingerTopology not in topology_map:
+            raise ValueError(
+                f"Unknown RingerTopology '{RingerTopology}'. "
+                f"Valid options: {list(topology_map)}"
+            )
+
+        Cpp.__init__(self, topology_map[RingerTopology](name))
+
+        self.setProperty("OutputRingerKey", OutputRingerKey)
+        self.setProperty("InputClusterKey", InputClusterKey)
+        self.setProperty("DeltaEtaRings", DeltaEtaRings)
+        self.setProperty("DeltaPhiRings", DeltaPhiRings)
+        self.setProperty("NRings", NRings)
+        self.setProperty("LayerRings", LayerRings)
+        self.setProperty("HistogramPath", HistogramPath)
+        self.setProperty("OutputLevel", OutputLevel)
+        self.setProperty("EtaRange", EtaRange)
+        self.setProperty("DoSigmaCut", DoSigmaCut)
+        self.setProperty("SigmaCut", SigmaCut)
+
+        if RingerTopology == "corner":
+            self.setProperty("CornerShift", CornerShift)
+        if RingerTopology == "strips":
+            self.setProperty("Axis", Axis)
+        if RingerTopology == "cross":
+            self.setProperty("CrossShift", CrossShift)
+        if RingerTopology == "custom":
+            self.setProperty("RingsShiftEta", RingsShiftEta)
+            self.setProperty("RingsShiftPhi", RingsShiftPhi)

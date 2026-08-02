@@ -10,42 +10,41 @@
 #include "TH2F.h"
 #include "TH2Poly.h"
 
-
 using namespace Gaugi;
 using namespace SG;
-
 
 /**
  * @class CaloRingsMerge
  * @brief Merges multiple CaloRings containers.
- * 
+ *
  * Reads multiple `xAOD::CaloRingsContainer` objects from StoreGate and
  * consolidates them into a single output container.
- * 
+ *
  * Properties:
  * - CollectionKeys: List of input keys.
  * - OutputRingerKey: Output key.
  */
-CaloRingsMerge::CaloRingsMerge( std::string name ) : 
-  IMsgService(name),
-  Algorithm()
+CaloRingsMerge::CaloRingsMerge(std::string name) : IMsgService(name),
+                                                   Algorithm()
 {
-  declareProperty( "CollectionKeys"         , m_collectionKeys={}           );
-  declareProperty( "OutputRingerKey"        , m_ringerKey="Rings"           );
-  declareProperty( "OutputLevel"            , m_outputLevel=1               );
+  declareProperty("CollectionKeys", m_collectionKeys = {});
+  declareProperty("OutputRingerKey", m_ringerKey = "Rings");
+  declareProperty("OutputLevel", m_outputLevel = 1);
 }
 
 //!=====================================================================
 
 CaloRingsMerge::~CaloRingsMerge()
-{;}
+{
+  ;
+}
 
 //!=====================================================================
 
 StatusCode CaloRingsMerge::initialize()
 {
   CHECK_INIT();
-  setMsgLevel( m_outputLevel );
+  setMsgLevel(m_outputLevel);
   return StatusCode::SUCCESS;
 }
 
@@ -58,28 +57,28 @@ StatusCode CaloRingsMerge::finalize()
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::bookHistograms( SG::EventContext &/*ctx*/ ) const
+StatusCode CaloRingsMerge::bookHistograms(SG::EventContext & /*ctx*/) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::pre_execute( EventContext &/*ctx*/ ) const
+StatusCode CaloRingsMerge::pre_execute(EventContext & /*ctx*/) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::execute( EventContext &/*ctx*/ , const G4Step * /*step*/ ) const
+StatusCode CaloRingsMerge::execute(EventContext & /*ctx*/, const G4Step * /*step*/) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::execute( EventContext &ctx , int /*evt*/ ) const
+StatusCode CaloRingsMerge::execute(EventContext &ctx, int /*evt*/) const
 {
   return post_execute(ctx);
 }
@@ -88,51 +87,50 @@ StatusCode CaloRingsMerge::execute( EventContext &ctx , int /*evt*/ ) const
 
 /**
  * @brief Performs the merge.
- * 
+ *
  * Iterates through input keys, retrieves containers, and deep-copies rings
  * into the new master container.
  */
-StatusCode CaloRingsMerge::post_execute( EventContext &ctx ) const
+StatusCode CaloRingsMerge::post_execute(EventContext &ctx) const
 {
 
-  MSG_INFO( "Starting collection merge algorithm..." );
+  MSG_INFO("Starting collection merge algorithm...");
 
-  SG::WriteHandle<xAOD::CaloRingsContainer> ringsContainer( m_ringerKey , ctx );
-  ringsContainer.record( std::unique_ptr<xAOD::CaloRingsContainer>(new xAOD::CaloRingsContainer()) );
+  SG::WriteHandle<xAOD::CaloRingsContainer> ringsContainer(m_ringerKey, ctx);
+  ringsContainer.record(std::unique_ptr<xAOD::CaloRingsContainer>(new xAOD::CaloRingsContainer()));
 
-  
-  for ( auto key : m_collectionKeys ){
+  for (auto key : m_collectionKeys)
+  {
 
-    MSG_DEBUG( "Reading all cells from collection with key " << key );
+    MSG_DEBUG("Reading all cells from collection with key " << key);
 
-    MSG_DEBUG( "Reading the CaloRingsContainer from the Context" );
-    SG::ReadHandle<xAOD::CaloRingsContainer> collection( key , ctx );
-    
-    if( !collection.isValid() ){
-      MSG_WARNING( "It's not possible to read the xAOD::CaloRingsCollection from this Context using this key: " << key );
+    MSG_DEBUG("Reading the CaloRingsContainer from the Context");
+    SG::ReadHandle<xAOD::CaloRingsContainer> collection(key, ctx);
+
+    if (!collection.isValid())
+    {
+      MSG_WARNING("It's not possible to read the xAOD::CaloRingsCollection from this Context using this key: " << key);
       continue;
     }
 
-    MSG_DEBUG( "Creating new ring and attach the object into the container" ); 
-    for( auto ring : **collection.ptr() ){
-      xAOD::CaloRings* newRing = new xAOD::CaloRings();
-      newRing->setRings( ring->rings() );
-      newRing->setCaloCluster( ring->caloCluster() );
-      ringsContainer->push_back( newRing );
+    MSG_DEBUG("Creating new ring and attach the object into the container");
+    for (auto ring : **collection.ptr())
+    {
+      xAOD::CaloRings *newRing = new xAOD::CaloRings();
+      newRing->setRings(ring->rings());
+      newRing->setCaloCluster(ring->caloCluster());
+      ringsContainer->push_back(newRing);
     }
 
-  }// Loop over all collections
+  } // Loop over all collections
 
-  MSG_DEBUG( "All collections were merged..." );
+  MSG_DEBUG("All collections were merged...");
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::fillHistograms( EventContext & /*ctx*/ ) const
+StatusCode CaloRingsMerge::fillHistograms(EventContext & /*ctx*/) const
 {
   return StatusCode::SUCCESS;
 }
-
-
-

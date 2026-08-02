@@ -11,15 +11,14 @@
 using namespace SG;
 using namespace Gaugi;
 
-
 /**
  * @class CaloRingsMaker
  * @brief Algorithm to build RingSets (Ringer variable) from CaloClusters.
- * 
- * "Rings" are concentric energy sums around the cluster center, calculated 
- * per longitudinal layer. This compressed representation is often used for 
+ *
+ * "Rings" are concentric energy sums around the cluster center, calculated
+ * per longitudinal layer. This compressed representation is often used for
  * fast electron identification (neural networks).
- * 
+ *
  * Properties:
  * - InputClusterKey: Input clusters to calculate rings for.
  * - OutputRingerKey: Output ring container.
@@ -27,28 +26,29 @@ using namespace Gaugi;
  * - NRings: Number of rings per layer.
  * - LayerRings: Definitions of which sampling layers belong to which RingSet.
  */
-CaloRingsMaker::CaloRingsMaker( std::string name ) : 
-  IMsgService(name),
-  Algorithm()
+CaloRingsMaker::CaloRingsMaker(std::string name) : IMsgService(name),
+                                                   Algorithm()
 {
-  declareProperty( "OutputRingerKey", m_ringerKey="Rings"     );
-  declareProperty( "InputClusterKey", m_clusterKey="Clusters" );
-  declareProperty( "DeltaEtaRings"  , m_detaRings={}          );
-  declareProperty( "DeltaPhiRings"  , m_dphiRings={}          );
-  declareProperty( "NRings"         , m_nRings={}             );
-  declareProperty( "LayerRings"     , m_layerRings={}         );
-  declareProperty( "OutputLevel"    , m_outputLevel=1         );
-  declareProperty( "HistogramPath"  , m_histPath=""           );
-  declareProperty( "DoForward"      , m_doForward=false       );
-  declareProperty( "EtaRange"       , m_etaRange={0,2.5}      );
-  declareProperty( "DoSigmaCut"     , m_DoSigmaCut=false      );
-  declareProperty( "SigmaCut"       , m_SigmaCut=2.0          );
+  declareProperty("OutputRingerKey", m_ringerKey = "Rings");
+  declareProperty("InputClusterKey", m_clusterKey = "Clusters");
+  declareProperty("DeltaEtaRings", m_detaRings = {});
+  declareProperty("DeltaPhiRings", m_dphiRings = {});
+  declareProperty("NRings", m_nRings = {});
+  declareProperty("LayerRings", m_layerRings = {});
+  declareProperty("OutputLevel", m_outputLevel = 1);
+  declareProperty("HistogramPath", m_histPath = "");
+  declareProperty("DoForward", m_doForward = false);
+  declareProperty("EtaRange", m_etaRange = {0, 2.5});
+  declareProperty("DoSigmaCut", m_DoSigmaCut = false);
+  declareProperty("SigmaCut", m_SigmaCut = 2.0);
 }
 
 //!=====================================================================
 
 CaloRingsMaker::~CaloRingsMaker()
-{;}
+{
+  ;
+}
 
 //!=====================================================================
 
@@ -70,33 +70,31 @@ StatusCode CaloRingsMaker::finalize()
 
 //!=====================================================================
 
-StatusCode CaloRingsMaker::bookHistograms( EventContext &ctx ) const
+StatusCode CaloRingsMaker::bookHistograms(EventContext &ctx) const
 {
   auto store = ctx.getStoreGateSvc();
-  store->mkdir( m_histPath );
-  store->add( new TH2F( "rings", "Et Vs #ring; #ring; E_{T} [GeV]; Count", m_maxRingsAccumulated, 0, m_maxRingsAccumulated, 150, 0, 150 ));
+  store->mkdir(m_histPath);
+  store->add(new TH2F("rings", "Et Vs #ring; #ring; E_{T} [GeV]; Count", m_maxRingsAccumulated, 0, m_maxRingsAccumulated, 150, 0, 150));
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-
-StatusCode CaloRingsMaker::pre_execute( EventContext &/*ctx*/ ) const
+StatusCode CaloRingsMaker::pre_execute(EventContext & /*ctx*/) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-
-StatusCode CaloRingsMaker::execute( EventContext &/*ctx*/, const G4Step * /*step*/ ) const
+StatusCode CaloRingsMaker::execute(EventContext & /*ctx*/, const G4Step * /*step*/) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CaloRingsMaker::execute( EventContext &ctx, int /*evt*/ ) const
+StatusCode CaloRingsMaker::execute(EventContext &ctx, int /*evt*/) const
 {
   return post_execute(ctx);
 }
@@ -105,7 +103,7 @@ StatusCode CaloRingsMaker::execute( EventContext &ctx, int /*evt*/ ) const
 
 /**
  * @brief Core Rings calculation logic.
- * 
+ *
  * 1. Reads the CaloClusters.
  * 2. Configures the RingSet objects based on layer definitions.
  * 3. For each cluster:
@@ -114,103 +112,113 @@ StatusCode CaloRingsMaker::execute( EventContext &ctx, int /*evt*/ ) const
  *    - Assigns cells to the appropriate RingSet and Ring index (radius).
  * 4. Stores the resulting CaloRings object.
  */
-StatusCode CaloRingsMaker::post_execute( EventContext &ctx ) const
+StatusCode CaloRingsMaker::post_execute(EventContext &ctx) const
 {
 
-  
   SG::WriteHandle<xAOD::CaloRingsContainer> ringer(m_ringerKey, ctx);
-  ringer.record( std::unique_ptr<xAOD::CaloRingsContainer>(new xAOD::CaloRingsContainer()) );
+  ringer.record(std::unique_ptr<xAOD::CaloRingsContainer>(new xAOD::CaloRingsContainer()));
 
   SG::ReadHandle<xAOD::CaloClusterContainer> clusters(m_clusterKey, ctx);
-  
-  std::vector< RingSet > vec_rs;
 
-  MSG_DEBUG( "Creating all RingSets...");
-  MSG_DEBUG( "DoSigmaCut is "<< m_DoSigmaCut );
-  MSG_DEBUG( "SigmaCut is "<< m_SigmaCut );
-  for ( int rs=0 ; rs < (int)m_nRings.size(); ++rs )
-  {  
+  std::vector<RingSet> vec_rs;
+
+  MSG_DEBUG("Creating all RingSets...");
+  MSG_DEBUG("DoSigmaCut is " << m_DoSigmaCut);
+  MSG_DEBUG("SigmaCut is " << m_SigmaCut);
+  for (int rs = 0; rs < (int)m_nRings.size(); ++rs)
+  {
     std::vector<CaloSampling> samplings;
-    for(auto samp : m_layerRings[rs])  {
+    for (auto samp : m_layerRings[rs])
+    {
       samplings.push_back((CaloSampling)samp);
     }
-    vec_rs.push_back( RingSet( samplings, m_nRings[rs], m_detaRings[rs], m_dphiRings[rs] ) );
+    vec_rs.push_back(RingSet(samplings, m_nRings[rs], m_detaRings[rs], m_dphiRings[rs]));
   }
 
   // Loop over all CaloClusters
-  for( auto* clus : **clusters.ptr())
+  for (auto *clus : **clusters.ptr())
   {
-    MSG_INFO( "Creating the CaloRings for this cluster..." );
+    MSG_INFO("Creating the CaloRings for this cluster...");
 
-    
-
-    if( (abs(clus->eta()) < m_etaRange[0]) || (abs(clus->eta()) >= m_etaRange[1]) ){
-      MSG_DEBUG( "Skipping cluster outside of the eta range... " << clus->eta() << " is out of:" << m_etaRange[0] << "," << m_etaRange[1] ); 
+    if ((abs(clus->eta()) < m_etaRange[0]) || (abs(clus->eta()) >= m_etaRange[1]))
+    {
+      MSG_DEBUG("Skipping cluster outside of the eta range... " << clus->eta() << " is out of:" << m_etaRange[0] << "," << m_etaRange[1]);
       continue;
     }
 
-
     // Create the CaloRings object
     auto rings = new xAOD::CaloRings();
-    for ( auto &rs : vec_rs ){
+    for (auto &rs : vec_rs)
+    {
 
       // zeroize
       rs.clear();
 
-      auto *hotCell = maxCell( clus, rs );
-     
+      auto *hotCell = maxCell(clus, rs);
+
       // Fill all rings using the hottest cell as center
-      for ( auto* cell : clus->cells() )
+      for (auto *cell : clus->cells())
       {
-  
+
         // sigma cut
-        if (m_DoSigmaCut) {
-          MSG_DEBUG( "post_execute: cell e = " << cell->e() << " sigma = " << cell->descriptor()->sigma() << " cut = " << m_SigmaCut*cell->descriptor()->sigma() );
-          if( cell->e() <= m_SigmaCut*cell->descriptor()->sigma() ) continue;
+        if (m_DoSigmaCut)
+        {
+          MSG_DEBUG("post_execute: cell e = " << cell->e() << " sigma = " << cell->descriptor()->sigma() << " cut = " << m_SigmaCut * cell->descriptor()->sigma());
+          if (cell->e() <= m_SigmaCut * cell->descriptor()->sigma())
+            continue;
         }
-        
-        if (hotCell){
-            rs.push_back( cell, hotCell->eta(), hotCell->phi() );
-        }else{
-            rs.push_back( cell, clus->eta(), clus->phi() );
+
+        if (hotCell)
+        {
+          rs.push_back(cell, hotCell->eta(), hotCell->phi());
+        }
+        else
+        {
+          rs.push_back(cell, clus->eta(), clus->phi());
         }
       }
-      
     }
 
     std::vector<float> ref_rings;
-    ref_rings.reserve( m_maxRingsAccumulated );
+    ref_rings.reserve(m_maxRingsAccumulated);
 
-    for ( auto& rs : vec_rs )
+    for (auto &rs : vec_rs)
       ref_rings.insert(ref_rings.end(), rs.rings().begin(), rs.rings().end());
 
-    MSG_DEBUG( "Setting all ring informations and attach into the EventContext." );
-    rings->setRings( ref_rings );
-    rings->setCaloCluster( clus );
-    ringer->push_back( rings );
-
+    MSG_DEBUG("Setting all ring informations and attach into the EventContext.");
+    rings->setRings(ref_rings);
+    rings->setCaloCluster(clus);
+    ringer->push_back(rings);
   }
-  
+
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-const xAOD::CaloCell * CaloRingsMaker::maxCell( const xAOD::CaloCluster *clus, RingSet &rs ) const
+const xAOD::CaloCell *CaloRingsMaker::maxCell(const xAOD::CaloCluster *clus, RingSet &rs) const
 {
-  const xAOD::CaloCell *maxCell=nullptr;
-  for ( auto *cell : clus->cells() ){
+  const xAOD::CaloCell *maxCell = nullptr;
+  for (auto *cell : clus->cells())
+  {
 
-    if( !rs.isValid(cell) ) continue;
+    if (!rs.isValid(cell))
+      continue;
     // sigma cut
-    if (m_DoSigmaCut) {
-      MSG_DEBUG( "maxCell: cell e = " << cell->e() << " sigma = " << cell->descriptor()->sigma() << " cut = " << m_SigmaCut*cell->descriptor()->sigma() );
-      if( cell->e() <= m_SigmaCut*cell->descriptor()->sigma() ) continue;
+    if (m_DoSigmaCut)
+    {
+      MSG_DEBUG("maxCell: cell e = " << cell->e() << " sigma = " << cell->descriptor()->sigma() << " cut = " << m_SigmaCut * cell->descriptor()->sigma());
+      if (cell->e() <= m_SigmaCut * cell->descriptor()->sigma())
+        continue;
     }
-      if(!maxCell){maxCell=cell;}
-      if (cell->e() > maxCell->e() ){
-          maxCell = cell;
-      }
+    if (!maxCell)
+    {
+      maxCell = cell;
+    }
+    if (cell->e() > maxCell->e())
+    {
+      maxCell = cell;
+    }
   }
   // Loop over all cells inside of this cluster
   return maxCell;
@@ -218,22 +226,25 @@ const xAOD::CaloCell * CaloRingsMaker::maxCell( const xAOD::CaloCluster *clus, R
 
 //!=====================================================================
 
-StatusCode CaloRingsMaker::fillHistograms( EventContext &ctx ) const
+StatusCode CaloRingsMaker::fillHistograms(EventContext &ctx) const
 {
   auto store = ctx.getStoreGateSvc();
-  SG::ReadHandle<xAOD::CaloRingsContainer> ringer( m_ringerKey, ctx );
+  SG::ReadHandle<xAOD::CaloRingsContainer> ringer(m_ringerKey, ctx);
 
-  if( !ringer.isValid() ){
-    MSG_ERROR( "It's not possible to read CaloRingsContainer from this Context using this key "<< m_ringerKey );
+  if (!ringer.isValid())
+  {
+    MSG_ERROR("It's not possible to read CaloRingsContainer from this Context using this key " << m_ringerKey);
     return StatusCode::FAILURE;
   }
 
   store->cd(m_histPath);
-  for (auto rings : **ringer.ptr() ){
+  for (auto rings : **ringer.ptr())
+  {
     auto ringerShape = rings->rings();
 
-    for (int r=0; r < m_maxRingsAccumulated; ++r){
-      store->hist1("rings")->Fill( r, ringerShape.at(r)/1.e3 );
+    for (int r = 0; r < m_maxRingsAccumulated; ++r)
+    {
+      store->hist1("rings")->Fill(r, ringerShape.at(r) / 1.e3);
     }
   }
 
@@ -245,40 +256,42 @@ StatusCode CaloRingsMaker::fillHistograms( EventContext &ctx ) const
 //!=====================================================================
 //!=====================================================================
 
-
-RingSet::RingSet( std::vector<CaloSampling> &samplings, unsigned nrings, float deta, float dphi ):
-  m_rings(nrings,0), 
-  m_deta(deta), 
-  m_dphi(dphi),
-  m_samplings(samplings)
-{;}
+RingSet::RingSet(std::vector<CaloSampling> &samplings, unsigned nrings, float deta, float dphi) : m_rings(nrings, 0),
+                                                                                                  m_deta(deta),
+                                                                                                  m_dphi(dphi),
+                                                                                                  m_samplings(samplings)
+{
+  ;
+}
 
 //!=====================================================================
 
 /**
  * @brief Adds a cell's energy to the appropriate ring.
- * 
+ *
  * calculates the distance (deta, dphi) from the center. If the cell
  * falls within the ring acceptance, adds its energy normalized by cosh(eta)
  * (Transverse Energy) to the ring sum.
- * 
+ *
  * @param cell The calorimeter cell.
  * @param eta_center Center eta of the ring system.
  * @param phi_center Center phi of the ring system.
  */
-void RingSet::push_back( const xAOD::CaloCell *cell , float eta_center, float phi_center )
+void RingSet::push_back(const xAOD::CaloCell *cell, float eta_center, float phi_center)
 {
   // This cell does not allow to this RingSet
-  if( isValid(cell) ){
-    float deta = std::abs( eta_center - cell->eta() ) / m_deta;
-    float dphi = std::abs( CaloPhiRange::diff(phi_center , cell->phi()) ) / m_dphi;
+  if (isValid(cell))
+  {
+    float deta = std::abs(eta_center - cell->eta()) / m_deta;
+    float dphi = std::abs(CaloPhiRange::diff(phi_center, cell->phi())) / m_dphi;
     float deltaGreater = std::max(deta, dphi);
-    int i = static_cast<unsigned int>( std::round(deltaGreater) );
-    if( i < (int)m_rings.size() ){
-        m_rings[i] += cell->e()/ std::cosh(std::abs(eta_center)); 
-      }
+    int i = static_cast<unsigned int>(std::round(deltaGreater));
+    if (i < (int)m_rings.size())
+    {
+      m_rings[i] += cell->e() / std::cosh(std::abs(eta_center));
     }
   }
+}
 
 //!=====================================================================
 
@@ -289,17 +302,18 @@ size_t RingSet::size() const
 
 //!=====================================================================
 
-const std::vector<float>& RingSet::rings() const
+const std::vector<float> &RingSet::rings() const
 {
   return m_rings;
 }
 
 //!=====================================================================
 
-bool RingSet::isValid(const xAOD::CaloCell* cell ) const
+bool RingSet::isValid(const xAOD::CaloCell *cell) const
 {
-  for( auto samp : m_samplings){
-    if(cell->descriptor()->sampling() == samp)
+  for (auto samp : m_samplings)
+  {
+    if (cell->descriptor()->sampling() == samp)
       return true;
   }
   return false;
@@ -311,7 +325,6 @@ void RingSet::clear()
 {
   for (std::vector<float>::iterator it = m_rings.begin(); it < m_rings.end(); it++)
   {
-    *it=0.0;
+    *it = 0.0;
   }
 }
-
