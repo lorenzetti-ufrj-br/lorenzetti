@@ -12,6 +12,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../events/CaloRings)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../core/GaugiKernel)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../core/G4Kernel)
 
+# CPS (Calorimetry Pulse Simulator): pulse-shaping logic used by PulseGenerator and
+# ConstrainedOptimalFilter. CPS_INCLUDE_DIR is resolved by the top-level CMakeLists
+# (either the installed <prefix>/include or a fetched-source include dir).
+include_directories(${CPS_INCLUDE_DIR})
+
 
 
 ROOT_GENERATE_DICTIONARY(CaloCellBuilderDict ${HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h  MODULE CaloCellBuilder)

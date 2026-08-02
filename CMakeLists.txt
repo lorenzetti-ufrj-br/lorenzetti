@@ -15,6 +15,42 @@ file(GLOB FASTJET_LIBRARIES $ENV{FASTJET_LIBRARIES}/*.dylib $ENV{FASTJET_LIBRARI
 file(GLOB PYTHIA8_LIBRARIES $ENV{PYTHIA8_LIBRARIES}/*.a $ENV{PYTHIA8_LIBRARIES}/*.so)
 
 
+# CPS (Calorimetry Pulse Simulator): provides the calorimeter pulse-shaping logic
+# consumed by reconstruction/calorimeter/CaloCellBuilder. Following the project
+# convention, it is normally installed under /usr/local (libcps + headers in cps/)
+# by the base Docker image and just located here. As a fallback (e.g. an image that
+# predates the CPS layer, or a local build without it), CPS is fetched and built
+# from source so the configure step still succeeds. Both branches expose the same
+# CPS_LIBRARY and CPS_INCLUDE_DIR variables to the rest of the build.
+find_library(CPS_LIBRARY NAMES cps)
+find_path(CPS_INCLUDE_DIR NAMES cps/AnalogPulse.h)
+
+if(CPS_LIBRARY AND CPS_INCLUDE_DIR)
+  message(STATUS "Found CPS library: ${CPS_LIBRARY}")
+else()
+  message(STATUS "CPS not found on the system; fetching and building it from source.")
+  include(FetchContent)
+  # CPS builds a SWIG Python module by default, which is not needed here.
+  set(BUILD_PYTHON OFF CACHE BOOL "" FORCE)
+  set(BUILD_TESTS  OFF CACHE BOOL "" FORCE)
+  set(BUILD_DOCS   OFF CACHE BOOL "" FORCE)
+  FetchContent_Declare(
+    cps
+    GIT_REPOSITORY https://github.com/ingoncalves/calorimetry-pulse-simulator.git
+    GIT_TAG        v1.1.0
+  )
+  FetchContent_MakeAvailable(cps)
+  # The 'cps' CMake target can be used directly as a link dependency.
+  set(CPS_LIBRARY cps)
+  # CPS's source tree keeps headers flat in include/; recreate the installed-style
+  # include/cps/ layout so that `#include "cps/..."` resolves in both cases.
+  set(CPS_INCLUDE_DIR ${CMAKE_BINARY_DIR}/cps_include)
+  file(MAKE_DIRECTORY ${CPS_INCLUDE_DIR}/cps)
+  file(GLOB _cps_headers ${cps_SOURCE_DIR}/include/*.h)
+  file(COPY ${_cps_headers} DESTINATION ${CPS_INCLUDE_DIR}/cps)
+endif()
+
+
 find_package(OpenMP)
 if(OpenMP_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -144,10 +180,11 @@ target_link_Libraries(lorenzetti ${ROOT_LIBRARIES}
                                  ${PYTHON_LIBRARIES} 
                                  #${Boost_FILESYSTEM_LIBRARY} 
                                  #${Boost_SYSTEM_LIBRARY} 
-                                 ${Geant4_LIBRARIES} 
-                                 ${FASTJET_LIBRARIES} 
+                                 ${Geant4_LIBRARIES}
+                                 ${FASTJET_LIBRARIES}
                                  ${HEPMC_LIBRARIES}
-                                 ${PYTHIA8_LIBRARIES} )
+                                 ${PYTHIA8_LIBRARIES}
+                                 ${CPS_LIBRARY} )
 
 
 

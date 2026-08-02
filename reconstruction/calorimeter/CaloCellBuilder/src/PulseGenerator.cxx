@@ -4,6 +4,10 @@
 #include "Randomize.hh"
 #include "TRandom.h"
 
+#include "cps/TextFilePulseShape.h"
+#include "cps/AnalogPulse.h"
+#include "cps/Digitizer.h"
+
 
 using namespace Gaugi;
 
@@ -11,22 +15,23 @@ using namespace Gaugi;
 /**
  * @class PulseGenerator
  * @brief Generates electronic pulse shapes for calorimeter cells.
- * 
- * Simulates the response of the readout electronics to an energy deposit.
- * It uses a reference shaper function (read from a file) to convolve the
- * energy deposit in time. It also adds electronic noise and random deformations.
- * 
+ *
+ * Simulates the response of the readout electronics to an energy deposit. The
+ * reference shaper function and the time sampling are provided by the CPS library
+ * (cps::TextFilePulseShape + cps::Digitizer); this tool accumulates the per-bunch
+ * crossing contributions and adds electronic noise and random deformations.
+ *
  * Properties:
  * - ShaperFile: File containing the reference pulse shape points.
  * - Pedestal: Baseline voltage.
  * - NoiseMean/Std: Electronic noise parameters.
  * - SamplingRate: Readout sampling rate (usually 25ns).
  */
-PulseGenerator::PulseGenerator( std::string name ) : 
+PulseGenerator::PulseGenerator( std::string name ) :
   IMsgService(name),
   AlgTool(),
-  m_shaperZeroIndex(0),
-  m_shaperResolution(0),
+  m_pulseShape(nullptr),
+  m_digitizer(nullptr),
   m_rng(0)
 {
   declareProperty( "ShaperFile"       , m_shaperFile=""         );
@@ -44,7 +49,10 @@ PulseGenerator::PulseGenerator( std::string name ) :
 //!=====================================================================
 
 PulseGenerator::~PulseGenerator()
-{;}
+{
+  delete m_digitizer;
+  delete m_pulseShape;
+}
 
 //!=====================================================================
 
@@ -52,7 +60,8 @@ StatusCode PulseGenerator::initialize()
 {
   setMsgLevel( (MSG::Level)m_outputLevel );
   MSG_DEBUG( "Reading shaper values from: " << m_shaperFile << " and " << m_nsamples << " samples.");
-  ReadShaper( m_shaperFile );
+  m_pulseShape = new cps::TextFilePulseShape( m_shaperFile.c_str() );
+  m_digitizer  = new cps::Digitizer( m_nsamples, m_samplingRate, m_startSamplingBC * m_samplingRate );
   return StatusCode::SUCCESS;
 }
 
@@ -107,31 +116,6 @@ StatusCode PulseGenerator::execute( SG::EventContext &ctx, Gaugi::EDM *edm ) con
 
 //!=====================================================================
 
-void PulseGenerator::ReadShaper( std::string filepath )
-{
-  std::ifstream file;
-  m_timeSeries.clear();
-  m_shaper.clear();
-  file.open(filepath);
-  if (file) {
-     int i=0;
-     float a, b;
-     while (file >> a >> b) // loop on the input operation, not eof
-     {
-        m_timeSeries.push_back(a);
-        m_shaper.push_back(b);
-        if (a == 0.0) m_shaperZeroIndex = i;
-        i++;
-     }
-  } else {
-    MSG_FATAL( "Invalid shaper path: " << filepath );
-  }
-  file.close();
-  m_shaperResolution = m_shaper.size() > 2 ? m_timeSeries[1] - m_timeSeries[0] : m_timeSeries[0];
-}
-
-//!=====================================================================
-
 void PulseGenerator::AddGaussianNoise( std::vector<float> &pulse, float noiseMean, float noiseStd) const
 {
   for ( auto &value : pulse )
@@ -140,21 +124,38 @@ void PulseGenerator::AddGaussianNoise( std::vector<float> &pulse, float noiseMea
 
 //!=====================================================================
 
+/**
+ * @brief Generates the deterministic (noise-free) pulse for a single bunch crossing.
+ *
+ * The shape sampling is delegated to CPS: the energy deposit is the pulse amplitude
+ * and the effective phase is the truth time-of-flight minus the bunch-crossing lag.
+ * A random deformation (TRandom3) is added per sample, and samples whose shape time
+ * falls outside the reference pulse are set to zero (matching the original behavior).
+ */
 void PulseGenerator::GenerateDeterministicPulse(  std::vector<float> &pulse,  float amplitude, float phase, float lag) const
 {
   pulse.resize( m_nsamples );
-  float shr    = m_shaperResolution;  
-  float shzi   = m_shaperZeroIndex; 
+
+  // CPS phase combines the truth tof and the bunch-crossing lag.
+  const double cpsPhase = phase - lag;
+  cps::AnalogPulse analogPulse( m_pulseShape, amplitude, m_pedestal, cpsPhase,
+                                /*deformationLevel*/ 0, /*noiseMean*/ 0, /*noiseStdDev*/ 0 );
+  std::vector<double> samples = m_digitizer->Digitize( &analogPulse );
+
+  const double tMin = m_pulseShape->GetTMin();
+  const double tMax = m_pulseShape->GetTMax();
 
   for (int i = 0; i < m_nsamples; i++) {
-    // random deformation (normal from geant)
+    // random deformation (normal from geant); drawn unconditionally to preserve the
+    // RNG call sequence regardless of the range check below.
     float deformation = m_rng.Gaus(m_deformationMean, m_deformationStd);
-    int shaperIndex = int(shzi) - int(lag / shr) + (i + m_startSamplingBC) * (m_samplingRate / shr) + round(phase / shr);
-    if (shaperIndex < 0 || shaperIndex > (int)m_shaper.size() - 1){
+    // Time at which the reference shape is evaluated for this sample.
+    double shapeTime = (i + m_startSamplingBC) * m_samplingRate + cpsPhase;
+    if (shapeTime < tMin || shapeTime > tMax){
       pulse[i] = 0;
       continue;
     }
-    pulse[i] += amplitude * m_shaper[shaperIndex] + m_pedestal + deformation;
+    pulse[i] = (float)samples[i] + deformation;
   }
 }
 

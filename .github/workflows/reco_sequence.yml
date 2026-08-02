@@ -1,6 +1,6 @@
 name: Test reconstruction sequence
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
 
@@ -9,13 +9,15 @@ jobs:
     container:
       image: docker://lorenzetti/lorenzetti:latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: lorenzetti
       - name: Compile
         shell: bash
         run: |
-          rm -rf *
-          git clone https://github.com/lorenzetti-ufrj-br/lorenzetti.git
           export CPU_N=$(grep -c ^processor /proc/cpuinfo)
-          cd lorenzetti && make 
+          cd lorenzetti && make
           
 
           

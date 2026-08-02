@@ -146,6 +146,19 @@ RUN wget http://hepmc.web.cern.ch/hepmc/releases/HepMC3-${HEPMC_VERSION}.tar.gz 
     make -j$(nproc) && \
     make install
 
+# CPS (Calorimetry Pulse Simulator) - provides the pulse-shaping logic used by
+# reconstruction/calorimeter/CaloCellBuilder. Installs libcps to /usr/local/lib and
+# headers to /usr/local/include/cps. Python interface is not needed here.
+ARG CPS_VERSION=v1.1.0
+LABEL CPS_VERSION=${CPS_VERSION}
+ENV CPS_VERSION=${CPS_VERSION}
+RUN git clone https://github.com/ingoncalves/calorimetry-pulse-simulator.git cps && \
+    cd cps && git checkout ${CPS_VERSION} && \
+    mkdir build && cd build && \
+    cmake -DBUILD_PYTHON=OFF -DBUILD_TESTS=OFF .. && \
+    make -j$(nproc) && \
+    make install
+
 COPY requirements.txt /requirements.txt
 RUN apt-get update -y && \
     apt install -y python3-pip python3-venv && \
