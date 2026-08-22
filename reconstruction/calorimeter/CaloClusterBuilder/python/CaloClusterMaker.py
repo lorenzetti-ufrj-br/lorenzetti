@@ -15,7 +15,7 @@ def CaloClusterMakerCfg( name,
                          DoForwardMoments : bool  = CaloClusterFlags.DoForwardMoments,
                          OutputLevel      : str   = 0,
                          HistogramPath    : str   = "Expert/Clusters",
-                       ):
+                       ) -> Configurable:
 
   return Configurable( name, 
                        ROOT.CaloClusterMaker,

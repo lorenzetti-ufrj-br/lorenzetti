@@ -1,109 +1,106 @@
 #ifndef CaloCellMaker_h
 #define CaloCellMaker_h
 
+#include "GaugiKernel/AlgTool.h"
 #include "GaugiKernel/Algorithm.h"
 #include "GaugiKernel/DataHandle.h"
-#include "GaugiKernel/AlgTool.h"
-
 
 /**
  * @class CaloCellMaker
  * @brief Algorithm to build calorimeter cells from hits.
- * 
+ *
  * This algorithm is responsible for converting simulated hits (energy deposits)
  * into calorimeter cells. It defines the readout geometry and applies the
  * digitization steps (pulse shaping, noise, etc) by scheduling sub-tools.
  */
-class CaloCellMaker : public Gaugi::Algorithm
-{
-  public:
-  
-    /** Contructor **/
-    CaloCellMaker( std::string name );
-    /** Destructor **/
-    ~CaloCellMaker()=default;
-    
-    /*! initialize the algorithm **/
-    virtual StatusCode initialize() override;
-    
-    /*! Book all histograms into the current storegate **/
-    virtual StatusCode bookHistograms( SG::EventContext &ctx ) const override;
-    
-    /*! Execute in step action step from geant core **/
-    virtual StatusCode execute( SG::EventContext &ctx , const G4Step *step) const override;
-    
-    /*! Execute in ComponentAccumulator **/
-    virtual StatusCode execute( SG::EventContext &ctx , int /*evt*/ ) const override;
-    
-    /*! execute before start the step action **/
-    virtual StatusCode pre_execute( SG::EventContext &ctx ) const override;
-    
-    /*! execute after the step action **/ 
-    virtual StatusCode post_execute( SG::EventContext &ctx ) const override;
-    
-    /*! fill histogram in the end **/
-    virtual StatusCode fillHistograms( SG::EventContext &ctx ) const override;
-    
-    /*! finalize the algorithm **/ 
-    virtual StatusCode finalize() override;
-    
-    /**
-     * @brief Add a tool to the execution list.
-     * @param tool Pointer to the AlgTool to be added.
-     */
-    void push_back( Gaugi::AlgTool *tool );
-    
-    /**
-     * @brief Set the pulse generator tool.
-     * @param tool Pointer to the PulseGenerator tool.
-     */
-    void setPulseGenerator(Gaugi::AlgTool *tool);
+class CaloCellMaker : public Gaugi::Algorithm {
+public:
+  /** Contructor **/
+  CaloCellMaker(std::string name);
+  /** Destructor **/
+  ~CaloCellMaker() = default;
 
-  private:
-   
-    int find( const std::vector<float> &vec, float value) const;
-    unsigned long int hash(unsigned bin) const;
+  /*! initialize the algorithm **/
+  virtual StatusCode initialize() override;
 
-    /*! output collection key */
-    std::string m_collectionKey;
-    /*! input hits key */
-    std::string m_hitsKey;
-    /*! Base histogram path */
-    std::string m_histPath;
-    /*! Sampling id for this reconstruction */
-    int m_sampling;
-    /*! Segment index for this sample calorimeter */
-    int m_segment;
-    /*! Detector id for this sampling*/
-    int m_detector;
-    /*! The start bunch crossing id for energy estimation */
-    int m_bcid_start;
-    /*! The end bunch crossing id for energy estimation */
-    int m_bcid_end;
-    /*! The number of samples per bunch crossing */
-    int m_bc_nsamples;
-    /*! The time space (in ns) between two bunch crossings */
-    float m_bc_duration;
+  /*! Book all histograms into the current storegate **/
+  virtual StatusCode bookHistograms(SG::EventContext &ctx) const override;
 
-    std::vector<float> m_etaBins; 
-    std::vector<float> m_phiBins; 
-    float m_zMin;
-    float m_zMax; 
-    float m_z;
-    
+  /*! Execute in step action step from geant core **/
+  virtual StatusCode execute(SG::EventContext &ctx,
+                             const G4Step *step) const override;
 
-    bool m_detailedHistograms;
+  /*! Execute in ComponentAccumulator **/
+  virtual StatusCode execute(SG::EventContext &ctx, int /*evt*/) const override;
 
-    unsigned int m_nEtaBins;
-    unsigned int m_nPhiBins;
+  /*! execute before start the step action **/
+  virtual StatusCode pre_execute(SG::EventContext &ctx) const override;
 
-    /*! Pulse generator */
-    Gaugi::AlgTool *m_pulseGenerator;
-    /*! The tool list that will be executed into the post execute step */
-    std::vector< Gaugi::AlgTool* > m_toolHandles;
+  /*! execute after the step action **/
+  virtual StatusCode post_execute(SG::EventContext &ctx) const override;
 
+  /*! fill histogram in the end **/
+  virtual StatusCode fillHistograms(SG::EventContext &ctx) const override;
+
+  /*! finalize the algorithm **/
+  virtual StatusCode finalize() override;
+
+  /**
+   * @brief Add a tool to the execution list.
+   * @param tool Pointer to the AlgTool to be added.
+   */
+  void __func__add__Tool(Gaugi::AlgTool *tool) {
+    m_toolHandles.push_back(tool);
+  };
+
+  /**
+   * @brief Set the pulse generator tool.
+   * @param tool Pointer to the PulseGenerator tool.
+   */
+  void __func__set__PulseGenerator(Gaugi::AlgTool *tool) {
+    m_pulseGenerator = tool;
+  };
+
+private:
+  int find(const std::vector<float> &vec, float value) const;
+  unsigned long int hash(unsigned bin) const;
+
+  /*! output collection key */
+  std::string m_collectionKey;
+  /*! input hits key */
+  std::string m_hitsKey;
+  /*! Base histogram path */
+  std::string m_histPath;
+  /*! Sampling id for this reconstruction */
+  int m_sampling;
+  /*! Segment index for this sample calorimeter */
+  int m_segment;
+  /*! Detector id for this sampling*/
+  int m_detector;
+  /*! The start bunch crossing id for energy estimation */
+  int m_bcid_start;
+  /*! The end bunch crossing id for energy estimation */
+  int m_bcid_end;
+  /*! The number of samples per bunch crossing */
+  int m_bc_nsamples;
+  /*! The time space (in ns) between two bunch crossings */
+  float m_bc_duration;
+
+  std::vector<float> m_etaBins;
+  std::vector<float> m_phiBins;
+  float m_zMin;
+  float m_zMax;
+  float m_z;
+
+  bool m_detailedHistograms;
+
+  unsigned int m_nEtaBins;
+  unsigned int m_nPhiBins;
+
+  /*! Pulse generator */
+  Gaugi::AlgTool *m_pulseGenerator;
+  /*! The tool list that will be executed into the post execute step */
+  std::vector<Gaugi::AlgTool *> m_toolHandles;
 };
-
-
 
 #endif

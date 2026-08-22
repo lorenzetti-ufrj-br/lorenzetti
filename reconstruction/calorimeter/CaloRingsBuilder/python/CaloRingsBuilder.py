@@ -38,7 +38,7 @@ def CaloRingsBuilderCfg(
     RingsShiftEta     : List[float]   = None,
     RingsShiftPhi     : List[float]   = None,
     Axis              : int   = None,
-):
+) -> List[Configurable]:
     pi = np.pi
 
     class_obj = {

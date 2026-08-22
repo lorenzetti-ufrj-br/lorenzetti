@@ -25,9 +25,7 @@ from . import CaloCellMaker
 __all__.extend(CaloCellMaker.__all__)
 from .CaloCellMaker import *
 
-from . import CaloCellMerge
-__all__.extend(CaloCellMerge.__all__)
-from .CaloCellMerge import *
+
 
 from . import PileupMerge
 __all__.extend(PileupMerge.__all__)

@@ -2,10 +2,9 @@
 
 __all__ = ["CaloCellMaker"]
 
-
-from GaugiKernel import Cpp, LoggingLevel
-from GaugiKernel.macros import *
 import ROOT
+
+from GaugiKernel import Configurable, LoggingLevel
 
 
 class CaloCellMaker( Cpp ):
@@ -21,23 +20,6 @@ class CaloCellMaker( Cpp ):
     self.Tools = []
     self.PulseGenerator = None
 
-    self.setProperty( "InputHitsKey"            , InputHitsKey                )
-    self.setProperty( "OutputCollectionKey"     , OutputCollectionKey         )
-    self.setProperty( "EtaBins"                 , sampling.sensitive().EtaBins)
-    self.setProperty( "PhiBins"                 , sampling.sensitive().PhiBins)
-    self.setProperty( "ZMin"                    , sampling.volume().ZMin      )
-    self.setProperty( "ZMax"                    , sampling.volume().ZMax      )
-    self.setProperty( "Z"                       , sampling.sv.pv.Z            )
-    self.setProperty( "Sampling"                , sampling.Sampling           )
-    self.setProperty( "Segment"                 , sampling.sensitive().Segment)
-    self.setProperty( "Detector"                , sampling.Detector           )
-    self.setProperty( "BunchIdStart"            , sampling.BunchIdStart       )
-    self.setProperty( "BunchIdEnd"              , sampling.BunchIdEnd         )
-    self.setProperty( "BunchDuration"           , 25                          )
-    self.setProperty( "DetailedHistograms"      , DetailedHistograms          )
-    self.setProperty( "HistogramPath"           , HistogramPath               )
-    self.setProperty( "OutputLevel"             , OutputLevel                 )
-
 
   def core(self):
     # Attach all tools before return the core
@@ -50,5 +32,40 @@ class CaloCellMaker( Cpp ):
   def __add__( self, tool ):
     self.Tools += tool
     return self
-  
+
+
+def CaloCellMakerCfg(
+  name : str,
+  sampling,
+  InputHitsKey        : str="Hits",
+  OutputCollectionKey : str="Collection",
+  OutputLevel         : int=LoggingLevel.toC('INFO'),
+  DetailedHistograms  : bool=False,
+  HistogramPath       : str="/Hists/Cells"
+) -> Configurable:
+
+  maker = Configurable(
+    ROOT.CaloCellMaker,
+    name,
+    InputHitsKey        = InputHitsKey,
+    OutputCollectionKey = OutputCollectionKey,
+    OutputLevel         = OutputLevel,
+    DetailedHistograms  = DetailedHistograms,
+    HistogramPath       = HistogramPath,
+    EtaBins             = sampling.sensitive().EtaBins,
+    PhiBins             = sampling.sensitive().PhiBins,
+    ZMin                = sampling.volume().ZMin,
+    ZMax                = sampling.volume().ZMax,
+    Z                   = sampling.sv.pv.Z,
+    Sampling            = sampling.Sampling,
+    Segment             = sampling.sensitive().Segment,
+    Detector            = sampling.Detector,
+    BunchIdStart        = sampling.BunchIdStart,
+    BunchIdEnd          = sampling.BunchIdEnd,
+    BunchDuration       = 25,
+  )
+
+  return maker
+
+
 
