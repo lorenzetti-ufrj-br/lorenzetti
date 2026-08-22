@@ -7,8 +7,7 @@ from GaugiKernel        import Logger, LoggingLevel, Configurable
 from GaugiKernel.macros import *
 
 from CaloCell           import CaloSampling, Detector
-from CaloCellBuilder    import PulsePerturberCfg
-from CaloCellBuilder    import OptimalFilter, ConstrainedOptimalFilter
+from CaloCellBuilder    import PulsePerturberCfg, CaloCellMakerCfg
 from CaloCellBuilder    import CaloFlags, CrossTalkFlags, AnomalyFlags
 
 #
@@ -118,17 +117,18 @@ class CaloCellBuilder( Logger ):
           OutputLevel    = self.OutputLevel
         )
     
-      maker = Configurable(ROOT.CaloCellMaker,
-        "CaloCellMaker_" + samp.CollectionKey, samp,
-                            # input key
-                            InputHitsKey            =  self.InputHitsKey, # hits
-                            # output key
-                            OutputCollectionKey     = samp.CollectionKey + "_Aux" if DoCrosstalk else samp.CollectionKey, # descriptors
-                            # monitoring configuration
-                            HistogramPath           = self.HistogramPath + '/' + samp.name(),
-                            OutputLevel             = self.OutputLevel,
-                            DetailedHistograms      = False, # Use True when debug with only one thread
-                            )
+      maker = CaloCellMakerCfg(
+        "CaloCellMaker_" + samp.CollectionKey, 
+        samp,
+        # input key
+        InputHitsKey            =  self.InputHitsKey, # hits
+        # output key
+        OutputCollectionKey     = samp.CollectionKey + "_Aux" if DoCrosstalk else samp.CollectionKey, # descriptors
+        # monitoring configuration
+        HistogramPath           = self.HistogramPath + '/' + samp.name(),
+        OutputLevel             = self.OutputLevel,
+        DetailedHistograms      = False, # Use True when debug with only one thread
+        )
   
       maker.PulseGenerator = pulse # for all cell
       

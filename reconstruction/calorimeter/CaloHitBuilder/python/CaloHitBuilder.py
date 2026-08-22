@@ -1,10 +1,12 @@
 
 __all__ = ["CaloHitBuilder"]
 
-from GaugiKernel import Logger, LoggingLevel
+import ROOT
+
+
+from GaugiKernel import Logger, LoggingLevel, Configurable
 from GaugiKernel.macros import MSG_INFO
-from CaloHitBuilder import CaloHitMaker
-from CaloHitBuilder import CaloHitMerge
+from CaloHitBuilder import CaloHitMakerCfg
 from G4Kernel import ComponentAccumulator
 
 
@@ -21,7 +23,7 @@ class CaloHitBuilder(Logger):
                  ):
 
         Logger.__init__(self, name)
-        self.__recoAlgs = []
+        self.RecoAlgs = []
         self.HistogramPath = HistogramPath
         self.OutputLevel = OutputLevel
         self.OutputHitsKey = OutputHitsKey
@@ -35,34 +37,39 @@ class CaloHitBuilder(Logger):
 
             MSG_INFO(
                 self,
-                "Create new CaloHitMaker and dump all hits into %s collection",
-                samp.CollectionKey
-            )
+                f"Create new CaloHitMaker and dump all hits into {samp.CollectionKey}")
+                
             histogramPath = self.HistogramPath + '/' + samp.name()
-            alg = CaloHitMaker("CaloHitMaker", samp,
-                               OutputCollectionKey=samp.CollectionKey,
-                               SamplingNoiseStd=samp.Noise,  # TOF selection
-                               HistogramPath=histogramPath,
-                               OutputLevel=self.OutputLevel,
-                               # Use True when debug with only one thread
-                               DetailedHistograms=False
-                               )
+            alg = CaloHitMakerCfg(
+                "CaloHitMaker", 
+                samp,
+                OutputCollectionKey=samp.CollectionKey,
+                SamplingNoiseStd=samp.Noise,  # TOF selection
+                HistogramPath=histogramPath,
+                OutputLevel=self.OutputLevel,
+                # Use True when debug with only one thread
+                DetailedHistograms=False
+                )
 
-            self.__recoAlgs.append(alg)
+            self.RecoAlgs.append(alg)
             self.OutputCollectionKeys.append(samp.CollectionKey)
 
         MSG_INFO(
             self,
-            "Create CaloHitMerge and dump all hit collections into"
-            " %s container",
-            "Hits")
+            f"Create CaloHitMerge and dump all hit collections into"
+            f" {self.OutputHitsKey} container")
+
         # Merge all collection into a container
         # and split between truth and reco
-        mergeAlg = CaloHitMerge("CaloHitMerge",
-                                InputCollectionKeys=self.OutputCollectionKeys,
-                                OutputHitsKey=self.OutputHitsKey,
-                                OutputLevel=self.OutputLevel)
-        self.__recoAlgs.append(mergeAlg)
+        mergeAlg = Configurable(
+            ROOT.CaloHitMerge,
+            "CaloHitMerge",
+            InputCollectionKeys=self.OutputCollectionKeys,
+            OutputHitsKey=self.OutputHitsKey,
+            OutputLevel=self.OutputLevel
+        )
+
+        self.RecoAlgs.append(mergeAlg)
 
     def merge(self, acc: ComponentAccumulator):
         """
