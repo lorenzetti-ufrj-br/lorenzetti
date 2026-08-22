@@ -24,9 +24,8 @@ using namespace SG;
  * - CollectionKeys: List of input keys.
  * - OutputRingerKey: Output key.
  */
-CaloRingsMerge::CaloRingsMerge(std::string name) : IMsgService(name),
-                                                   Algorithm()
-{
+CaloRingsMerge::CaloRingsMerge(std::string name)
+    : IMsgService(name), Algorithm() {
   declareProperty("CollectionKeys", m_collectionKeys = {});
   declareProperty("OutputRingerKey", m_ringerKey = "Rings");
   declareProperty("OutputLevel", m_outputLevel = 1);
@@ -34,15 +33,11 @@ CaloRingsMerge::CaloRingsMerge(std::string name) : IMsgService(name),
 
 //!=====================================================================
 
-CaloRingsMerge::~CaloRingsMerge()
-{
-  ;
-}
+CaloRingsMerge::~CaloRingsMerge() { ; }
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::initialize()
-{
+StatusCode CaloRingsMerge::initialize() {
   CHECK_INIT();
   setMsgLevel(m_outputLevel);
   return StatusCode::SUCCESS;
@@ -50,36 +45,30 @@ StatusCode CaloRingsMerge::initialize()
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::finalize()
-{
+StatusCode CaloRingsMerge::finalize() { return StatusCode::SUCCESS; }
+
+//!=====================================================================
+
+StatusCode CaloRingsMerge::bookHistograms(SG::EventContext & /*ctx*/) const {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::bookHistograms(SG::EventContext & /*ctx*/) const
-{
+StatusCode CaloRingsMerge::pre_execute(EventContext & /*ctx*/) const {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::pre_execute(EventContext & /*ctx*/) const
-{
+StatusCode CaloRingsMerge::execute(EventContext & /*ctx*/,
+                                   const G4Step * /*step*/) const {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::execute(EventContext & /*ctx*/, const G4Step * /*step*/) const
-{
-  return StatusCode::SUCCESS;
-}
-
-//!=====================================================================
-
-StatusCode CaloRingsMerge::execute(EventContext &ctx, int /*evt*/) const
-{
+StatusCode CaloRingsMerge::execute(EventContext &ctx, int /*evt*/) const {
   return post_execute(ctx);
 }
 
@@ -91,31 +80,30 @@ StatusCode CaloRingsMerge::execute(EventContext &ctx, int /*evt*/) const
  * Iterates through input keys, retrieves containers, and deep-copies rings
  * into the new master container.
  */
-StatusCode CaloRingsMerge::post_execute(EventContext &ctx) const
-{
+StatusCode CaloRingsMerge::post_execute(EventContext &ctx) const {
 
   MSG_INFO("Starting collection merge algorithm...");
 
   SG::WriteHandle<xAOD::CaloRingsContainer> ringsContainer(m_ringerKey, ctx);
-  ringsContainer.record(std::unique_ptr<xAOD::CaloRingsContainer>(new xAOD::CaloRingsContainer()));
+  ringsContainer.record(std::unique_ptr<xAOD::CaloRingsContainer>(
+      new xAOD::CaloRingsContainer()));
 
-  for (auto key : m_collectionKeys)
-  {
+  for (auto key : m_collectionKeys) {
 
     MSG_DEBUG("Reading all cells from collection with key " << key);
 
     MSG_DEBUG("Reading the CaloRingsContainer from the Context");
     SG::ReadHandle<xAOD::CaloRingsContainer> collection(key, ctx);
 
-    if (!collection.isValid())
-    {
-      MSG_WARNING("It's not possible to read the xAOD::CaloRingsCollection from this Context using this key: " << key);
+    if (!collection.isValid()) {
+      MSG_WARNING("It's not possible to read the xAOD::CaloRingsCollection "
+                  "from this Context using this key: "
+                  << key);
       continue;
     }
 
     MSG_DEBUG("Creating new ring and attach the object into the container");
-    for (auto ring : **collection.ptr())
-    {
+    for (auto ring : **collection.ptr()) {
       xAOD::CaloRings *newRing = new xAOD::CaloRings();
       newRing->setRings(ring->rings());
       newRing->setCaloCluster(ring->caloCluster());
@@ -130,7 +118,6 @@ StatusCode CaloRingsMerge::post_execute(EventContext &ctx) const
 
 //!=====================================================================
 
-StatusCode CaloRingsMerge::fillHistograms(EventContext & /*ctx*/) const
-{
+StatusCode CaloRingsMerge::fillHistograms(EventContext & /*ctx*/) const {
   return StatusCode::SUCCESS;
 }

@@ -1,109 +1,57 @@
-__all__ = ["CaloRingsBuilderCfg"]
+__all__ = ["CaloRingsBuilder", "CaloRingsTopology"]
 
-from CaloRingsBuilder import CaloRingsMaker, CaloRingsMerge
-from CaloCell.CaloDefs import CaloSampling
+import ROOT
 import numpy as np
 
-pi = np.pi
+from typing import List
+from CaloCell.CaloDefs import CaloSampling
+from GaudiKernel import Configurable, EnumStringification
 
-DELTA_ETA_RINGS = [0.025, 0.00325, 0.025, 0.050, 0.1, 0.1, 0.2]
-DELTA_PHI_RINGS = [
-    pi / 32,
-    pi / 32,
-    pi / 128,
-    pi / 128,
-    pi / 128,
-    pi / 32,
-    pi / 32,
-    pi / 32,
-]
-N_RINGS = [8, 64, 8, 8, 4, 4, 4]
-ETA_RANGE = [0.0, 2.5]
-LAYERS_RINGS = [
-    [CaloSampling.PSB, CaloSampling.PSE],
-    [CaloSampling.EMB1, CaloSampling.EMEC1],
-    [CaloSampling.EMB2, CaloSampling.EMEC2],
-    [CaloSampling.EMB3, CaloSampling.EMEC3],
-    [CaloSampling.HEC1, CaloSampling.TileCal1, CaloSampling.TileExt1],
-    [CaloSampling.HEC2, CaloSampling.TileCal2, CaloSampling.TileExt2],
-    [CaloSampling.HEC3, CaloSampling.TileCal3, CaloSampling.TileExt3],
-]
 
-DELTA_ETA_RINGS_FWD = [0.1, 0.1, 0.1, 0.2, 0.2, 0.2]
-DELTA_PHI_RINGS_FWD = [
-    pi / 32,
-    pi / 32,
-    pi / 32,
-    pi / 16,
-    pi / 16,
-    pi / 16,
-]
-N_RINGS_FWD = [4, 4, 4, 2, 2, 2]
-ETA_RANGE_FWD = [2.5, 4.9]
-LAYERS_RINGS_FWD = [
-    [CaloSampling.EMEC1],
-    [CaloSampling.EMEC2],
-    [CaloSampling.EMEC3],
-    [CaloSampling.HEC1],
-    [CaloSampling.HEC2],
-    [CaloSampling.HEC3],
-]
 
-caloRingsArgs = {
-    "DeltaEtaRings": DELTA_ETA_RINGS,
-    "DeltaPhiRings": DELTA_PHI_RINGS,
-    "NRings": N_RINGS,
-    "LayerRings": LAYERS_RINGS,
-    "EtaRange": ETA_RANGE,
-}
+class CaloRingsTopology(EnumStringification):
+    """
+    Definition of thecaloRings
 
-caloRingerTopologies = {
-    "std": caloRingsArgs,
-    "asym": caloRingsArgs | {"NRings": [(n - 1) * 4 + 1 for n in N_RINGS]},
-    "strips": caloRingsArgs | {"NRings": [28, 252, 28, 14, 8, 8, 4], "Axis": 0},
-    "corner": caloRingsArgs | {"CornerShift": 3, "NRings": [n * 4 for n in N_RINGS]},
-    "cross": caloRingsArgs | {"CrossShift": 3, "NRings": [n * 4 for n in N_RINGS]},
-    "custom": caloRingsArgs | {"RingsShiftEta": [0], "RingsShiftPhi": [0]},
-}
+    Definition of the
+    """
+    Standard = "std",
+    Asym     = "asym",
+    Strips   = "strips",
+    Corner   = "corner",
+    Cross    = "cross",
+    Custom   = "custom",
 
-caloRingsFwdArgs = {
-    "DeltaEtaRings": DELTA_ETA_RINGS_FWD,
-    "DeltaPhiRings": DELTA_PHI_RINGS_FWD,
-    "NRings": N_RINGS_FWD,
-    "LayerRings": LAYERS_RINGS_FWD,
-    "EtaRange": ETA_RANGE_FWD,
-}
 
 
 def CaloRingsBuilderCfg(
-    name: str,
-    InputClusterKey: str,
-    OutputRingerKey: str,
-    OutputLevel: int = 0,
-    HistogramPath: str = "Expert/Rings",
-    DoSigmaCut: bool = False,
-    SigmaCut: float = 2.0,
-    RingerTopology: str = "std",
-    CornerShift: int = None,
-    CrossShift: int = None,
-    RingsShiftEta: list = None,
-    RingsShiftPhi: list = None,
-    Axis: int = None,
+    name              : str,
+    InputClusterKey   : str,
+    OutputRingerKey   : str,
+    OutputLevel       : int   = 0,
+    HistogramPath     : str   = "Expert/Rings",
+    DoSigmaCut        : bool  = False,
+    SigmaCut          : float = 2.0,
+    RingerTopology    : CaloRingsTopology = CaloRingsTopology.Standard,
+    CornerShift       : int   = None,
+    CrossShift        : int   = None,
+    RingsShiftEta     : List[float]   = None,
+    RingsShiftPhi     : List[float]   = None,
+    Axis              : int   = None,
 ):
-    topology_args = dict(caloRingerTopologies[RingerTopology])
+    pi = np.pi
 
-    if CornerShift is not None:
-        topology_args["CornerShift"] = CornerShift
-    if CrossShift is not None:
-        topology_args["CrossShift"] = CrossShift
-    if Axis is not None:
-        topology_args["Axis"] = Axis
-    if RingsShiftEta is not None:
-        topology_args["RingsShiftEta"] = RingsShiftEta
-    if RingsShiftPhi is not None:
-        topology_args["RingsShiftPhi"] = RingsShiftPhi
-    print(topology_args)
-    rings = CaloRingsMaker(
+    class_obj = {
+        CaloRingsTopology.Standard    : ROOT.CaloRingsMaker,
+        CaloRingsTopology.Asym        : ROOT.CaloAsymRingsMaker,
+        CaloRingsTopology.Strips      : ROOT.CaloStripsRingsMaker,
+        CaloRingsTopology.Corner      : ROOT.CaloCornerRingsMaker,
+        CaloRingsTopology.Cross       : ROOT.CaloCrossRingsMaker,
+        CaloRingsTopology.Custom      : ROOT.CaloCustomRingsMaker,
+    }
+
+    rings = Configurable(
+        class_obj[RingerTopology],
         name,
         InputClusterKey=InputClusterKey,
         OutputRingerKey=OutputRingerKey + "_Aux",
@@ -112,23 +60,68 @@ def CaloRingsBuilderCfg(
         DoSigmaCut=DoSigmaCut,
         SigmaCut=SigmaCut,
         RingerTopology=RingerTopology,
-        **topology_args,
+
+        LayerRings = [
+            [CaloSampling.PSB,  CaloSampling.PSE],
+            [CaloSampling.EMB1, CaloSampling.EMEC1],
+            [CaloSampling.EMB2, CaloSampling.EMEC2],
+            [CaloSampling.EMB3, CaloSampling.EMEC3],
+            [CaloSampling.HEC1, CaloSampling.TileCal1, CaloSampling.TileExt1],
+            [CaloSampling.HEC2, CaloSampling.TileCal2, CaloSampling.TileExt2],
+            [CaloSampling.HEC3, CaloSampling.TileCal3, CaloSampling.TileExt3],
+        ],
+        EtaRange      = [0.0, 2.5],
+        NRings        = [8, 64, 8, 8, 4, 4, 4],
+        DeltaPhiRings = [pi / 32, pi / 32, pi / 128, pi / 128, pi / 128, pi / 32, pi / 32, pi / 32],
+        DeltaEtaRings = [0.025, 0.00325, 0.025, 0.050, 0.1, 0.1, 0.2],
     )
 
-    fwd_rings = CaloRingsMaker(
+    if RingerTopology == CaloRingsTopology.Asym:
+        rings.NRings = [(n - 1) * 4 + 1 for n in rings.NRings]
+    if RingerTopology == CaloRingsTopology.Strips:
+        rings.NRings = [28, 252, 28, 14, 8, 8, 4]
+        rings.Axis = 0 if Axis is None else Axis
+    if RingerTopology == CaloRingsTopology.Corner:
+        rings.CornerShift = 3 if CornerShift is None else CornerShift
+        rings.NRings = [n * 4 for n in rings.NRings]
+    if RingerTopology == CaloRingsTopology.Cross:
+        rings.CrossShift = 3 if CrossShift is None else CrossShift
+        rings.NRings = [n * 4 for n in rings.NRings]
+    if RingerTopology == CaloRingsTopology.Custom:
+        rings.RingsShiftEta = [0] if RingsShiftEta is None else RingsShiftEta
+        rings.RingsShiftPhi = [0] if RingsShiftPhi is None else RingsShiftPhi
+
+    fwd_rings = Configurable( 
+        ROOT.CaloRingsMaker,
         name + "_Fwd",
-        InputClusterKey=InputClusterKey,
-        OutputRingerKey=OutputRingerKey + "_Fwd_Aux",
-        HistogramPath=HistogramPath + "_Fwd",
-        OutputLevel=OutputLevel,
-        **caloRingsFwdArgs,
+        InputClusterKey   = InputClusterKey,
+        OutputRingerKey   = OutputRingerKey + "_Fwd_Aux",
+        HistogramPath     = HistogramPath + "_Fwd",
+        OutputLevel       = OutputLevel,
+        DeltaEtaRings     = [0.1, 0.1, 0.1, 0.2, 0.2, 0.2],
+        DeltaPhiRings     = [pi / 32, pi / 32, pi / 32, pi / 16, pi / 16, pi / 16],
+        NRings            = [4, 4, 4, 2, 2, 2],
+        LayerRings        = [
+            [CaloSampling.EMEC1],
+            [CaloSampling.EMEC2],
+            [CaloSampling.EMEC3],
+            [CaloSampling.HEC1],
+            [CaloSampling.HEC2],
+            [CaloSampling.HEC3],
+        ],
+        EtaRange          = [2.5, 4.9],
     )
 
-    merge_rings = CaloRingsMerge(
+
+    merge_rings = Configurable( 
+        ROOT.CaloRingsMerge, 
         name + "_Merge",
-        CollectionKeys=[rings.OutputRingerKey, fwd_rings.OutputRingerKey],
-        OutputRingerKey=OutputRingerKey,
-        OutputLevel=OutputLevel,
+        CollectionKeys  =[rings.OutputRingerKey, fwd_rings.OutputRingerKey],
+        OutputRingerKey = OutputRingerKey,
+        OutputLevel     = OutputLevel,
     )
 
     return [rings, fwd_rings, merge_rings]
+
+
+CaloRingsBuilder = CaloRingsBuilderCfg
