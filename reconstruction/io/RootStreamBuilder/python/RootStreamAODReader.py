@@ -1,11 +1,10 @@
 __all__ = ["RootStreamAODReader"]
 
-from GaugiKernel import Cpp
-from GaugiKernel.macros import *
 import ROOT
 
+from GaugiKernel import Configurable, ComponentAccumulator
 
-class RootStreamAODReader(Cpp):
+class RootStreamAODReader(Configurable):
 
     def __init__(
         self,
@@ -25,33 +24,30 @@ class RootStreamAODReader(Cpp):
         NtupleName: str = "CollectionTree",
     ):
 
-        Cpp.__init__(self, ROOT.RootStreamAODReader(name))
-
-        # Propriedades padrão
-        self.setProperty("OutputEventKey", OutputEventKey)
-        self.setProperty("OutputTruthKey", OutputTruthKey)
-        self.setProperty("OutputClusterKey", OutputClusterKey)
-        self.setProperty("OutputRingerL0Key", OutputRingerL0Key)
-        self.setProperty("OutputSeedsKey", OutputSeedsKey)
-        self.setProperty("OutputElectronKey", OutputElectronKey)
-        self.setProperty("OutputTruthClusterKey", OutputTruthClusterKey)
-        self.setProperty("OutputTruthElectronKey", OutputTruthElectronKey)
-
-        # Novas propriedades de listas (Múltiplas coleções)
-        self.setProperty("OutputRingerKeys", OutputRingerKeys)
-        self.setProperty("OutputTruthRingerKeys", OutputTruthRingerKeys)
-
-        # Configurações gerais
-        self.setProperty("OutputLevel", OutputLevel)
-        self.setProperty("NtupleName", NtupleName)
-        self.setProperty("InputFile", InputFile)
+        Configurable.__init__(self, 
+                              ROOT.RootStreamAODReader,
+                              name,
+                              InputFile = InputFile,
+                              OutputEventKey = OutputEventKey,
+                              OutputTruthKey = OutputTruthKey,
+                              OutputClusterKey = OutputClusterKey,
+                              OutputRingerKeys = OutputRingerKeys,
+                              OutputRingerL0Key = OutputRingerL0Key,
+                              OutputSeedsKey = OutputSeedsKey,
+                              OutputElectronKey = OutputElectronKey,
+                              OutputTruthClusterKey = OutputTruthClusterKey,
+                              OutputTruthRingerKeys = OutputTruthRingerKeys,
+                              OutputTruthElectronKey = OutputTruthElectronKey,
+                              OutputLevel = OutputLevel,
+                              NtupleName = NtupleName,
+                              )
 
         f = ROOT.TFile(self.InputFile, "read")
         t = f.Get(self.NtupleName)
-        self.__entries = t.GetEntries()
+        self.Entries = t.GetEntries()
 
-    def GetEntries(self):
-        return self.__entries
+    def GetEntries(self) -> int:
+        return self.Entries
 
-    def merge(self, acc):
+    def merge(self, acc : ComponentAccumulator) -> None:
         acc.SetReader(self)

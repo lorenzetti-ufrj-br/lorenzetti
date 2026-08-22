@@ -1,39 +1,41 @@
 __all__ = ["RootStreamNtupleMaker"]
 
-from GaugiKernel import Cpp
-from GaugiKernel.macros import *
 import ROOT
+from GaugiKernel import Configurable
+from GaugiKernel.macros import *
 
 
-class RootStreamNtupleMaker(Cpp):
+def RootStreamNtupleMakerCfg(
+    name,
+    InputEventKey: str,
+    InputTruthKey: str,
+    InputSeedsKey: str,
+    InputClusterKey: str,
+    InputRingerKeys: str,
+    InputRingerL0Key: str,
+    InputTruthClusterKey: str,
+    InputTruthRingerKeys: str,
+    InputTruthElectronKey: str,
+    InputElectronKey: str,
+    OutputLevel: int = 0,
+    OutputNtupleName: str = "events",
+) -> Configurable:
 
-    def __init__(
-        self,
-        name,
-        InputEventKey: str,
-        InputTruthKey: str,
-        InputSeedsKey: str,
-        InputClusterKey: str,
-        InputRingerKeys: str,
-        InputRingerL0Key: str,
-        InputTruthClusterKey: str,
-        InputTruthRingerKeys: str,
-        InputTruthElectronKey: str,
-        InputElectronKey: str,
-        OutputLevel: int = 0,
-        OutputNtupleName: str = "events",
-    ):
+    return Configurable(
+        ROOT.RootStreamNtupleMaker,
+        name=name,
+        InputEventKey=InputEventKey,
+        InputTruthKey=InputTruthKey,
+        InputSeedsKey=InputSeedsKey,
+        InputClusterKey=InputClusterKey,
+        InputRingerKeys=InputRingerKeys,
+        InputRingerL0Key=InputRingerL0Key,
+        InputTruthClusterKey=InputTruthClusterKey,
+        InputTruthRingerKeys=InputTruthRingerKeys,
+        InputTruthElectronKey=InputTruthElectronKey,
+        InputElectronKey=InputElectronKey,
+        OutputNtupleName=OutputNtupleName,
+        OutputLevel=OutputLevel,
+    )
 
-        Cpp.__init__(self, ROOT.RootStreamNtupleMaker(name))
-        self.setProperty("InputEventKey", InputEventKey)
-        self.setProperty("InputTruthKey", InputTruthKey)
-        self.setProperty("InputSeedsKey", InputSeedsKey)
-        self.setProperty("InputClusterKey", InputClusterKey)
-        self.setProperty("InputRingerKeys", InputRingerKeys)
-        self.setProperty("InputRingerL0Key", InputRingerL0Key)
-        self.setProperty("InputTruthClusterKey", InputTruthClusterKey)
-        self.setProperty("InputTruthRingerKeys", InputTruthRingerKeys)
-        self.setProperty("InputTruthElectronKey", InputTruthElectronKey)
-        self.setProperty("InputElectronKey", InputElectronKey)
-        self.setProperty("OutputNtupleName", OutputNtupleName)
-        self.setProperty("OutputLevel", OutputLevel)
+RootStreamNtupleMaker = RootStreamNtupleMakerCfg
