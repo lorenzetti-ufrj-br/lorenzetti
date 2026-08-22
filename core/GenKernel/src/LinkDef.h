@@ -2,7 +2,8 @@
 #include "GenKernel/IAlgorithm.h"
 #include "GenKernel/IGenerator.h"
 #include "GenKernel/EventTape.h"
-
+#include "src/Pythia8Gen.h"
+#include "src/hepmc3/RootReader.h"
 
 
 #ifdef __CINT__
