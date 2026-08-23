@@ -1,96 +1,42 @@
 #!/usr/bin/env python3
-import argparse
-import sys
-import os
+import typer
 
-from pathlib            import Path
-from typing             import List
+from typing import Annotated, List
+from pathlib import Path
 from CaloCellBuilder    import CaloCellBuilder
-from GaugiKernel        import LoggingLevel, get_argparser_formatter
-from GaugiKernel        import ComponentAccumulator
+from GaugiKernel        import ComponentAccumulator, LoggingLevel
 from RootStreamBuilder  import RootStreamHITReader, recordable
 from RootStreamBuilder  import RootStreamESDMaker
-
-from reco.reco_job import merge_args, update_args, create_parallel_job
 from geometry import DetectorConstruction_v1
 
 
-"""
-Script: digit_trf.py
-Purpose: Performs the digitization step in the simulation chain.
-         Converts Geant4 energy hits into digital signals (cells) by simulating
-         electronic logical pulses, noise, and cross-talk.
-Usage:
-    digit_trf.py -i input.HIT.root -o output.ESD.root
-"""
 
-def parse_args():
-    """
-    Parses command-line arguments for the digitization job.
-
-    Returns:
-        argparse.Namespace: Configuration arguments including logging level and execution hooks.
-    """
-    # create the top-level parser
-    parser = argparse.ArgumentParser(
-        description='',
-        formatter_class=get_argparser_formatter(),
-        add_help=False)
-
-    parser.add_argument('-l', '--output-level', action='store',
-                        dest='output_level', required=False,
-                        type=str, default='INFO',
-                        help="The output level messenger.")
-    
-    parser.add_argument('--pre-init', action='store',
-                        dest='pre_init', required=False, default="''",
-                        help="The preinit command")
-
-    parser.add_argument('--pre-exec', action='store',
-                        dest='pre_exec', required=False, default="''",
-                        help="The preexec command")
-    
-    parser.add_argument('--post-exec', action='store',
-                        dest='post_exec', required=False, default="''",
-                        help="The postexec command")
-
-   
-    parser = merge_args(parser)
-
-    return parser
+app = typer.Typer(add_completion=False)
 
 
-def main(events : List[int],
-         logging_level: str,
-         input_file: str | Path,
-         output_file: str | Path,
-         pre_init: str,
-         pre_exec: str,
-         post_exec: str,
-        ):
+@app.command()
+def main(
+    input_file  : Annotated[Path|str      , typer.Option("-i", "--input-file", help="Path to input HIT file.")],
+    output_file : Annotated[Path|str      , typer.Option("-o", "--output-file", help="Path to output ESD file.")],
+    nov         : Annotated[List[int]|int , typer.Option("--nov", "--number-of-events", help="List of event indices to process.")] = None,
+    output_level: Annotated[str           , typer.Option("-l", "--output-level", help="Logging verbosity level.")] = "INFO",
+    pre_init    : Annotated[str           , typer.Option("--pre-init", help="Hook for pre-initialization code.")] = "''",
+    pre_exec    : Annotated[str           , typer.Option("--pre-exec", help="Hook for pre-execution code.")] = "''",
+    post_exec   : Annotated[str           , typer.Option("--post-exec", help="Hook for post-execution code.")] = "''",
+):
     """
     Main function for the digitization process.
 
     Reads Hits from the input file, simulates the calorimeter readout electronics
     (CaloCellBuilder), and produces an Event Summary Data (ESD) file containing
     calorimeter cells.
-
-    Args:
-        events (List[int]): List of event indices to process.
-        logging_level (str): Logging verbosity.
-        input_file (str | Path): Path to input HIT file.
-        output_file (str | Path): Path to output ESD file.
-        pre_init (str): Hook for pre-initialization code.
-        pre_exec (str): Hook for pre-execution code.
-        post_exec (str): Hook for post-execution code.
     """
-
     if isinstance(input_file, Path):
         input_file = str(input_file)
     if isinstance(output_file, Path):
         output_file = str(output_file)
 
-    outputLevel = LoggingLevel.toC(logging_level)
+    outputLevel = LoggingLevel.toC(output_level)
 
     exec(pre_init)
 
@@ -105,7 +51,6 @@ def main(events : List[int],
                                  OutputSeedsKey=recordable("Seeds"),
                                  OutputLevel=outputLevel,
                                  )
-
     reader.merge(acc)
 
     # digitalization!    
@@ -130,24 +75,9 @@ def main(events : List[int],
     acc += ESD
     
     exec(pre_exec)
-    acc.run(events)
+    acc.run(nov)
     exec(post_exec)
 
 
-    
-
-
 if __name__ == "__main__":
-    parser=parse_args()
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
-    args = parser.parse_args()
-    args = update_args(args)
-    pool  = create_parallel_job(args)
-    pool( main, 
-         logging_level    = args.output_level,
-         pre_init         = args.pre_init,
-         pre_exec         = args.pre_exec,
-         post_exec        = args.post_exec,
-         )
+    app()

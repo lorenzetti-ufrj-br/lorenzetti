@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import argparse
 import sys
+import typer
 import os
 
 from pathlib import Path
-from typing import List
+from typing import List, Annotated
 from expand_folders import expand_folders
 from GaugiKernel import LoggingLevel, get_argparser_formatter
 from GaugiKernel import ComponentAccumulator
@@ -35,65 +36,18 @@ TOPOLOGY_MAP = {
 }
 
 
-def parse_args():
-    """
-    Parses command-line arguments for the reconstruction job.
 
-    Returns:
-        argparse.Namespace: Arguments for reconstruction configuration.
-    """
-    # create the top-level parser
-    parser = argparse.ArgumentParser(
-        description="", formatter_class=get_argparser_formatter(), add_help=False
-    )
+app = typer.Typer()
 
-    parser.add_argument(
-        "-l",
-        "--output-level",
-        action="store",
-        dest="output_level",
-        required=False,
-        type=str,
-        default="INFO",
-        help="The output level messenger.",
-    )
-    parser.add_argument(
-        "-c",
-        "--command",
-        action="store",
-        dest="command",
-        required=False,
-        default="''",
-        help="The preexec command",
-    )
-
-    return merge_args(parser)
-
-
+@app.command()
 def main(
-    events: List[int],
-    logging_level: str,
-    input_file: str | Path,
-    output_file: str | Path,
-    command: str,
+    nov             : Annotated[List[int]   , typer.Option("--nov", "--number-of-events", help="The total number of events to run.")] = -1,
+    logging_level   : Annotated[str         , typer.Option("-l", "--log-level", help="Logging verbosity.")] = "INFO",
+    input_file      : Annotated[str | Path  , typer.Option("-i", "--input-file", help="The input file or folder to run the job.")],
+    output_file     : Annotated[str | Path  , typer.Option("-o", "--output-file", help="The output file.")],
+    preexec         : Annotated[str         , typer.Option("-p", "--preexec", help="The preexec command to run before the reconstruction.")] = "''",
 ):
-    """
-    Main function for the reconstruction workflow.
 
-    Orchestrates the reconstruction sequence:
-    1. Reads ESD file (Cells, Particles, Seeds).
-    2. Runs CaloClusterMaker to group cells into clusters.
-    3. Runs CaloRingsBuilder to extract concentric ring energy sums.
-    4. Runs ElectronBuilder to create electron candidates.
-    5. Writes the results to an Analysis Object Data (AOD) file.
-
-    Args:
-        events (List[int]): List of event indices.
-        logging_level (str): Logging verbosity.
-        input_file (str | Path): Path to input ESD file.
-        output_file (str | Path): Path to output AOD file.
-        command (str): Optional command to execute before the sequence.
-    """
     if isinstance(input_file, Path):
         input_file = str(input_file)
     if isinstance(output_file, Path):
@@ -101,7 +55,7 @@ def main(
 
     outputLevel = LoggingLevel.toC(logging_level)
 
-    exec(command)
+    exec(preexec)
 
     acc = ComponentAccumulator("ComponentAccumulator", output_file)
 
@@ -238,19 +192,8 @@ def main(
     acc += hypo_truth
     acc += AOD
 
-    acc.run(events)
+    acc.run(nov)
 
 
 if __name__ == "__main__":
-    parser = parse_args()
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
-    args = parser.parse_args()
-    args = update_args(args)
-    pool = create_parallel_job(args)
-    pool(
-        main,
-        logging_level=args.output_level,
-        command=args.command,
-    )
+    app()

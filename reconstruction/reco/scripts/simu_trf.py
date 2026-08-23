@@ -1,121 +1,36 @@
 #!/usr/bin/env python3
 
-import multiprocessing
-import argparse
-import sys
 
+import typer
+
+from typing import Annotated
 from pathlib                import Path
 from GaugiKernel.constants  import MINUTES
-from GaugiKernel            import LoggingLevel, get_argparser_formatter
-from G4Kernel               import ComponentAccumulator, EventReader
+from G4Kernel               import ComponentAccumulator, EventReader, LoggingLevel
 from RootStreamBuilder      import recordable
 from CaloHitBuilder         import CaloHitBuilder
 from RootStreamBuilder      import RootStreamHITMaker
-
 from geometry import DetectorConstruction_v1
-from reco import update_args_from_file,merge_args_from_file
 
 
-"""
-Script: simu_trf.py
-Purpose: Runs the full Geant4 simulation step in the Lorenzetti framework.
-         Reads generated event files (EVT), simulates particle interactions with the detector,
-         and produces Hit files (HIT).
-Usage:
-    simu_trf.py -i input.EVT.root -o output.HIT.root -nt <threads>
-"""
+app = typer.Typer(add_completion=False)
 
-def parse_args():
-    """
-    Parses command-line arguments for the simulation job.
-
-    Returns:
-        argparse.Namespace: Arguments specifying inputs/outputs, thread count,
-                            magnetic field options, and execution hooks.
-    """
-    parser = argparse.ArgumentParser(
-        description='',
-        add_help=False,
-        formatter_class=get_argparser_formatter())
-
-    parser.add_argument('-i', '--input-file', action='store',
-                            dest='input_file', required=True,
-                            help="The input file or folder to run the job")
-    parser.add_argument('-o', '--output-file', action='store',
-                        dest='output_file', required=True,
-                        help="The output file.")
-    parser.add_argument('--nov', '--number-of-events', action='store',
-                        dest='number_of_events', required=False,
-                        type=int, default=-1,
-                        help="The total number of events to run.")
-    parser.add_argument('-nt', '--number-of-threads', action='store',
-                        dest='number_of_threads', required=False,
-                        type=int, default=multiprocessing.cpu_count(),
-                        help="The number of threads")
-    parser.add_argument('--enable-magnetic-field', action='store_true',
-                        dest='enable_magnetic_field', required=False,
-                        help="Enable the magnetic field.")
-    parser.add_argument('-t', '--timeout', action='store',
-                        dest='timeout', required=False, type=int, default=240,
-                        help="Event timeout in minutes")
-    parser.add_argument('-l', '--output-level', action='store',
-                        dest='output_level', required=False,
-                        type=str, default='INFO',
-                        help="The output level messenger.")
-    parser.add_argument('--pre-init', action='store',
-                        dest='pre_init', required=False, default="''",
-                        help="The preinit command")
-    parser.add_argument('--pre-exec', action='store',
-                        dest='pre_exec', required=False, default="''",
-                        help="The preexec command")
-    parser.add_argument('--post-exec', action='store',
-                        dest='post_exec', required=False, default="''",
-                        help="The postexec command")
-    parser.add_argument('--save-all-hits', action='store_true',
-                        dest='save_all_hits', required=False,
-                        help="Save all hits into the output file.")
-    parser.add_argument('--dry-run', action='store_true',
-                        dest='dry_run', required=False,
-                        help="Run the script without executing the main logic.")
-    return merge_args_from_file(parser)
-
-
-def main(logging_level: str,
-         input_file: str | Path,
-         output_file: str | Path,
-         pre_init: str,
-         pre_exec: str,
-         post_exec: str,
-         enable_magnetic_field: bool,
-         save_all_hits : bool,
-         timeout: int,
-         number_of_events: int,
-         number_of_threads: int,
-         dry_run: bool,
+@app.command()
+def main(
+         logging_level          : Annotated[str,           typer.Option("-l", "--output-level", help="The output level messenger.")],
+         input_file             : Annotated[str | Path,    typer.Option("-i", "--input-file", help="The input file or folder to run the job.")],
+         output_file            : Annotated[str | Path,    typer.Option("-o", "--output-file", help="The output file.")],
+         pre_init               : Annotated[str,           typer.Option("--pre-init", help="The preinit command")],
+         pre_exec               : Annotated[str,           typer.Option("--pre-exec", help="The preexec command")],
+         post_exec              : Annotated[str,           typer.Option("--post-exec", help="The postexec command")],
+         enable_magnetic_field  : Annotated[bool,          typer.Option("--enable-magnetic-field", help="Enable the magnetic field.")],
+         save_all_hits          : Annotated[bool,          typer.Option("--save-all-hits", help="Save all hits into the output file.")],
+         timeout                : Annotated[int,           typer.Option("--timeout", help="Timeout in minutes.")],
+         number_of_events       : Annotated[int,           typer.Option("--nov", "--number-of-events", help="The total number of events to run.")],
+         number_of_threads      : Annotated[int,           typer.Option("-nt", "--number-of-threads", help="The number of threads.")],
+         dry_run                : Annotated[bool,          typer.Option("--dry-run", help="Perform a dry run without executing jobs.")],
+         
          ):
-    """
-    Main function to drive the Geant4 simulation.
-
-    Constructs the simulation environment using `ComponentAccumulator`:
-    1. Initializes Detector Construction (DetectorConstruction_v1).
-    2. Sets up the Event Reader to stream events from input.
-    3. Configures the CaloHitBuilder to collect energy deposits.
-    4. Merges components and executes the run loop.
-
-    Args:
-        logging_level (str): Verbosity level.
-        input_file (str | Path): Path to the input event file.
-        output_file (str | Path): Path to the output hit file.
-        pre_init (str): Python code to execute before initialization.
-        pre_exec (str): Python code to execute before the run loop.
-        post_exec (str): Python code to execute after the run loop.
-        enable_magnetic_field (bool): Toggle for the detector magnetic field.
-        save_all_hits (bool): If True, saves all hits regardless of Region of Interest (RoI).
-        timeout (int): Timeout in minutes.
-        number_of_events (int): Number of events to process.
-        number_of_threads (int): Number of Geant4 threads.
-        dry_run (bool): If True, sets up but does not execute the run.
-    """
 
     if isinstance(input_file, Path):
         input_file = str(input_file)
@@ -164,36 +79,4 @@ def main(logging_level: str,
 
 
 if __name__ == "__main__":
-    parser=parse_args()
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args()
-
-    if Path(args.input_file).is_dir():
-        raise IsADirectoryError(f"Input file '{args.input_file}' was expected to be a file, "
-                                 "but it is a directory. Please provide a list of files instead.")
-    
-    args = update_args_from_file(args)
-    print(f"input file: {args.input_file}")
-    print(f"output file: {args.output_file}")
-    print(f"number of threads: {args.number_of_threads}")
-
-    main(
-             logging_level         = args.output_level,
-             input_file            = args.input_file,
-             output_file           = args.output_file,
-             pre_init              = args.pre_init,
-             pre_exec              = args.pre_exec,
-             post_exec             = args.post_exec,
-             enable_magnetic_field = args.enable_magnetic_field,
-             save_all_hits         = args.save_all_hits,
-             timeout               = args.timeout,
-             number_of_events      = args.number_of_events,
-             number_of_threads     = args.number_of_threads,
-             dry_run               = args.dry_run,
-        )
-
-
-
+    app()
