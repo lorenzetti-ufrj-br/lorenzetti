@@ -64,7 +64,7 @@ namespace SG {
 
   
   template<class T>
-  DataVector<T>::~DataVector<T>() {
+  DataVector<T>::~DataVector() {
     for (auto obj : m_data) {
       if (obj) {
         delete obj;

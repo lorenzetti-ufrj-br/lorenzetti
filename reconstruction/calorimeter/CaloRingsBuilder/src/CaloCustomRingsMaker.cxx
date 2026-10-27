@@ -68,6 +68,10 @@ StatusCode CaloCustomRingsMaker::post_execute(SG::EventContext &ctx) const
     ringer.record(std::make_unique<xAOD::CaloRingsContainer>());
 
     SG::ReadHandle<xAOD::CaloClusterContainer> clusters(m_clusterKey, ctx);
+    if (!clusters.isValid()) {
+      MSG_WARNING("CaloClusterContainer with key '" << m_clusterKey << "' is not valid in EventContext!");
+      return StatusCode::SUCCESS;
+    }
 
     std::vector<RingSetCustom> vec_rs;
     vec_rs.reserve(m_nRings.size());

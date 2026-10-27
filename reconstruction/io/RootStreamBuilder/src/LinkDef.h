@@ -1,6 +1,7 @@
 #include "src/RootStreamMaker.h"
 #include "src/RootStreamReader.h"
 #include "src/RootStreamNtupleMaker.h"
+#include "src/RootStreamParquetMaker.h"
 
 #ifdef __CINT__
 
@@ -12,5 +13,6 @@
 #pragma link C++ class RootStreamMaker+;
 #pragma link C++ class RootStreamReader+;
 #pragma link C++ class RootStreamNtupleMaker+;
+#pragma link C++ class RootStreamParquetMaker+;
 
 #endif

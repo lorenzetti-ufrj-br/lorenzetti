@@ -149,6 +149,9 @@ class Configurable(Logger):
                 return prop_list
             return None
 
+        if hasattr(self, '_c_ptr') and hasattr(self._c_ptr, name):
+            return getattr(self._c_ptr, name)
+
         try:
             return super().__getattr__(name)
         except AttributeError:

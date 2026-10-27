@@ -347,6 +347,7 @@ StatusCode RootStreamNtupleMaker::fillHistograms(EventContext &ctx) const
   if (!event_container.isValid())
   {
     MSG_FATAL("It's not possible to read the xAOD::EventInfoContainer from this Context using this key " << m_eventKey);
+    return StatusCode::FAILURE;
   }
 
   std::vector<SG::ReadHandle<xAOD::CaloRingsContainer>> ringer_containers;
@@ -364,18 +365,21 @@ StatusCode RootStreamNtupleMaker::fillHistograms(EventContext &ctx) const
   if (!electron_container.isValid())
   {
     MSG_FATAL("It's not possible to read the xAOD::ElectronContainer from this Context using this key " << m_electronKey);
+    return StatusCode::FAILURE;
   }
 
   SG::ReadHandle<xAOD::SeedContainer> seed_container(m_seedsKey, ctx);
   if (!seed_container.isValid())
   {
     MSG_FATAL("It's not possible to read the xAOD::SeedContainer from this Context using this key " << m_seedsKey);
+    return StatusCode::FAILURE;
   }
 
   SG::ReadHandle<xAOD::TruthParticleContainer> truth_container(m_truthKey, ctx);
   if (!truth_container.isValid())
   {
     MSG_FATAL("It's not possible to read the xAOD::TruthParticleContainer from this Context using this key " << m_truthKey);
+    return StatusCode::FAILURE;
   }
 
   SG::ReadHandle<xAOD::CaloRingsContainer> ringerL0_container(m_ringerL0Key, ctx);
@@ -843,6 +847,11 @@ StatusCode RootStreamNtupleMaker::fillHistograms(EventContext &ctx) const
     tree->Fill();
 
   } // each cluster should be 1 entry on ntuple file
+
+  if (tree)
+  {
+    tree->ResetBranchAddresses();
+  }
 
   return StatusCode::SUCCESS;
 }

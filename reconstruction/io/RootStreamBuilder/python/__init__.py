@@ -19,3 +19,7 @@ from .RootStreamReader import *
 from . import RootStreamNtupleMaker
 __all__.extend(RootStreamNtupleMaker.__all__)
 from .RootStreamNtupleMaker import *
+
+from . import RootStreamParquetMaker
+__all__.extend(RootStreamParquetMaker.__all__)
+from .RootStreamParquetMaker import *

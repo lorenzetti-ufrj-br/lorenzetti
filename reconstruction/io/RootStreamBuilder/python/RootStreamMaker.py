@@ -61,6 +61,7 @@ def RootStreamAODMakerCfg(
     name: str = "RootStreamAODMaker",
     InputEventKey: str = "EventInfo",
     InputTruthKey: str = "Particles",
+    InputSeedsKey: str = "Seeds",
     InputCellsKey: str = "Cells",
     InputClusterKey: str = "CaloClusters",
     InputRingerKeys: Optional[List[str]] = None,
@@ -78,12 +79,18 @@ def RootStreamAODMakerCfg(
     """
     if InputRingerKeys is None:
         InputRingerKeys = ["Rings"]
+    elif isinstance(InputRingerKeys, str):
+        InputRingerKeys = [InputRingerKeys]
+
     if InputTruthRingerKeys is None:
         InputTruthRingerKeys = ["TruthRings"]
+    elif isinstance(InputTruthRingerKeys, str):
+        InputTruthRingerKeys = [InputTruthRingerKeys]
 
     item_list: List[str] = [
         f"EventInfoContainer#{InputEventKey}",
         f"TruthParticleContainer#{InputTruthKey}",
+        f"SeedContainer#{InputSeedsKey}",
         f"CaloClusterContainer#{InputClusterKey}",
         f"ElectronContainer#{InputElectronKey}",
         f"CaloClusterContainer#{InputTruthClusterKey}",
@@ -120,11 +127,8 @@ def RootStreamESDMakerCfg(
     InputTruthCellsKey: str = "TruthCells",
     InputCellsTruthKey: Optional[str] = None,
     InputDescriptorsKey: str = "CaloDetDescriptors",
-    InputClusterKey: str = "CaloClusters",
-    InputTruthClusterKey: str = "TruthClusters",
     TreeName: str = "CollectionTree",
     OutputLevel: int = 0,
-    **kwargs,
 ) -> Configurable:
     """
     Convenience preset configuring a RootStreamMaker for ESD tier output.
@@ -139,8 +143,6 @@ def RootStreamESDMakerCfg(
         f"CaloCellContainer#{InputCellsKey}",
         f"CaloCellContainer#{InputTruthCellsKey}",
         f"CaloDetDescriptorContainer#{InputDescriptorsKey}",
-        f"CaloClusterContainer#{InputClusterKey}",
-        f"CaloClusterContainer#{InputTruthClusterKey}",
     ]
 
     return RootStreamMakerCfg(

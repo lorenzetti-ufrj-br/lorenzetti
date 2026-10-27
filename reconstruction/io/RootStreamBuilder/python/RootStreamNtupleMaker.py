@@ -25,8 +25,13 @@ def RootStreamNtupleMakerCfg(
     """
     if InputRingerKeys is None:
         InputRingerKeys = ["Rings"]
+    elif isinstance(InputRingerKeys, str):
+        InputRingerKeys = [InputRingerKeys]
+
     if InputTruthRingerKeys is None:
         InputTruthRingerKeys = ["TruthRings"]
+    elif isinstance(InputTruthRingerKeys, str):
+        InputTruthRingerKeys = [InputTruthRingerKeys]
 
     return Configurable(
         ROOT.RootStreamNtupleMaker,

@@ -37,7 +37,7 @@ def main(
     exec(pre_init)
 
 
-    reader = RootStreamHITReader(
+    HIT = RootStreamHITReader(
         "HITReader",
         InputFile=input_file,
         OutputHitsKey=recordable("Hits"),
@@ -47,7 +47,7 @@ def main(
         OutputLevel=outputLevel,
     )
 
-    acc = ComponentAccumulator("ComponentAccumulator", output_file, reader)
+    acc = ComponentAccumulator("ComponentAccumulator", output_file, HIT)
 
     calorimeter = CaloCellBuilder(
         "CaloCellBuilder",

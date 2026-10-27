@@ -10,6 +10,27 @@
 namespace Gaugi {
 
   /**
+   * @class IWriteBuffer
+   * @brief Polymorphic RAII write buffer holding per-event heap data during TTree filling.
+   */
+  class IWriteBuffer {
+  public:
+    virtual ~IWriteBuffer() = default;
+  };
+
+  /**
+   * @class IReadBuffer
+   * @brief Polymorphic RAII read buffer holding per-event heap data during TTree reading and StoreGate recording.
+   */
+  class IReadBuffer {
+  public:
+    virtual ~IReadBuffer() = default;
+
+    /*! Convert read persistent data into EDM objects and record into EventContext */
+    virtual StatusCode record(SG::EventContext &ctx) = 0;
+  };
+
+  /**
    * @class IBranchHandler
    * @brief Polymorphic interface to serialize and deserialize branches dynamically.
    */
@@ -26,20 +47,22 @@ namespace Gaugi {
     /*! Return the formatted branch name ("<TypeName>_<Key>") */
     virtual std::string branchName() const = 0;
 
-    /*! Initialize branch for reading from TTree */
-    virtual void initReadBranch(TTree *tree) = 0;
+    /*! Prepare local read buffer and link branch address on tree */
+    virtual std::unique_ptr<IReadBuffer> prepareRead(TTree *tree) const = 0;
 
-    /*! Initialize branch for writing to TTree */
-    virtual void initWriteBranch(TTree *tree) = 0;
+    /*! Book branch for writing to TTree */
+    virtual void bookBranch(TTree *tree) const = 0;
 
-    /*! Read data from persistent vector, convert, and record into EventContext */
-    virtual StatusCode readAndRecord(SG::EventContext &ctx) = 0;
+    /*! Alias for backwards compatibility */
+    virtual void initWriteBranch(TTree *tree) { bookBranch(tree); }
 
-    /*! Read container from EventContext, convert, and write into persistent vector */
-    virtual StatusCode writeFromContext(SG::EventContext &ctx) = 0;
+    /*! Read container from EventContext, set branch address on tree, and return RAII write buffer */
+    virtual std::unique_ptr<IWriteBuffer> writeFromContext(TTree *tree, SG::EventContext &ctx) const = 0;
 
-    /*! Clear internal buffer between events */
-    virtual void clear() = 0;
+    /*! Backwards compatibility */
+    virtual void initReadBranch(TTree */*tree*/) {}
+    virtual StatusCode readAndRecord(SG::EventContext &/*ctx*/) { return StatusCode::SUCCESS; }
+    virtual void clear() {}
   };
 
 } // namespace Gaugi

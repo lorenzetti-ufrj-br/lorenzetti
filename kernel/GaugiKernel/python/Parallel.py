@@ -91,6 +91,7 @@ __all__ = [
     "append_index_to_file",
     "check_file_exists",
     "merge_root_files",
+    "merge_parquet_files",
 ]
 
 
@@ -131,7 +132,14 @@ def check_file_exists(path: Union[str, Path], ntuple_name: str = "") -> bool:
     path_str = str(path)
     if not os.path.exists(path_str):
         return False
-    if not ntuple_name:
+    if not ntuple_name or path_str.endswith(".parquet"):
+        if path_str.endswith(".parquet"):
+            try:
+                import pyarrow.parquet as pq
+                meta = pq.read_metadata(path_str)
+                return meta.num_rows > 0
+            except Exception:
+                return os.path.getsize(path_str) > 0
         return os.path.getsize(path_str) > 0
     try:
         f = ROOT.TFile.Open(path_str, "READ")
@@ -143,6 +151,45 @@ def check_file_exists(path: Union[str, Path], ntuple_name: str = "") -> bool:
         return entries > 0
     except Exception:
         return False
+
+
+def merge_parquet_files(output_file: Union[str, Path], chunk_files: List[str]) -> None:
+    """
+    Merges intermediate chunk Parquet files into a single destination file via PyArrow.
+
+    Upon successful merge, the intermediate chunk files are automatically cleaned up.
+    """
+    output_str = str(output_file)
+    if not chunk_files:
+        return
+    if len(chunk_files) == 1:
+        if chunk_files[0] != output_str:
+            shutil.move(chunk_files[0], output_str)
+        return
+
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    tables = [pq.read_table(f) for f in chunk_files]
+    merged = pa.concat_tables(tables)
+    pq.write_table(merged, output_str)
+
+    for f in chunk_files:
+        if os.path.exists(f) and f != output_str:
+            try:
+                os.remove(f)
+            except OSError:
+                pass
+
+
+def merge_files(output_file: Union[str, Path], chunk_files: List[str]) -> None:
+    """
+    Dispatches file merging based on output extension (.parquet vs ROOT).
+    """
+    if str(output_file).endswith(".parquet"):
+        merge_parquet_files(output_file, chunk_files)
+    else:
+        merge_root_files(output_file, chunk_files)
 
 
 def merge_root_files(output_file: Union[str, Path], chunk_files: List[str]) -> None:
@@ -664,7 +711,7 @@ def parallel_job(_func: Optional[Callable] = None, *, ntuple_name: str = "partic
             all_chunk_files = list(plan.keys())
             if merge or len(all_chunk_files) == 1:
                 job._logger.info(f"Merging {len(all_chunk_files)} chunk(s) into {output_file}...")
-                merge_root_files(output_file, all_chunk_files)
+                merge_files(output_file, all_chunk_files)
 
         cli_entry.__signature__ = new_sig
         cli_entry.__annotations__ = {p.name: p.annotation for p in all_params}
@@ -1176,7 +1223,7 @@ def file_parallel_job(
             all_dest_files = list(plan.keys())
             if merge and not is_out_dir and len(all_dest_files) > 1:
                 job._logger.info(f"Merging {len(all_dest_files)} file(s) into {output_file}...")
-                merge_root_files(output_file, all_dest_files)
+                merge_files(output_file, all_dest_files)
 
         cli_entry.__signature__ = new_sig
         cli_entry.__annotations__ = {p.name: p.annotation for p in all_params}

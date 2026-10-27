@@ -33,7 +33,7 @@ public:
   virtual StatusCode finalize() override;
 
 private:
-  StatusCode setupBranches();
+  std::vector<std::unique_ptr<Gaugi::IBranchHandler>> createHandlers() const;
 
   std::string m_ntupleName;
   std::string m_outputFile;
@@ -44,11 +44,6 @@ private:
   float m_phiWindow;
   std::string m_truthKey;
   std::vector<int> m_cellHashes;
-
-  mutable TFile *m_file;
-  mutable TTree *m_tree;
-  mutable bool m_ownsFile;
-  std::vector<std::unique_ptr<Gaugi::IBranchHandler>> m_handlers;
 };
 
 #endif

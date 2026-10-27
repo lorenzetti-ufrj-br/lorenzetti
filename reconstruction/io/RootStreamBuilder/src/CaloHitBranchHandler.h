@@ -36,11 +36,14 @@ namespace Gaugi {
 
     virtual ~CaloHitBranchHandler() = default;
 
-    virtual StatusCode writeFromContext(SG::EventContext &ctx) override {
-      clear();
+    virtual std::unique_ptr<IWriteBuffer> writeFromContext(TTree *tree, SG::EventContext &ctx) const override {
+      if (!tree) return nullptr;
+      auto buf = std::make_unique<TypedWriteBuffer<xAOD::CaloHit_t>>();
+      tree->SetBranchAddress(m_branchName.c_str(), &(buf->data));
+
       SG::ReadHandle<xAOD::CaloHitContainer> handle(m_key, ctx);
       if (!handle.isValid()) {
-        return StatusCode::FAILURE;
+        return buf;
       }
 
       xAOD::CaloHitConverter cnv;
@@ -77,18 +80,18 @@ namespace Gaugi {
 
           xAOD::CaloHit_t item_t;
           cnv.convert(hit, item_t);
-          m_data->push_back(item_t);
+          buf->data->push_back(item_t);
         }
       } else {
         for (const auto hit : *handle) {
           if (!hit) continue;
           xAOD::CaloHit_t item_t;
           cnv.convert(hit, item_t);
-          m_data->push_back(item_t);
+          buf->data->push_back(item_t);
         }
       }
 
-      return StatusCode::SUCCESS;
+      return buf;
     }
 
   private:

@@ -15,6 +15,7 @@ def main(
     number_of_threads: Annotated[int, typer.Option("-nt", "--number-of-threads", help="Threads allocated per worker")] = 1,
     nov: Annotated[int, typer.Option("--nov", "--number-of-events", help="The total number of events to run.")] = -1,
     output_level: Annotated[str, typer.Option("-l", "--output-level", help="Logging verbosity.")] = "INFO",
+    preexec: Annotated[str, typer.Option("-p", "--preexec", help="The preexec command to run before execution.")] = "''",
 ):
     """
     Creates an analysis flat ntuple (TTree 'physics') from AOD input files.
@@ -23,35 +24,29 @@ def main(
     output_file = str(output_file)
     outputLevel = LoggingLevel.toC(output_level)
 
-    acc = ComponentAccumulator("ComponentAccumulator", output_file)
+    exec(preexec)
 
-    aod = RootStreamAODReader(
+    AOD = RootStreamAODReader(
         "AODReader",
         InputFile=input_file,
+        TreeName="CollectionTree",
         OutputLevel=outputLevel,
-        OutputEventKey=recordable("Events"),
-        OutputTruthKey=recordable("Particles"),
-        OutputClusterKey=recordable("Clusters"),
-        OutputElectronKey=recordable("Electrons"),
-        OutputSeedsKey=recordable("Seeds"),
-        OutputTruthClusterKey=recordable("TruthClusters"),
-        OutputRingerL0Key=recordable("RingsL0"),
-        OutputTruthElectronKey=recordable("TruthElectrons"),
-        NtupleName="CollectionTree",
     )
-    aod.merge(acc)
+
+    acc = ComponentAccumulator("ComponentAccumulator", output_file, AOD)
 
     ntuple = RootStreamNtupleMaker(
         "NtupleMaker",
         OutputLevel=outputLevel,
         InputEventKey=recordable("Events"),
         InputTruthKey=recordable("Particles"),
-        InputClusterKey=recordable("Clusters"),
-        InputRingerL0Key=recordable("RingsL0"),
-        InputElectronKey=recordable("Electrons"),
         InputSeedsKey=recordable("Seeds"),
+        InputClusterKey=recordable("Clusters"),
         InputTruthClusterKey=recordable("TruthClusters"),
+        InputElectronKey=recordable("Electrons"),
         InputTruthElectronKey=recordable("TruthElectrons"),
+        InputRingerKeys=[recordable("Rings")],
+        InputTruthRingerKeys=[recordable("TruthRings")],
         OutputNtupleName="physics",
     )
     acc += ntuple

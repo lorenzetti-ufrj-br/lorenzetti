@@ -38,7 +38,12 @@ class ComponentAccumulator( Logger ):
     return self
 
   def GetEntries(self):
-    return self.__reader.GetEntries()
+    reader = self.__reader.c_ptr() if hasattr(self.__reader, 'c_ptr') else self.__reader
+    if hasattr(reader, "GetEntries"):
+      return reader.GetEntries()
+    elif hasattr(reader, "entries"):
+      return reader.entries()
+    return 0
 
   def configure(self):
     self.__acc.initialize()
@@ -46,13 +51,13 @@ class ComponentAccumulator( Logger ):
 
  
   def run( self , events : Union[List[int], int] = -1 ):
+    self.configure()
     if isinstance(events, int):
       total = self.GetEntries()
       if events > 0:
         total = min(events, total)
       events = list(range(max(0, total)))
 
-    self.configure()
     for evt in events:
         self.__acc.run(self.__ctx, evt)
       

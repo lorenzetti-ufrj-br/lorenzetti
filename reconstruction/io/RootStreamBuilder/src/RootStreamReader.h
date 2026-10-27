@@ -17,6 +17,7 @@
  * 
  * Inspects all branches in the input TTree, identifies the EDM container types and keys,
  * and dynamically records the reconstructed xAOD containers into StoreGate for each event.
+ * Stateless and thread-safe: delegates file and tree retrieval to the EventContext StoreGate service.
  */
 class RootStreamReader : public Gaugi::Algorithm {
 public:
@@ -34,9 +35,12 @@ public:
 
   /*! Return the number of events in the TTree */
   long long entries() const;
+  long long entries(SG::EventContext &ctx) const;
+  long long GetEntries() const { return entries(); }
+  long long GetEntries(SG::EventContext &ctx) const { return entries(ctx); }
 
 private:
-  StatusCode discoverBranches(TTree *tree);
+  std::vector<std::unique_ptr<Gaugi::IBranchHandler>> createHandlers(TTree *tree) const;
 
   std::string m_inputFile;
   std::string m_ntupleName;
@@ -44,10 +48,6 @@ private:
   bool m_filterBySigma;
   float m_sigmaThreshold;
   std::string m_descriptorsKey;
-
-  TFile *m_file;
-  TTree *m_tree;
-  std::vector<std::unique_ptr<Gaugi::IBranchHandler>> m_handlers;
 };
 
 #endif

@@ -131,6 +131,9 @@ message( STATUS ${FASTJET_LIBRARIES} )
 message( STATUS ${PYTHIA8_LIBRARIES} )
 message( STATUS ${HEPMC_LIBRARIES} )
 
+execute_process(COMMAND python3 -c "import pyarrow, os; print(os.path.dirname(pyarrow.__file__))" OUTPUT_VARIABLE PYARROW_LIB_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+file(GLOB PYARROW_LIBRARIES "${PYARROW_LIB_DIR}/libarrow.so*" "${PYARROW_LIB_DIR}/libparquet.so*")
+
 target_link_Libraries(lorenzetti ${ROOT_LIBRARIES} 
                                  ${ROOT_COMPONENT_LIBRARIES} 
                                  #${Boost_PYTHON_LIBRARIES} 
@@ -140,7 +143,8 @@ target_link_Libraries(lorenzetti ${ROOT_LIBRARIES}
                                  ${Geant4_LIBRARIES} 
                                  ${FASTJET_LIBRARIES} 
                                  ${HEPMC_LIBRARIES}
-                                 ${PYTHIA8_LIBRARIES} )
+                                 ${PYTHIA8_LIBRARIES}
+                                 ${PYARROW_LIBRARIES} )
 
 
 

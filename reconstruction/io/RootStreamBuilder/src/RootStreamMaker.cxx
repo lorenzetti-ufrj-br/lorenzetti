@@ -14,11 +14,7 @@ RootStreamMaker::RootStreamMaker(std::string name)
     m_etaWindow(0.4f),
     m_phiWindow(0.4f),
     m_truthKey("Particles"),
-    m_cellHashes(),
-    m_file(nullptr),
-    m_tree(nullptr),
-    m_ownsFile(false),
-    m_handlers()
+    m_cellHashes()
 {
   declareProperty("TreeName",      m_ntupleName);
   declareProperty("NtupleName",    m_ntupleName); // alias for backwards compatibility
@@ -35,45 +31,19 @@ RootStreamMaker::RootStreamMaker(std::string name)
 
 RootStreamMaker::~RootStreamMaker()
 {
-  m_handlers.clear();
-  if (m_ownsFile && m_file) {
-    if (m_file->IsOpen()) {
-      m_file->Write();
-      m_file->Close();
-    }
-    delete m_file;
-    m_file = nullptr;
-  }
 }
 
 StatusCode RootStreamMaker::initialize()
 {
   CHECK_INIT();
   setMsgLevel(m_outputLevel);
-
-  if (!m_outputFile.empty()) {
-    m_file = TFile::Open(m_outputFile.c_str(), "RECREATE");
-    if (!m_file || m_file->IsZombie()) {
-      MSG_FATAL("Could not open ROOT output file for writing: " << m_outputFile);
-      return StatusCode::FAILURE;
-    }
-    m_ownsFile = true;
-    m_file->cd();
-    m_tree = new TTree(m_ntupleName.c_str(), m_ntupleName.c_str());
-  }
-
   return StatusCode::SUCCESS;
 }
 
-StatusCode RootStreamMaker::setupBranches()
+std::vector<std::unique_ptr<IBranchHandler>> RootStreamMaker::createHandlers() const
 {
-  if (!m_tree) {
-    return StatusCode::FAILURE;
-  }
-
-  if (!m_handlers.empty()) {
-    return StatusCode::SUCCESS; // Already configured
-  }
+  std::vector<std::unique_ptr<IBranchHandler>> handlers;
+  handlers.reserve(m_itemList.size());
 
   for (const auto &item : m_itemList) {
     if (item.empty()) continue;
@@ -101,29 +71,17 @@ StatusCode RootStreamMaker::setupBranches()
     auto handler = BranchHandlerFactory::createHandler(
         typeName, key, m_onlyRoI, m_etaWindow, m_phiWindow, m_truthKey, m_cellHashes);
     if (handler) {
-      handler->initWriteBranch(m_tree);
-      if (m_onlyRoI && typeName == "CaloHitContainer") {
-        MSG_INFO("Configured write branch '" << handler->branchName() << "' with RoI filtering (TruthKey: "
-                 << m_truthKey << ", EtaWindow: " << m_etaWindow << ", PhiWindow: " << m_phiWindow << ")");
-      } else {
-        MSG_INFO("Configured write branch '" << handler->branchName() << "' for item: " << item);
-      }
-      m_handlers.push_back(std::move(handler));
+      handlers.push_back(std::move(handler));
     } else {
       MSG_ERROR("Unknown type '" << typeName << "' in item '" << item << "'. Cannot create branch handler.");
     }
   }
 
-  MSG_INFO("RootStreamMaker setup complete with " << m_handlers.size() << " active branches.");
-  return StatusCode::SUCCESS;
+  return handlers;
 }
 
 StatusCode RootStreamMaker::bookHistograms(SG::EventContext &ctx) const
 {
-  if (m_tree) {
-    return StatusCode::SUCCESS;
-  }
-
   auto store = ctx.getStoreGateSvc();
   if (!store) {
     MSG_FATAL("StoreGate service is null!");
@@ -131,22 +89,15 @@ StatusCode RootStreamMaker::bookHistograms(SG::EventContext &ctx) const
   }
 
   store->cd(); // Ensure gDirectory is root "/" of StoreGate file
-  TFile *file = store->file();
-  if (file) {
-    file->cd();
-    TTree *tree = dynamic_cast<TTree*>(file->Get(m_ntupleName.c_str()));
-    if (!tree) {
-      tree = new TTree(m_ntupleName.c_str(), m_ntupleName.c_str());
-    }
-    const_cast<RootStreamMaker*>(this)->m_tree = tree;
-  } else {
-    const_cast<RootStreamMaker*>(this)->m_tree = new TTree(m_ntupleName.c_str(), m_ntupleName.c_str());
+  TTree *tree = store->tree(m_ntupleName);
+  if (!tree) {
+    tree = new TTree(m_ntupleName.c_str(), m_ntupleName.c_str());
+    store->add(tree, true);
   }
 
-  store->add(const_cast<RootStreamMaker*>(this)->m_tree);
-
-  if (const_cast<RootStreamMaker*>(this)->setupBranches().isFailure()) {
-    return StatusCode::FAILURE;
+  auto handlers = createHandlers();
+  for (const auto &handler : handlers) {
+    handler->bookBranch(tree);
   }
 
   return StatusCode::SUCCESS;
@@ -169,19 +120,38 @@ StatusCode RootStreamMaker::execute(SG::EventContext &ctx, int /*evt*/) const
 
 StatusCode RootStreamMaker::post_execute(SG::EventContext &ctx) const
 {
-  if (!m_tree) {
+  auto store = ctx.getStoreGateSvc();
+  if (!store) {
+    MSG_FATAL("StoreGate service is null!");
+    return StatusCode::FAILURE;
+  }
+
+  store->cd();
+  TTree *tree = store->tree(m_ntupleName);
+  if (!tree) {
     if (bookHistograms(ctx).isFailure()) {
+      return StatusCode::FAILURE;
+    }
+    tree = store->tree(m_ntupleName);
+    if (!tree) {
+      MSG_FATAL("Could not get or book TTree '" << m_ntupleName << "'");
       return StatusCode::FAILURE;
     }
   }
 
-  for (const auto &handler : m_handlers) {
-    if (handler->writeFromContext(ctx).isFailure()) {
-      MSG_DEBUG("No container found for branch: " << handler->branchName() << " (key: " << handler->key() << ")");
-    }
+  auto handlers = createHandlers();
+  std::vector<std::unique_ptr<IWriteBuffer>> buffers;
+  buffers.reserve(handlers.size());
+
+  for (const auto &handler : handlers) {
+    buffers.push_back(handler->writeFromContext(tree, ctx));
   }
 
-  m_tree->Fill();
+  tree->Fill();
+
+  buffers.clear();
+  tree->ResetBranchAddresses();
+
   return StatusCode::SUCCESS;
 }
 
@@ -192,19 +162,5 @@ StatusCode RootStreamMaker::fillHistograms(SG::EventContext &/*ctx*/) const
 
 StatusCode RootStreamMaker::finalize()
 {
-  if (m_ownsFile && m_file) {
-    m_file->cd();
-    m_file->Write();
-    m_file->Close();
-    delete m_file;
-    m_file = nullptr;
-    m_tree = nullptr;
-  } else if (m_tree) {
-    TDirectory *dir = m_tree->GetDirectory();
-    if (dir) {
-      dir->cd();
-      m_tree->Write(0, TObject::kOverwrite);
-    }
-  }
   return StatusCode::SUCCESS;
 }

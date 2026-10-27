@@ -56,7 +56,7 @@ namespace SG {
   };
 
   template<class T>
-  Collection<T>::~Collection<T>() {
+  Collection<T>::~Collection() {
     clear();
   }
 

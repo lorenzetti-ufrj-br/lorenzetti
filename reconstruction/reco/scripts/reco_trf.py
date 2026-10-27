@@ -33,7 +33,6 @@ def main(
 
     exec(preexec)
 
-    acc = ComponentAccumulator("ComponentAccumulator", output_file)
 
     ESD = RootStreamESDReader(
         "ESDReader",
@@ -47,7 +46,8 @@ def main(
         SigmaThreshold=sigma_threshold,
         OutputLevel=outputLevel,
     )
-    ESD.merge(acc)
+
+    acc = ComponentAccumulator("ComponentAccumulator", output_file, ESD)
 
     cluster = CaloClusterMaker(
         "CaloClusterMaker",
@@ -78,6 +78,7 @@ def main(
         "ElectronBuilder_Truth",
         InputClusterKey=recordable("TruthClusters"),
         OutputElectronKey=recordable("TruthElectrons"),
+        HistogramPath="Expert/TruthElectrons",
         OutputLevel=outputLevel,
     )
 
@@ -106,18 +107,18 @@ def main(
         InputTruthCellsKey=recordable("TruthCells"),
         InputClusterKey=recordable("Clusters"),
         InputTruthClusterKey=recordable("TruthClusters"),
-        InputRingerKeys=recordable("Rings"),
-        InputTruthRingerKeys=recordable("TruthRings"),
+        InputRingerKeys=[recordable("Rings")],
+        InputTruthRingerKeys=[recordable("TruthRings")],
         InputElectronKey=recordable("Electrons"),
         InputTruthElectronKey=recordable("TruthElectrons"),
         OutputLevel=outputLevel,
     )
 
     acc += cluster
+    acc += cluster_truth
     acc += acc_rings
     acc += acc_rings_truth
     acc += hypo
-    acc += cluster_truth
     acc += hypo_truth
     acc += AOD
     acc.run(nov)

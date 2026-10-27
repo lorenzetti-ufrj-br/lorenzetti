@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+from pathlib import Path
+from typing_extensions import Annotated
+import typer
+
+from GaugiKernel import file_parallel_job, ComponentAccumulator, LoggingLevel
+from RootStreamBuilder import RootStreamAODReader, recordable, RootStreamParquetMaker
+
+
+@file_parallel_job(ntuple_name="", output_replace=(".AOD.root", ".parquet"))
+def main(
+    input_file: Annotated[str | Path, typer.Option("-i", "--input-file", help="The input file or folder to run the job.")],
+    output_file: Annotated[str | Path, typer.Option("-o", "--output-file", help="The output file or folder.")],
+    number_of_threads: Annotated[int, typer.Option("-nt", "--number-of-threads", help="Threads allocated per worker")] = 1,
+    nov: Annotated[int, typer.Option("--nov", "--number-of-events", help="The total number of events to run.")] = -1,
+    output_level: Annotated[str, typer.Option("-l", "--output-level", help="Logging verbosity.")] = "INFO",
+    preexec: Annotated[str, typer.Option("-p", "--preexec", help="The preexec command to run before execution.")] = "''",
+):
+    """
+    Creates an analysis flat Parquet file from AOD input files.
+    """
+    input_file = str(input_file)
+    output_file = str(output_file)
+    outputLevel = LoggingLevel.toC(output_level)
+
+    exec(preexec)
+
+    AOD = RootStreamAODReader(
+        "AODReader",
+        InputFile=input_file,
+        TreeName="CollectionTree",
+        OutputLevel=outputLevel,
+    )
+
+    acc = ComponentAccumulator("ComponentAccumulator", output_file, AOD)
+
+    parquet = RootStreamParquetMaker(
+        "ParquetMaker",
+        OutputFile=output_file,
+        OutputLevel=outputLevel,
+        InputEventKey=recordable("Events"),
+        InputTruthKey=recordable("Particles"),
+        InputSeedsKey=recordable("Seeds"),
+        InputClusterKey=recordable("Clusters"),
+        InputTruthClusterKey=recordable("TruthClusters"),
+        InputElectronKey=recordable("Electrons"),
+        InputTruthElectronKey=recordable("TruthElectrons"),
+        InputRingerKeys=[recordable("Rings")],
+        InputTruthRingerKeys=[recordable("TruthRings")],
+    )
+    acc += parquet
+    acc.run(nov)
+
+
+if __name__ == "__main__":
+    main()
