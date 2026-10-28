@@ -13,7 +13,7 @@ jobs:
         shell: bash
         run: |
           rm -rf *
-          git clone https://github.com/lorenzetti-ufrj-br/lorenzetti.git
+          git clone --depth 1 -b ${{ github.head_ref || github.ref_name }} https://github.com/lorenzetti-ufrj-br/lorenzetti.git
           export CPU_N=$(grep -c ^processor /proc/cpuinfo)
           cd lorenzetti && make 
           
@@ -46,7 +46,7 @@ jobs:
 
   merge:
     runs-on: self-hosted
-    needs: simulation
+    needs: [simulation, gen_minbias]
     container:
       image: docker://lorenzetti/lorenzetti:latest
     steps:
@@ -93,6 +93,18 @@ jobs:
         run: |
           cd lorenzetti && source build/lzt_setup.sh
           ntuple_trf.py -i Zee.AOD.root -o Zee.NTUPLE.root
+
+  parquet:
+    runs-on: self-hosted
+    needs: reconstruction
+    container:
+      image: docker://lorenzetti/lorenzetti:latest
+    steps:
+      - name: Parquet Events
+        shell: bash
+        run: |
+          cd lorenzetti && source build/lzt_setup.sh
+          parquet_trf.py -i Zee.AOD.root -o Zee.parquet
 
 
 #
