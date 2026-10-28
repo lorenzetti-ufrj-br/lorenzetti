@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 project(lorenzetti)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DDROP_CGAL")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DDROP_CGAL -Wno-cpp")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -45,6 +49,13 @@ include_directories(${CMAKE_SOURCE_DIR} ${Geant4_INCLUDE_DIRS} ${CMAKE_CURRENT_S
 find_package(ROOT COMPONENTS EG Eve Geom Gui GuiHtml GenVector Hist Physics Matrix Graf RIO Tree Gpad RGL MathCore)
 include(${ROOT_USE_FILE})
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+string(REGEX REPLACE "-std=c\\+\\+[0-9a-z]+" "-std=c++20" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+if(NOT CMAKE_CXX_FLAGS MATCHES "-std=c\\+\\+20")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+endif()
+
 
 #----------------------------------------------------------------------------
 include(kernel/GaugiKernel/cmake/InstallGaugiFunctions.cmake)
@@ -64,6 +75,15 @@ find_package( PythonLibs REQUIRED)
 include_directories( ${FASTJET_INCLUDE_DIRS} )
 include_directories( ${PYTHIA8_INCLUDE_DIRS} )
 include_directories( ${HEPMC_INCLUDE_DIRS} )
+
+# PyArrow include for tabular export (Parquet)
+execute_process(COMMAND python3 -c "import pyarrow; print(pyarrow.get_include())" OUTPUT_VARIABLE PYARROW_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT PYARROW_INCLUDE AND EXISTS "/opt/lorenzetti-python/lib/python3.10/site-packages/pyarrow/include")
+  set(PYARROW_INCLUDE "/opt/lorenzetti-python/lib/python3.10/site-packages/pyarrow/include")
+endif()
+if(PYARROW_INCLUDE)
+  include_directories(${PYARROW_INCLUDE})
+endif()
 
 
 # kernel

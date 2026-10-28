@@ -2,7 +2,7 @@
 #define RootStreamNtupleMaker_h
 
 #include "GaugiKernel/Algorithm.h"
-#include "CaloCell/enumeration.h"
+#include "GaugiKernel/BranchSpec.h"
 #include "EventInfo/EventInfo.h"
 #include "TruthParticle/TruthParticle.h"
 #include "CaloCluster/CaloCluster.h"
@@ -11,14 +11,14 @@
 #include "TTree.h"
 #include <string>
 #include <vector>
+#include <map>
 
 /**
  * @class RootStreamNtupleMaker
  * @brief Algorithm to dump analysis-level variables into a flat Ntuple (TTree).
  *
- * Reads reconstructed objects (Clusters, Rings, Electrons) and truth info
- * and writes them into a simple, flat TTree structure suitable for physics analysis
- * and machine learning.
+ * Reads reconstructed objects (Electrons, Clusters, Rings) and truth info
+ * and writes them into a flat TTree structure using EDM converters.
  */
 class RootStreamNtupleMaker : public Gaugi::Algorithm
 {
@@ -38,9 +38,6 @@ public:
   virtual StatusCode finalize() override;
 
 private:
-  template <class T>
-  void InitBranch(TTree *fChain, std::string branch_name, T *param) const;
-
   std::string m_seedsKey;
   std::string m_eventKey;
   std::string m_truthKey;
@@ -53,6 +50,8 @@ private:
 
   std::vector<std::string> m_ringerKeys;
   std::vector<std::string> m_truthRingerKeys;
+
+  std::map<std::string, std::string> m_schema;
 
   int m_outputLevel;
 };

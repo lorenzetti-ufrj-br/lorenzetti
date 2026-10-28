@@ -23,3 +23,8 @@ from .RootStreamNtupleMaker import *
 from . import RootStreamParquetMaker
 __all__.extend(RootStreamParquetMaker.__all__)
 from .RootStreamParquetMaker import *
+
+from . import RootStreamSchema
+__all__.extend(RootStreamSchema.__all__)
+from .RootStreamSchema import *
+

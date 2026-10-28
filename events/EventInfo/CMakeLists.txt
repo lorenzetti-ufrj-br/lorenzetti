@@ -11,6 +11,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Truth)
 ROOT_GENERATE_DICTIONARY(EventInfoDict ${HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h  MODULE EventInfo)
                                       
 add_library(EventInfo  OBJECT ${SOURCES} EventInfoDict.cxx)
+set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS "-std=c++20 -Wno-cpp")
 install(FILES ${HEADERS}  DESTINATION EventInfo)
 
 

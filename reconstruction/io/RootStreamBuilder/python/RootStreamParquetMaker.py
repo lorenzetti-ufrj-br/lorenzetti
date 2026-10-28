@@ -1,7 +1,7 @@
 __all__ = ["RootStreamParquetMaker", "RootStreamParquetMakerCfg"]
 
 import ROOT
-from typing import List, Optional
+from typing import List, Optional, Dict
 from GaugiKernel import Configurable
 
 
@@ -18,6 +18,7 @@ def RootStreamParquetMakerCfg(
     InputTruthRingerKeys: Optional[List[str]] = None,
     InputTruthElectronKey: str = "TruthElectrons",
     InputElectronKey: str = "Electrons",
+    Schema: Optional[Dict[str, str]] = None,
     OutputLevel: int = 0,
 ) -> Configurable:
     """
@@ -33,6 +34,9 @@ def RootStreamParquetMakerCfg(
     elif isinstance(InputTruthRingerKeys, str):
         InputTruthRingerKeys = [InputTruthRingerKeys]
 
+    if Schema is None:
+        Schema = {}
+
     return Configurable(
         ROOT.RootStreamParquetMaker,
         name=name,
@@ -47,6 +51,7 @@ def RootStreamParquetMakerCfg(
         InputTruthRingerKeys=InputTruthRingerKeys,
         InputTruthElectronKey=InputTruthElectronKey,
         InputElectronKey=InputElectronKey,
+        Schema=Schema,
         OutputLevel=OutputLevel,
     )
 

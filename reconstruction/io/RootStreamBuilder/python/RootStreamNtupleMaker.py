@@ -1,7 +1,7 @@
 __all__ = ["RootStreamNtupleMaker", "RootStreamNtupleMakerCfg"]
 
 import ROOT
-from typing import List, Optional
+from typing import List, Optional, Dict
 from GaugiKernel import Configurable
 
 
@@ -18,6 +18,7 @@ def RootStreamNtupleMakerCfg(
     InputTruthElectronKey: str = "TruthElectrons",
     InputElectronKey: str = "Electrons",
     OutputNtupleName: str = "events",
+    Schema: Optional[Dict[str, str]] = None,
     OutputLevel: int = 0,
 ) -> Configurable:
     """
@@ -33,6 +34,9 @@ def RootStreamNtupleMakerCfg(
     elif isinstance(InputTruthRingerKeys, str):
         InputTruthRingerKeys = [InputTruthRingerKeys]
 
+    if Schema is None:
+        Schema = {}
+
     return Configurable(
         ROOT.RootStreamNtupleMaker,
         name=name,
@@ -47,6 +51,7 @@ def RootStreamNtupleMakerCfg(
         InputTruthElectronKey=InputTruthElectronKey,
         InputElectronKey=InputElectronKey,
         OutputNtupleName=OutputNtupleName,
+        Schema=Schema,
         OutputLevel=OutputLevel,
     )
 

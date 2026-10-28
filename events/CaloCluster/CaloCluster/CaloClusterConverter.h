@@ -3,9 +3,18 @@
 
 /** simulator includes **/
 #include "CaloCluster/CaloCluster.h"
+#include "GaugiKernel/BranchSpec.h"
 #include <map>
 #include <vector>
+#include <memory>
+#include <string>
 #include <cstdint>
+
+class TTree;
+
+#ifndef __CLING__
+#include <arrow/api.h>
+#endif
 
 namespace xAOD {
 
@@ -57,16 +66,51 @@ namespace xAOD {
     uint32_t seed_index;
   };
 
+#ifndef __CLING__
+  struct CaloCluster_parquet {
+    std::unique_ptr<arrow::FloatBuilder> b_e;
+    std::unique_ptr<arrow::FloatBuilder> b_et;
+    std::unique_ptr<arrow::FloatBuilder> b_eta;
+    std::unique_ptr<arrow::FloatBuilder> b_phi;
+    std::unique_ptr<arrow::FloatBuilder> b_deta;
+    std::unique_ptr<arrow::FloatBuilder> b_dphi;
+    std::unique_ptr<arrow::FloatBuilder> b_e0, b_e1, b_e2, b_e3;
+    std::unique_ptr<arrow::FloatBuilder> b_ehad1, b_ehad2, b_ehad3, b_etot;
+    std::unique_ptr<arrow::FloatBuilder> b_e233, b_e237, b_e277, b_emaxs1, b_emaxs2, b_e2tsts1;
+    std::unique_ptr<arrow::FloatBuilder> b_reta, b_rphi, b_rhad, b_rhad1, b_eratio;
+    std::unique_ptr<arrow::FloatBuilder> b_f0, b_f1, b_f2, b_f3, b_weta2;
+    std::unique_ptr<arrow::FloatBuilder> b_secondR, b_lambdaCenter, b_secondLambda, b_fracMax;
+    std::unique_ptr<arrow::FloatBuilder> b_lateralMom, b_longitudinalMom;
+    std::vector<arrow::ArrayBuilder*> builders;
+  };
+#endif
+
   class CaloClusterConverter {
   public:
     CaloClusterConverter() = default;
     ~CaloClusterConverter() = default;
 
     // Convert an EDM class object into a persistent struct
-    bool convert(const CaloCluster *clus, CaloCluster_t &clus_t);
+    bool convert(const CaloCluster *clus, CaloCluster_t &clus_t) const;
 
     // Convert a persistent struct into an EDM class object
-    bool convert(const CaloCluster_t &cluster_t, CaloCluster *&cluster);
+    bool convert(const CaloCluster_t &cluster_t, CaloCluster *&cluster) const;
+
+    // Ntuple (TTree)
+    void book_ntuple(TTree *tree, CaloCluster_t &buf,
+                     const std::vector<Gaugi::BranchSpec> &specs = {},
+                     const std::string &defaultPrefix = "cl_") const;
+    void to_ntuple(const CaloCluster *clus, CaloCluster_t &buf) const;
+
+#ifndef __CLING__
+    // Parquet (Arrow)
+    void book_parquet(std::vector<std::shared_ptr<arrow::Field>> &fields,
+                      CaloCluster_parquet &buf_parquet,
+                      const std::vector<Gaugi::BranchSpec> &specs = {},
+                      const std::string &defaultPrefix = "cl_") const;
+    void to_parquet(const CaloCluster_t &buf, CaloCluster_parquet &buf_parquet) const;
+    void to_parquet(const CaloCluster *clus, CaloCluster_parquet &buf_parquet) const;
+#endif
   };
 
 } // namespace xAOD

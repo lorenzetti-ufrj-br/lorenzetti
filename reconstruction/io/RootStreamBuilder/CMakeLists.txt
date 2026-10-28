@@ -1,10 +1,17 @@
 file(GLOB SOURCES src/*.cxx)
 file(GLOB_RECURSE HEADERS src/RootStreamMaker.h src/RootStreamReader.h src/RootStreamNtupleMaker.h src/RootStreamParquetMaker.h)
 
-execute_process(COMMAND python3 -c "import pyarrow; print(pyarrow.get_include())" OUTPUT_VARIABLE PYARROW_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
-include_directories(${PYARROW_INCLUDE})
+if(NOT DEFINED PYARROW_INCLUDE OR "${PYARROW_INCLUDE}" STREQUAL "")
+  execute_process(COMMAND python3 -c "import pyarrow; print(pyarrow.get_include())" OUTPUT_VARIABLE PYARROW_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+if(NOT PYARROW_INCLUDE AND EXISTS "/opt/lorenzetti-python/lib/python3.10/site-packages/pyarrow/include")
+  set(PYARROW_INCLUDE "/opt/lorenzetti-python/lib/python3.10/site-packages/pyarrow/include")
+endif()
+if(PYARROW_INCLUDE)
+  include_directories(${PYARROW_INCLUDE})
+endif()
 
-set_source_files_properties(src/RootStreamParquetMaker.cxx PROPERTIES COMPILE_FLAGS "-std=c++20 -Wno-cpp")
+set_source_files_properties(src/RootStreamParquetMaker.cxx src/RootStreamNtupleMaker.cxx PROPERTIES COMPILE_FLAGS "-std=c++20 -Wno-cpp")
 
 include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../events/Egamma)

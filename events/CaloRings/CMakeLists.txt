@@ -12,6 +12,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../EventInfo)
 ROOT_GENERATE_DICTIONARY(CaloRingsDict ${HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h  MODULE CaloRings)
                                       
 add_library(CaloRings  OBJECT ${SOURCES} CaloRingsDict.cxx)
+set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS "-std=c++20 -Wno-cpp")
 install(FILES ${HEADERS}  DESTINATION CaloRings)
 
 

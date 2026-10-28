@@ -16,6 +16,7 @@ def main(
     nov: Annotated[int, typer.Option("--nov", "--number-of-events", help="The total number of events to run.")] = -1,
     output_level: Annotated[str, typer.Option("-l", "--output-level", help="Logging verbosity.")] = "INFO",
     preexec: Annotated[str, typer.Option("-p", "--preexec", help="The preexec command to run before execution.")] = "''",
+    schema_file: Annotated[str, typer.Option("-s", "--schema", help="Path to JSON file with branch schema dictionary.")] = "",
 ):
     """
     Creates an analysis flat ntuple (TTree 'physics') from AOD input files.
@@ -25,6 +26,12 @@ def main(
     outputLevel = LoggingLevel.toC(output_level)
 
     exec(preexec)
+
+    schema_dict = {}
+    if schema_file:
+        import json
+        with open(schema_file, "r") as f:
+            schema_dict = json.load(f)
 
     AOD = RootStreamAODReader(
         "AODReader",
@@ -48,6 +55,7 @@ def main(
         InputRingerKeys=[recordable("Rings")],
         InputTruthRingerKeys=[recordable("TruthRings")],
         OutputNtupleName="physics",
+        Schema=schema_dict,
     )
     acc += ntuple
     acc.run(nov)

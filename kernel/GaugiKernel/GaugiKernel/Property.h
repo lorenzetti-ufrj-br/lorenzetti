@@ -69,6 +69,7 @@ namespace Gaugi{
       void declareProperty( std::string name, std::vector<std::vector<int>> &value );
       void declareProperty( std::string name, Gaugi::AlgTool*               &value );
       void declareProperty( std::string name, std::vector<Gaugi::AlgTool*> &value );
+      void declareProperty( std::string name, std::map<std::string, std::string> &value );
       
       /* Setter */
       void setProperty( std::string name, int                           value );
@@ -83,6 +84,7 @@ namespace Gaugi{
       void setProperty( std::string name, std::vector<std::vector<int>> value );
       void setProperty( std::string name, Gaugi::AlgTool*               value );
       void setProperty( std::string name, std::vector<Gaugi::AlgTool*> value );
+      void setProperty( std::string name, std::map<std::string, std::string> value );
  
       /* Getter */
       void getProperty( std::string name, int                           &value );
@@ -97,6 +99,7 @@ namespace Gaugi{
       void getProperty( std::string name, std::vector<std::vector<int>> &value );
       void getProperty( std::string name, Gaugi::AlgTool*               &value );
       void getProperty( std::string name, std::vector<Gaugi::AlgTool*> &value );
+      void getProperty( std::string name, std::map<std::string, std::string> &value );
   
       bool hasProperty( std::string name);
       std::vector<std::string> getProperties() const;
@@ -139,6 +142,7 @@ namespace Gaugi{
    inline void PropertyService::declareProperty( std::string name, std::vector<std::vector<int>>   &value ){__declareProperty<std::vector<std::vector<int>>>(name,value);}
    inline void PropertyService::declareProperty( std::string name, Gaugi::AlgTool*                 &value ){__declareProperty<Gaugi::AlgTool*>(name,value);}
    inline void PropertyService::declareProperty( std::string name, std::vector<Gaugi::AlgTool*>   &value ){__declareProperty<std::vector<Gaugi::AlgTool*>>(name,value);}
+   inline void PropertyService::declareProperty( std::string name, std::map<std::string, std::string> &value ){__declareProperty<std::map<std::string, std::string>>(name,value);}
  
  
  
@@ -166,6 +170,7 @@ namespace Gaugi{
    inline void PropertyService::setProperty( std::string name, std::vector<std::vector<int>> value ){__setProperty<std::vector<std::vector<int>>>(name,value);}
    inline void PropertyService::setProperty( std::string name, Gaugi::AlgTool*               value ){__setProperty<Gaugi::AlgTool*>(name,value);}
    inline void PropertyService::setProperty( std::string name, std::vector<Gaugi::AlgTool*> value ){__setProperty<std::vector<Gaugi::AlgTool*>>(name,value);}
+   inline void PropertyService::setProperty( std::string name, std::map<std::string, std::string> value ){__setProperty<std::map<std::string, std::string>>(name,value);}
  
    
    /** Getter **/
@@ -192,6 +197,7 @@ namespace Gaugi{
    inline void PropertyService::getProperty( std::string name, std::vector<std::vector<int>> &value ){__getProperty<std::vector<std::vector<int>>>(name,value);}
    inline void PropertyService::getProperty( std::string name, Gaugi::AlgTool*               &value ){__getProperty<Gaugi::AlgTool*>(name,value);}
    inline void PropertyService::getProperty( std::string name, std::vector<Gaugi::AlgTool*> &value ){__getProperty<std::vector<Gaugi::AlgTool*>>(name,value);}
+   inline void PropertyService::getProperty( std::string name, std::map<std::string, std::string> &value ){__getProperty<std::map<std::string, std::string>>(name,value);}
  
  
  

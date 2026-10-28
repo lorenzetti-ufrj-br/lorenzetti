@@ -12,6 +12,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../EventInfo)
 ROOT_GENERATE_DICTIONARY(CaloClusterDict ${HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h  MODULE CaloCluster)
                                       
 add_library(CaloCluster  OBJECT ${SOURCES} CaloClusterDict.cxx)
+set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS "-std=c++20 -Wno-cpp")
 install(FILES ${HEADERS}  DESTINATION CaloCluster)
 gaugi_install_python_modules( ${CMAKE_CURRENT_SOURCE_DIR}/python CaloCluster)
 

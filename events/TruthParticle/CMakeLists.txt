@@ -11,6 +11,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../EventInfo)
 ROOT_GENERATE_DICTIONARY(TruthParticleDict ${HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h  MODULE TruthParticle)
                                       
 add_library(TruthParticle  OBJECT ${SOURCES} TruthParticleDict.cxx)
+set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS "-std=c++20 -Wno-cpp")
 install(FILES ${HEADERS}  DESTINATION TruthParticle)
 
 

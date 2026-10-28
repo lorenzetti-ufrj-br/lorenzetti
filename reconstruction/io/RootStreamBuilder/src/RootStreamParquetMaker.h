@@ -4,6 +4,7 @@
 #include "GaugiKernel/Algorithm.h"
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 
 /**
@@ -46,6 +47,8 @@ private:
 
   std::vector<std::string> m_ringerKeys;
   std::vector<std::string> m_truthRingerKeys;
+
+  std::map<std::string, std::string> m_schema;
 
   int m_outputLevel;
 };
