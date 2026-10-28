@@ -9,7 +9,7 @@ import typer
 
 import ROOT
 from GaugiKernel import file_parallel_job, ComponentAccumulator, LoggingLevel
-from RootStreamBuilder import RootStreamHITReader, recordable, RootStreamHITMaker
+from RootStreamBuilder import RootStreamHITReader, recordable, clear_recorded_items, RootStreamHITMaker
 
 
 @file_parallel_job(ntuple_name="CollectionTree", output_replace=(".HIT.", ".HIT_Merged."))
@@ -28,6 +28,8 @@ def main(
     """
     Simulates pileup superposition by overlaying minimum bias events onto signal events.
     """
+    clear_recorded_items()
+
     input_file = str(input_file)
     output_file = str(output_file)
     outputLevel = LoggingLevel.toC(output_level)
@@ -78,8 +80,6 @@ def main(
         InputEventKey="Events_Merged",
         InputTruthKey=recordable("Particles"),
         InputSeedsKey=recordable("Seeds"),
-        OutputHitsKey=recordable("Hits"),
-        OutputEventKey=recordable("Events"),
         OutputLevel=outputLevel,
     )
     acc += HIT

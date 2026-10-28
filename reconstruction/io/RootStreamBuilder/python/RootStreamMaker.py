@@ -13,6 +13,12 @@ import ROOT
 from typing import List, Optional
 from GaugiKernel import Configurable
 from RootStreamBuilder import RootStreamAODFlags
+from RootStreamBuilder.RootStreamKeys import (
+    get_recorded_items,
+    get_recorded_items_by_type,
+    has_recorded_key,
+    get_recorded_item_by_key,
+)
 
 
 def RootStreamMakerCfg(
@@ -29,6 +35,9 @@ def RootStreamMakerCfg(
     Creates a generic RootStreamMaker algorithm that serializes any requested
     xAOD containers into branches of format <TypeName>_<Key> inside a TTree.
 
+    If ItemList is omitted (None), it automatically uses all items currently
+    registered via recordable().
+
     :param name: Algorithm name.
     :param ItemList: List of items to record, formatted as 'TypeName#Key' (e.g. 'CaloClusterContainer#CaloClusters').
     :param TreeName: Name of the output TTree.
@@ -39,7 +48,7 @@ def RootStreamMakerCfg(
     :param TruthKey: StoreGate key for truth particles used in RoI matching.
     """
     if ItemList is None:
-        ItemList = []
+        ItemList = get_recorded_items()
 
     return Configurable(
         ROOT.RootStreamMaker,
@@ -59,53 +68,121 @@ RootStreamMaker = RootStreamMakerCfg
 
 def RootStreamAODMakerCfg(
     name: str = "RootStreamAODMaker",
-    InputEventKey: str = "EventInfo",
-    InputTruthKey: str = "Particles",
-    InputSeedsKey: str = "Seeds",
-    InputCellsKey: str = "Cells",
-    InputClusterKey: str = "CaloClusters",
+    ItemList: Optional[List[str]] = None,
+    InputEventKey: Optional[str] = None,
+    InputTruthKey: Optional[str] = None,
+    InputSeedsKey: Optional[str] = None,
+    InputCellsKey: Optional[str] = None,
+    InputClusterKey: Optional[str] = None,
     InputRingerKeys: Optional[List[str]] = None,
-    InputElectronKey: str = "Electrons",
-    InputTruthCellsKey: str = "TruthCells",
-    InputTruthClusterKey: str = "TruthClusters",
+    InputElectronKey: Optional[str] = None,
+    InputTruthCellsKey: Optional[str] = None,
+    InputTruthClusterKey: Optional[str] = None,
     InputTruthRingerKeys: Optional[List[str]] = None,
-    InputTruthElectronKey: str = "TruthElectrons",
+    InputTruthElectronKey: Optional[str] = None,
     TreeName: str = "CollectionTree",
     OutputLevel: int = 0,
     DumpCells: bool = RootStreamAODFlags.DumpCells,
 ) -> Configurable:
     """
     Convenience preset configuring a RootStreamMaker for AOD tier output.
+
+    If ItemList and specific Input*Key arguments are omitted, it automatically
+    selects all active recordable() items corresponding to the AOD tier
+    (EventInfo, TruthParticles, Seeds, Clusters, Electrons, Rings, and Cells if DumpCells=True).
     """
-    if InputRingerKeys is None:
-        InputRingerKeys = ["Rings"]
-    elif isinstance(InputRingerKeys, str):
-        InputRingerKeys = [InputRingerKeys]
+    if ItemList is not None:
+        item_list = list(ItemList)
+    else:
+        manual_keys = any(
+            k is not None
+            for k in [
+                InputEventKey,
+                InputTruthKey,
+                InputSeedsKey,
+                InputCellsKey,
+                InputClusterKey,
+                InputRingerKeys,
+                InputElectronKey,
+                InputTruthCellsKey,
+                InputTruthClusterKey,
+                InputTruthRingerKeys,
+                InputTruthElectronKey,
+            ]
+        )
+        if not manual_keys:
+            # Auto-discovery from active recordable() registry
+            recorded = get_recorded_items()
+            aod_valid_types = {
+                "EventInfoContainer",
+                "TruthParticleContainer",
+                "SeedContainer",
+                "CaloClusterContainer",
+                "ElectronContainer",
+                "CaloRingsContainer",
+            }
+            if DumpCells:
+                aod_valid_types.add("CaloCellContainer")
 
-    if InputTruthRingerKeys is None:
-        InputTruthRingerKeys = ["TruthRings"]
-    elif isinstance(InputTruthRingerKeys, str):
-        InputTruthRingerKeys = [InputTruthRingerKeys]
+            item_list = [item for item in recorded if item.split("#")[0] in aod_valid_types]
 
-    item_list: List[str] = [
-        f"EventInfoContainer#{InputEventKey}",
-        f"TruthParticleContainer#{InputTruthKey}",
-        f"SeedContainer#{InputSeedsKey}",
-        f"CaloClusterContainer#{InputClusterKey}",
-        f"ElectronContainer#{InputElectronKey}",
-        f"CaloClusterContainer#{InputTruthClusterKey}",
-        f"ElectronContainer#{InputTruthElectronKey}",
-    ]
+            # If no items were recorded in registry, fallback to standard defaults
+            if not item_list:
+                item_list = [
+                    "EventInfoContainer#EventInfo",
+                    "TruthParticleContainer#Particles",
+                    "SeedContainer#Seeds",
+                    "CaloClusterContainer#CaloClusters",
+                    "ElectronContainer#Electrons",
+                    "CaloClusterContainer#TruthClusters",
+                    "ElectronContainer#TruthElectrons",
+                    "CaloRingsContainer#Rings",
+                    "CaloRingsContainer#TruthRings",
+                ]
+                if DumpCells:
+                    item_list.extend([
+                        "CaloCellContainer#Cells",
+                        "CaloCellContainer#TruthCells",
+                    ])
+        else:
+            # Manual / backwards-compatible mode
+            event_key = InputEventKey or "EventInfo"
+            truth_key = InputTruthKey or "Particles"
+            seeds_key = InputSeedsKey or "Seeds"
+            cluster_key = InputClusterKey or "CaloClusters"
+            electron_key = InputElectronKey or "Electrons"
+            truth_cluster_key = InputTruthClusterKey or "TruthClusters"
+            truth_electron_key = InputTruthElectronKey or "TruthElectrons"
 
-    for key in InputRingerKeys:
-        item_list.append(f"CaloRingsContainer#{key}")
+            ringer_keys = InputRingerKeys or ["Rings"]
+            if isinstance(ringer_keys, str):
+                ringer_keys = [ringer_keys]
 
-    for key in InputTruthRingerKeys:
-        item_list.append(f"CaloRingsContainer#{key}")
+            truth_ringer_keys = InputTruthRingerKeys or ["TruthRings"]
+            if isinstance(truth_ringer_keys, str):
+                truth_ringer_keys = [truth_ringer_keys]
 
-    if DumpCells:
-        item_list.append(f"CaloCellContainer#{InputCellsKey}")
-        item_list.append(f"CaloCellContainer#{InputTruthCellsKey}")
+            item_list = [
+                f"EventInfoContainer#{event_key}",
+                f"TruthParticleContainer#{truth_key}",
+                f"SeedContainer#{seeds_key}",
+                f"CaloClusterContainer#{cluster_key}",
+                f"ElectronContainer#{electron_key}",
+                f"CaloClusterContainer#{truth_cluster_key}",
+                f"ElectronContainer#{truth_electron_key}",
+            ]
+
+            for key in ringer_keys:
+                item_list.append(f"CaloRingsContainer#{key}")
+
+            for key in truth_ringer_keys:
+                item_list.append(f"CaloRingsContainer#{key}")
+
+            if DumpCells:
+                cells_key = InputCellsKey or "Cells"
+                truth_cells_key = InputTruthCellsKey or "TruthCells"
+                item_list.append(f"CaloCellContainer#{cells_key}")
+                item_list.append(f"CaloCellContainer#{truth_cells_key}")
 
     return RootStreamMakerCfg(
         name=name,
@@ -120,30 +197,84 @@ RootStreamAODMaker = RootStreamAODMakerCfg
 
 def RootStreamESDMakerCfg(
     name: str = "RootStreamESDMaker",
-    InputEventKey: str = "EventInfo",
-    InputTruthKey: str = "Particles",
-    InputSeedsKey: str = "Seeds",
-    InputCellsKey: str = "Cells",
-    InputTruthCellsKey: str = "TruthCells",
+    ItemList: Optional[List[str]] = None,
+    InputEventKey: Optional[str] = None,
+    InputTruthKey: Optional[str] = None,
+    InputSeedsKey: Optional[str] = None,
+    InputCellsKey: Optional[str] = None,
+    InputTruthCellsKey: Optional[str] = None,
     InputCellsTruthKey: Optional[str] = None,
-    InputDescriptorsKey: str = "CaloDetDescriptors",
+    InputDescriptorsKey: Optional[str] = None,
     TreeName: str = "CollectionTree",
     OutputLevel: int = 0,
 ) -> Configurable:
     """
     Convenience preset configuring a RootStreamMaker for ESD tier output.
+
+    If ItemList and specific Input*Key arguments are omitted, it automatically
+    selects all active recordable() items corresponding to the ESD tier
+    (EventInfo, TruthParticles, Seeds, Cells, TruthCells, CaloDetDescriptors).
     """
     if InputCellsTruthKey is not None:
         InputTruthCellsKey = InputCellsTruthKey
 
-    item_list: List[str] = [
-        f"EventInfoContainer#{InputEventKey}",
-        f"TruthParticleContainer#{InputTruthKey}",
-        f"SeedContainer#{InputSeedsKey}",
-        f"CaloCellContainer#{InputCellsKey}",
-        f"CaloCellContainer#{InputTruthCellsKey}",
-        f"CaloDetDescriptorContainer#{InputDescriptorsKey}",
-    ]
+    if ItemList is not None:
+        item_list = list(ItemList)
+    else:
+        manual_keys = any(
+            k is not None
+            for k in [
+                InputEventKey,
+                InputTruthKey,
+                InputSeedsKey,
+                InputCellsKey,
+                InputTruthCellsKey,
+                InputDescriptorsKey,
+            ]
+        )
+        if not manual_keys:
+            # Auto-discovery from active recordable() registry
+            recorded = get_recorded_items()
+            esd_valid_types = {
+                "EventInfoContainer",
+                "TruthParticleContainer",
+                "SeedContainer",
+                "CaloCellContainer",
+                "CaloDetDescriptorContainer",
+            }
+            item_list = [item for item in recorded if item.split("#")[0] in esd_valid_types]
+
+            # Ensure CaloDetDescriptorContainer is present
+            if not any(item.startswith("CaloDetDescriptorContainer#") for item in item_list):
+                item_list.append(f"CaloDetDescriptorContainer#{InputDescriptorsKey or 'CaloDetDescriptors'}")
+
+            # If no items were recorded in registry, fallback to standard defaults
+            if len(item_list) <= 1:
+                item_list = [
+                    "EventInfoContainer#EventInfo",
+                    "TruthParticleContainer#Particles",
+                    "SeedContainer#Seeds",
+                    "CaloCellContainer#Cells",
+                    "CaloCellContainer#TruthCells",
+                    f"CaloDetDescriptorContainer#{InputDescriptorsKey or 'CaloDetDescriptors'}",
+                ]
+        else:
+            # Manual / backwards-compatible mode
+            event_key = InputEventKey or "EventInfo"
+            truth_key = InputTruthKey or "Particles"
+            seeds_key = InputSeedsKey or "Seeds"
+            cells_key = InputCellsKey or "Cells"
+            truth_cells_key = InputTruthCellsKey or "TruthCells"
+            desc_key = InputDescriptorsKey or "CaloDetDescriptors"
+
+            item_list = [
+                f"EventInfoContainer#{event_key}",
+                f"TruthParticleContainer#{truth_key}",
+                f"SeedContainer#{seeds_key}",
+                f"CaloCellContainer#{cells_key}",
+                f"CaloCellContainer#{truth_cells_key}",
+                f"CaloDetDescriptorContainer#{desc_key}",
+            ]
 
     return RootStreamMakerCfg(
         name=name,
@@ -158,10 +289,11 @@ RootStreamESDMaker = RootStreamESDMakerCfg
 
 def RootStreamHITMakerCfg(
     name: str = "RootStreamHITMaker",
-    InputEventKey: str = "EventInfo",
-    InputTruthKey: str = "Particles",
-    InputHitsKey: str = "Hits",
-    InputSeedsKey: str = "Seeds",
+    ItemList: Optional[List[str]] = None,
+    InputEventKey: Optional[str] = None,
+    InputTruthKey: Optional[str] = None,
+    InputHitsKey: Optional[str] = None,
+    InputSeedsKey: Optional[str] = None,
     TreeName: str = "CollectionTree",
     OutputLevel: int = 0,
     OnlyRoI: bool = True,
@@ -170,13 +302,63 @@ def RootStreamHITMakerCfg(
 ) -> Configurable:
     """
     Convenience preset configuring a RootStreamMaker for HIT tier output.
+
+    If ItemList and specific Input*Key arguments are omitted, it automatically
+    selects all active recordable() items corresponding to the HIT tier
+    (EventInfo, TruthParticles, Hits, Seeds).
     """
-    item_list: List[str] = [
-        f"EventInfoContainer#{InputEventKey}",
-        f"TruthParticleContainer#{InputTruthKey}",
-        f"CaloHitContainer#{InputHitsKey}",
-        f"SeedContainer#{InputSeedsKey}",
-    ]
+    truth_key = InputTruthKey or "Particles"
+
+    if ItemList is not None:
+        item_list = list(ItemList)
+    else:
+        manual_keys = any(
+            k is not None
+            for k in [
+                InputEventKey,
+                InputTruthKey,
+                InputHitsKey,
+                InputSeedsKey,
+            ]
+        )
+        if not manual_keys:
+            # Auto-discovery from active recordable() registry
+            recorded = get_recorded_items()
+            hit_valid_types = {
+                "EventInfoContainer",
+                "TruthParticleContainer",
+                "CaloHitContainer",
+                "SeedContainer",
+            }
+            item_list = [item for item in recorded if item.split("#")[0] in hit_valid_types]
+
+            # Resolve truth key for RoI filtering from recorded items if available
+            for item in item_list:
+                if item.startswith("TruthParticleContainer#"):
+                    truth_key = item.split("#")[1]
+                    break
+
+            # Fallback to standard defaults if nothing recorded
+            if not item_list:
+                item_list = [
+                    "EventInfoContainer#EventInfo",
+                    f"TruthParticleContainer#{truth_key}",
+                    "CaloHitContainer#Hits",
+                    "SeedContainer#Seeds",
+                ]
+        else:
+            # Manual / backwards-compatible mode
+            event_key = InputEventKey or "EventInfo"
+            truth_key = InputTruthKey or "Particles"
+            hits_key = InputHitsKey or "Hits"
+            seeds_key = InputSeedsKey or "Seeds"
+
+            item_list = [
+                f"EventInfoContainer#{event_key}",
+                f"TruthParticleContainer#{truth_key}",
+                f"CaloHitContainer#{hits_key}",
+                f"SeedContainer#{seeds_key}",
+            ]
 
     return RootStreamMakerCfg(
         name=name,
@@ -186,7 +368,7 @@ def RootStreamHITMakerCfg(
         OnlyRoI=OnlyRoI,
         EtaWindow=EtaWindow,
         PhiWindow=PhiWindow,
-        TruthKey=InputTruthKey,
+        TruthKey=truth_key,
     )
 
 

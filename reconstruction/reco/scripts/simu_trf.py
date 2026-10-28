@@ -7,7 +7,7 @@ import typer
 from GaugiKernel import file_parallel_job, LoggingLevel
 from GaugiKernel.constants import MINUTES
 from G4Kernel import EventReader, ComponentAccumulator
-from RootStreamBuilder import recordable, RootStreamHITMaker
+from RootStreamBuilder import recordable, clear_recorded_items, RootStreamHITMaker
 from CaloHitBuilder import CaloHitBuilder
 from geometry import DetectorConstruction_v1
 
@@ -29,6 +29,8 @@ def main(
     """
     Simulates detector showers from generated events using Geant4.
     """
+    clear_recorded_items()
+
     input_file = str(input_file)
     output_file = str(output_file)
     outputLevel = LoggingLevel.toC(output_level)
@@ -67,10 +69,6 @@ def main(
         "RootStreamHITMaker",
         OutputLevel=outputLevel,
         OnlyRoI=not save_all_hits,
-        InputHitsKey=recordable("Hits"),
-        InputEventKey=recordable("Events"),
-        InputTruthKey=recordable("Particles"),
-        InputSeedsKey=recordable("Seeds"),
     )
     acc += HIT
 

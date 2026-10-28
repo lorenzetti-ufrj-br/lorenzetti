@@ -6,7 +6,7 @@ import typer
 
 from GaugiKernel import file_parallel_job, ComponentAccumulator, LoggingLevel
 from CaloCellBuilder import CaloCellBuilder
-from RootStreamBuilder import RootStreamHITReader, recordable, RootStreamESDMaker
+from RootStreamBuilder import RootStreamHITReader, recordable, clear_recorded_items, RootStreamESDMaker
 from geometry import DetectorConstruction_v1
 
 
@@ -30,6 +30,8 @@ def main(
     (CaloCellBuilder), and produces an Event Summary Data (ESD) file containing
     calorimeter cells.
     """
+    clear_recorded_items()
+
     input_file = str(input_file)
     output_file = str(output_file)
     outputLevel = LoggingLevel.toC(output_level)
@@ -65,11 +67,6 @@ def main(
 
     ESD = RootStreamESDMaker(
         "RootStreamESDMaker",
-        InputCellsKey=recordable("Cells"),
-        InputTruthCellsKey=recordable("TruthCells"),
-        InputEventKey=recordable("Events"),
-        InputTruthKey=recordable("Particles"),
-        InputSeedsKey=recordable("Seeds"),
         OutputLevel=outputLevel,
     )
     acc += ESD

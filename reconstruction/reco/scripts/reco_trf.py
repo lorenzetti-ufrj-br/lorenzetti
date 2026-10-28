@@ -5,7 +5,7 @@ from typing_extensions import Annotated
 import typer
 
 from GaugiKernel import file_parallel_job, ComponentAccumulator, LoggingLevel
-from RootStreamBuilder import RootStreamESDReader, recordable, RootStreamAODMaker
+from RootStreamBuilder import RootStreamESDReader, recordable, clear_recorded_items, RootStreamAODMaker
 from CaloClusterBuilder import CaloClusterMaker
 from CaloRingsBuilder import CaloRingsBuilderCfg
 from EgammaBuilder import ElectronBuilderCfg
@@ -27,6 +27,8 @@ def main(
     Reads digitized cells (ESD), builds calorimeter clusters, computes
     ring variables (Rings), and reconstructs electron candidates.
     """
+    clear_recorded_items()
+
     input_file = str(input_file)
     output_file = str(output_file)
     outputLevel = LoggingLevel.toC(output_level)
@@ -100,17 +102,6 @@ def main(
 
     AOD = RootStreamAODMaker(
         "RootStreamAODMaker",
-        InputEventKey=recordable("Events"),
-        InputSeedsKey=recordable("Seeds"),
-        InputTruthKey=recordable("Particles"),
-        InputCellsKey=recordable("Cells"),
-        InputTruthCellsKey=recordable("TruthCells"),
-        InputClusterKey=recordable("Clusters"),
-        InputTruthClusterKey=recordable("TruthClusters"),
-        InputRingerKeys=[recordable("Rings")],
-        InputTruthRingerKeys=[recordable("TruthRings")],
-        InputElectronKey=recordable("Electrons"),
-        InputTruthElectronKey=recordable("TruthElectrons"),
         OutputLevel=outputLevel,
     )
 

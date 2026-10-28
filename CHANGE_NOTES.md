@@ -14,6 +14,7 @@ This document details the major architectural enhancements, modernization effort
 6. [CLI Interface Modernization & Declarative Transform Scripts](#6-cli-interface-modernization--declarative-transform-scripts)
 7. [Python-C++ Integration: `Configurable` & `ComponentAccumulator`](#7-python-c-integration-configurable--componentaccumulator)
 8. [Direct Parquet Pipeline & Columnar Serialization (`RootStreamParquetMaker` & `parquet_trf.py`)](#8-direct-parquet-pipeline--columnar-serialization-rootstreamparquetmaker--parquet_trfpy)
+9. [Active Persistence Registry & Stream Auto-Configuration (`recordable()`)](#9-active-persistence-registry--stream-auto-configuration-recordable)
 
 ---
 
@@ -476,6 +477,32 @@ parquet_trf.py -i Zee.AOD.root -o Zee.parquet -nw 4 -m
 
 ---
 
+## 9. Active Persistence Registry & Stream Auto-Configuration (`recordable()`)
+
+### What was in `master`
+In earlier iterations, configuring any `RootStream*Maker` required passing every single EDM container key individually via explicit keyword arguments (e.g. `InputEventKey`, `InputSeedsKey`, `InputTruthKey`, `InputClusterKey`, `InputTruthClusterKey`, `InputRingerKeys`, `InputElectronKey`, `InputTruthElectronKey`, etc.). This resulted in:
+- 10 to 15 lines of repetitive boilerplate in every transformation script (`simu_trf.py`, `digit_trf.py`, `reco_trf.py`, `merge_trf.py`).
+- Constant human error whenever new container keys or algorithms were introduced.
+- Inconsistency with `RootStreamReader`, which automatically discovers all branches inside the input ROOT file.
+
+### The Refactored Solution: Active Registry via `recordable()`
+1. **Dynamic Registration:** Calling `recordable("Key")` in algorithm definitions automatically resolves the corresponding EDM container type (e.g. `"CaloClusterContainer"` for `"Clusters"`) using `DEFAULT_KEY_TO_TYPE_MAP` and registers `"TypeName#Key"` into an active ordered registry (`_active_recorded_items`).
+2. **Zero-Parameter Stream Makers:** `RootStreamHITMaker`, `RootStreamESDMaker`, and `RootStreamAODMaker` automatically query the active registry for the containers matching their respective data tier:
+   ```python
+   # simu_trf.py
+   HIT = RootStreamHITMaker("RootStreamHITMaker", OutputLevel=outputLevel, OnlyRoI=not save_all_hits)
+
+   # digit_trf.py
+   ESD = RootStreamESDMaker("RootStreamESDMaker", OutputLevel=outputLevel)
+
+   # reco_trf.py
+   AOD = RootStreamAODMaker("RootStreamAODMaker", OutputLevel=outputLevel)
+   ```
+3. **Full Backward Compatibility:** Explicit `Input*Key` overrides and custom `ItemList` parameters are fully respected when provided.
+4. **Clean Job Lifecycle Isolation:** `clear_recorded_items()` ensures per-job registry resetting across multi-process and sequential tasks.
+
+---
+
 ## Summary of Benefits
 
 | Feature | `master` | `python_refactory` | Benefit |
@@ -487,3 +514,5 @@ parquet_trf.py -i Zee.AOD.root -o Zee.parquet -nw 4 -m
 | **CLI Transforms** | ~250 lines of `argparse` per script | Declarative typed functions via `typer` | Clean syntax, automatic JSON configs, uniform flags |
 | **C++ Configuration** | Manual `setProperty()` calls | Dynamic `Configurable` + `PropertyList` | Natural Python syntax, `+=` tool accumulation, type coercion |
 | **Modern Parquet ML** | Non-existent (ROOT TTree only) | Direct C++ `RootStreamParquetMaker` | Direct ML integration (PyTorch/Pandas), native Arrow list support, zero ROOT dependency |
+| **Persistence Registry** | Manual 15-key argument passing per maker | Active registry via `recordable()` | Zero boilerplate in `simu_trf`, `digit_trf`, and `reco_trf`; auto-discovers tier items |
+

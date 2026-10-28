@@ -109,24 +109,26 @@ reader = RootStreamReaderCfg(
 )
 ```
 
-### 4.2. Flexible Writing (`RootStreamMaker`)
+### 4.2. Flexible Writing (`RootStreamMaker`) & Active `recordable()` Registry
 
-Specify the containers to persist using `ItemList` with the `"TypeName#Key"` syntax:
+Persisted containers are specified via `ItemList` using the standard `"TypeName#Key"` syntax.
+
+#### Automated Stream Configuration via `recordable()`
+Rather than manually repeating container keys across every algorithm and stream maker, Lorenzetti implements an **active persistence registry** via `recordable()`:
+
+1. When configuring upstream algorithms (such as `EventReader`, `CaloHitBuilder`, `CaloCellBuilder`, `CaloClusterMaker`, etc.), wrapping output and input keys with `recordable("Key")` automatically registers the item (`"TypeName#Key"`) in the active registry according to the EDM catalog `DEFAULT_KEY_TO_TYPE_MAP`.
+2. All stream presets (`RootStreamHITMakerCfg`, `RootStreamESDMakerCfg`, `RootStreamAODMakerCfg`, and `RootStreamMakerCfg`) automatically inspect the active registry when called without manual key arguments, extracting exactly the containers appropriate for that data tier.
+3. Full backward compatibility is preserved: manually passing explicit `Input*Key` arguments or custom `ItemList` continues to override the automatic registry.
 
 ```python
-from RootStreamBuilder import RootStreamMakerCfg
+from RootStreamBuilder import recordable, RootStreamAODMakerCfg
 
-writer = RootStreamMakerCfg(
-    name="StreamAODMaker",
-    ItemList=[
-        "EventInfoContainer#EventInfo",
-        "TruthParticleContainer#Particles",
-        "CaloClusterContainer#CaloClusters",
-        "CaloRingsContainer#Rings",
-        "ElectronContainer#Electrons"
-    ],
-    TreeName="CollectionTree"
-)
+# Algorithms register their persistent containers automatically:
+cluster = CaloClusterMakerCfg("CaloClusterMaker", OutputClusterKey=recordable("Clusters"))
+hypo = ElectronBuilderCfg("ElectronBuilder", OutputElectronKey=recordable("Electrons"))
+
+# The stream maker discovers all active recordable() items for the AOD tier automatically!
+aod_maker = RootStreamAODMakerCfg("RootStreamAODMaker")
 ```
 
 #### Lifecycle Architecture & Root Placement
@@ -135,10 +137,10 @@ writer = RootStreamMakerCfg(
 * **Dynamic Handler Construction**: Branch handlers (`IBranchHandler`) are constructed on demand inside `bookHistograms()` and `fillHistograms()`.
 * **Clean Root Directory Placement**: All trees are registered at the root of the output `TFile` via `store->cd()`, eliminating duplicate trees or conflicting directory structures (such as `Events/CollectionTree`).
 
-Convenience presets are also available for standard data tiers:
-- `RootStreamAODMakerCfg(...)`
-- `RootStreamESDMakerCfg(...)`
-- `RootStreamHITMakerCfg(...)`
+Convenience presets are available for standard data tiers:
+- `RootStreamAODMakerCfg(...)` (or `RootStreamAODMaker(...)`)
+- `RootStreamESDMakerCfg(...)` (or `RootStreamESDMaker(...)`)
+- `RootStreamHITMakerCfg(...)` (or `RootStreamHITMaker(...)`)
 
 ### 4.3. HIT Tier & Online Region of Interest (RoI) Filtering (`RootStreamHITMaker`)
 
