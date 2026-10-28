@@ -13,6 +13,7 @@ This document details the major architectural enhancements, modernization effort
 5. [High-Throughput Parallelism Framework (`ParallelJob` & `FileParallelJob`)](#5-high-throughput-parallelism-framework-paralleljob--fileparalleljob)
 6. [CLI Interface Modernization & Declarative Transform Scripts](#6-cli-interface-modernization--declarative-transform-scripts)
 7. [Python-C++ Integration: `Configurable` & `ComponentAccumulator`](#7-python-c-integration-configurable--componentaccumulator)
+8. [Direct Parquet Pipeline & Columnar Serialization (`RootStreamParquetMaker` & `parquet_trf.py`)](#8-direct-parquet-pipeline--columnar-serialization-rootstreamparquetmaker--parquet_trfpy)
 
 ---
 
@@ -209,6 +210,14 @@ Each class repeated hundreds of lines of boilerplate registering specific branch
 2. **Factory Design:** `BranchHandlerFactory` maps container type names (e.g. `CaloCellContainer`, `ElectronContainer`) to their dedicated handlers.
 3. **Automated Branch Discovery:** `RootStreamReader::discoverBranches()` parses the `CollectionTree` branches matching `<TypeName>_<Key>` and automatically configures handlers without any hardcoded branch lists.
 4. **StoreGate Root-Directory Fix:** Resolved an issue where `simu_trf.py` missed the `CollectionTree` by ensuring `RootStreamMaker::bookHistograms()` hooks into `StoreGate::file()` and registers `m_tree` directly in the root `/` directory.
+5. **Decoupled Execution Lifecycle (Stateless `initialize()`):**
+   - Refactored `RootStreamMaker` so that `initialize()` does not instantiate branch handlers or perform filesystem operations.
+   - Handlers are dynamically constructed on-demand within `bookHistograms()` and `fillHistograms()`, preventing invalid thread states, dangling pointers, and premature file locks.
+   - Explicit `store->cd()` guarantees that the primary `CollectionTree` resides cleanly at the root of the output `TFile`, eliminating directory duplication inside `Events/`.
+6. **Flat Ntuple Pipeline Hardening (`RootStreamNtupleMaker` & `ntuple_trf.py`):**
+   - Added automatic key normalization in Python (single strings converted to `list[str]` for `InputRingerKeys` and `InputTruthRingerKeys`).
+   - Integrated immediate `return StatusCode::FAILURE;` upon missing mandatory event containers in `fillHistograms()`.
+   - Added defensive `tree->ResetBranchAddresses();` at the end of the event loop to eliminate stale stack addresses.
 
 ```cpp
 // python_refactory: reconstruction/io/RootStreamBuilder/src/RootStreamReader.cxx
@@ -263,6 +272,7 @@ public:
 - **Extensibility:** Adding new EDM types only requires registering one line in `BranchHandlerFactory`.
 - **Elimination of Duplication:** Reduced ~2,500 lines of duplicated C++ code across `RootStream*Maker/Reader`.
 - **Self-Describing Files:** Files written by any tier can be read transparently by `RootStreamReader` without hardcoding tier types.
+- **Robust Multi-Threading Lifecycle:** Decoupled `initialize()` removes race conditions and ensures clean TFile tree placement.
 
 ---
 
@@ -434,13 +444,46 @@ class Configurable(Logger):
 
 ---
 
+## 8. Direct Parquet Pipeline & Columnar Serialization (`RootStreamParquetMaker` & `parquet_trf.py`)
+
+### What was in `master`
+In `master`, the only way to perform downstream analysis and train neural networks (e.g. Ringer) was via ROOT TTrees produced by legacy ntuple makers. Users wanting to work with Python Data Science ecosystems (Pandas, Polars, PyTorch, DuckDB) had to rely on intermediate ROOT converters or slow Python extraction scripts, leading to large storage overheads and high deserialization latency.
+
+### The Refactored Solution: `RootStreamParquetMaker`
+Introduced direct C++ serialization to **Apache Parquet** (`.parquet`) through **Apache Arrow** (`parquet/arrow/writer.h`), fully integrated into Lorenzetti's transform infrastructure via `parquet_trf.py`:
+
+1. **Direct AOD-to-Parquet Transformation:** Directly processes AOD input files and writes columnar Parquet tables without requiring intermediate ROOT files.
+2. **1:1 Feature Equivalence with Ntuple:** Dumps identical variables:
+   - Scalar metrics (`EventNumber`, `RunNumber`, `avgmu`, kinematics `cl_eta`, `cl_phi`, `cl_e`, `cl_et`, shower shapes, and electron PID).
+   - Nested vectors stored as native Arrow lists (`list<float>`) for calorimeter rings (`cl_rings_*`, `cl_ringsL0`, `truth_cl_rings_*`) and MC truth (`mc_pdgid`, `mc_eta`, `mc_phi`, `mc_e`, `mc_et`).
+3. **PIMPL Architecture Isolation:** Uses `struct Impl; std::unique_ptr<Impl> m_impl;` in `RootStreamParquetMaker.h`. This encapsulates Arrow C++20 headers (`<arrow/api.h>`, `<parquet/arrow/writer.h>`) within `RootStreamParquetMaker.cxx`, completely insulating the ROOT dictionary generator (`rootcling`) from C++ standard mismatches.
+4. **Fileless `StoreGate` Execution:** Extended `StoreGate` to support in-memory mode when output is `.parquet`, preventing the creation of unwanted empty ROOT files.
+5. **Parallel Chunk Merging (`merge_parquet_files`):** Integrated PyArrow table concatenation into `kernel/GaugiKernel/python/Parallel.py`, enabling multi-worker parallelism (`-nw 4 -m`) with automatic chunk merging into a single `.parquet` file.
+6. **C++20 Template Destructor Conformance:** Updated `DataVector<T>::~DataVector()` and `Collection<T>::~Collection()` in `GaugiKernel` to conform to modern C++20 specifications (eliminating deprecated template-id destructor syntax).
+
+```python
+# Direct transformation CLI:
+parquet_trf.py -i Zee.AOD.root -o Zee.parquet --nov 1000
+
+# Parallel batch processing with automatic chunk merge:
+parquet_trf.py -i Zee.AOD.root -o Zee.parquet -nw 4 -m
+```
+
+### Improvements
+- **Zero ROOT Dependency for ML:** Parquet files load instantly into Python (`pq.read_table("Zee.parquet").to_pandas()`) without needing ROOT or PyROOT in the analysis environment.
+- **Superior Storage & Compression:** Leverages Parquet's columnar dictionary and bit-packing compression, achieving substantial space savings over flat ROOT trees.
+- **High Performance:** Native C++ event loop with preallocated Arrow builders scales efficiently across large datasets.
+
+---
+
 ## Summary of Benefits
 
 | Feature | `master` | `python_refactory` | Benefit |
 | :--- | :--- | :--- | :--- |
 | **EDM Associations** | Raw C++ pointers | `SG::ElementLink<T>` | Eliminates crashes, enables persistent ROOT relational storage |
 | **Calo Cell Noise** | All cells stored unconditionally | $E > 2\sigma_{\text{noise}}$ threshold | >80% disk space reduction, accurate ATLAS-like cell selection |
-| **Stream I/O** | 6+ specialized Maker/Reader classes | Generalized `RootStreamMaker/Reader` | ~2,500 lines removed; automated branch discovery |
-| **Job Parallelism** | External scripts / manual splitting | `@parallel_job` & `@file_parallel_job` | Built-in multiprocessing, event chunking, and auto-merge |
+| **Stream I/O** | 6+ specialized Maker/Reader classes | Generalized `RootStreamMaker/Reader` | ~2,500 lines removed; automated branch discovery; decoupled lifecycle |
+| **Job Parallelism** | External scripts / manual splitting | `@parallel_job` & `@file_parallel_job` | Built-in multiprocessing, event chunking, and auto-merge (ROOT & Parquet) |
 | **CLI Transforms** | ~250 lines of `argparse` per script | Declarative typed functions via `typer` | Clean syntax, automatic JSON configs, uniform flags |
 | **C++ Configuration** | Manual `setProperty()` calls | Dynamic `Configurable` + `PropertyList` | Natural Python syntax, `+=` tool accumulation, type coercion |
+| **Modern Parquet ML** | Non-existent (ROOT TTree only) | Direct C++ `RootStreamParquetMaker` | Direct ML integration (PyTorch/Pandas), native Arrow list support, zero ROOT dependency |

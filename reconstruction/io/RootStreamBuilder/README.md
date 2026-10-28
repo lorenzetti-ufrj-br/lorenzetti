@@ -4,8 +4,9 @@ The **RootStreamBuilder** package (`reconstruction/io/RootStreamBuilder`) is the
 
 It provides a **generic, extensible, and data-driven** architecture:
 - **`RootStreamReader`**: Smart reader with **automatic branch discovery**, inspecting the `TTree`, instantiating matching converters, and reconstructing all containers directly in `EventContext`/`StoreGate` without requiring manual per-tier configuration (HIT, ESD, AOD).
-- **`RootStreamMaker`**: Generic writer configured via an item list (`ItemList`), serializing any requested `xAOD` container into standard `<TypeName>_<Key>` branches.
-- **`RootStreamNtupleMaker`**: Analysis algorithm flattening physical variables and calorimetric shower rings into a flat `TTree` (`events`), ideal for neural network training (Ringer) and performance studies.
+- **`RootStreamMaker`**: Generic writer configured via an item list (`ItemList`), serializing any requested `xAOD` container into standard `<TypeName>_<Key>` branches. Handlers are constructed dynamically in `bookHistograms` and `fillHistograms`, ensuring `initialize()` remains completely state-free.
+- **`RootStreamNtupleMaker`**: Analysis algorithm flattening physical variables and calorimetric shower rings into a flat `TTree` (`physics`), ideal for neural network training (Ringer) and performance studies.
+- **`RootStreamParquetMaker`**: High-throughput C++ columnar serializer converting AOD collections directly into an Apache Parquet file using Apache Arrow, preserving identical variables and nested ring vectors.
 
 ---
 
@@ -13,11 +14,10 @@ It provides a **generic, extensible, and data-driven** architecture:
 
 ```mermaid
 graph TD
-    subgraph Storage ["ROOT File (TTree)"]
-        B1["EventInfoContainer_EventInfo"]
-        B2["CaloCellContainer_Cells"]
-        B3["CaloClusterContainer_CaloClusters"]
-        B4["ElectronContainer_Electrons"]
+    subgraph Storage ["Persistent Storage (ROOT / Parquet)"]
+        B1["ROOT TTree: CollectionTree ('<TypeName>_<Key>')"]
+        B2["ROOT Flat TTree: physics"]
+        B3["Apache Parquet: Columnar Schema with Arrow Lists"]
     end
 
     subgraph Reading ["RootStreamReader (Auto-Discovery: discoverBranches)"]
@@ -35,17 +35,17 @@ graph TD
         C4["xAOD::ElectronContainer ('Electrons')"]
     end
 
-    subgraph Writing ["RootStreamMaker"]
-        ItemList["ItemList: ['Type#Key', ...]"] --> MakeHandler["Create Branch Handlers"]
-        MakeHandler --> SG_Read["Read from EventContext"]
-        SG_Read --> Convert["Convert xAOD -> C Structs"]
-        Convert --> FillTree["Fill TTree Branches"]
+    subgraph Writing ["Stream Makers"]
+        W1["RootStreamMaker<br/>(Dynamic Handlers, Root Tree)"]
+        W2["RootStreamNtupleMaker<br/>(Flat TTree 'physics')"]
+        W3["RootStreamParquetMaker<br/>(Apache Arrow Table Writer)"]
     end
 
-    Storage --> Inspect
+    B1 --> Inspect
     SG_Record --> Memory
-    Memory --> SG_Read
-    FillTree --> Storage
+    Memory --> W1 --> B1
+    Memory --> W2 --> B2
+    Memory --> W3 --> B3
 ```
 
 ---
@@ -60,8 +60,9 @@ graph TD
 | `CaloCellBranchHandler` | Specialized branch handler for `CaloCellContainer` supporting online independent noise sigma filtering ($E > N\sigma$, ATLAS Run 4) during deserialization. |
 | `BranchHandlerFactory` | Central factory instantiating typed handlers based strictly on EDM container names (`*Container`). |
 | `RootStreamReader` | Algorithm that discovers branches dynamically from the input tree via `discoverBranches()` and records containers into `StoreGate`. |
-| `RootStreamMaker` | Algorithm that reads containers from `EventContext` specified in `ItemList` and fills the `TTree`. |
+| `RootStreamMaker` | Algorithm that reads containers from `EventContext` specified in `ItemList` and fills the `TTree`, with dynamic on-demand handler construction. |
 | `RootStreamNtupleMaker` | Analysis algorithm producing flat `TTree` structures (e.g. `cl_et`, `cl_rings`, etc.). |
+| `RootStreamParquetMaker` | High-throughput C++ algorithm dumping analysis variables and calorimeter rings into an Apache Parquet file via Apache Arrow. |
 
 ---
 
@@ -128,6 +129,12 @@ writer = RootStreamMakerCfg(
 )
 ```
 
+#### Lifecycle Architecture & Root Placement
+`RootStreamMaker` adopts a strictly decoupled execution lifecycle:
+* **Stateless `initialize()`**: `initialize()` performs zero file operations or branch handler allocations, preventing premature I/O handles or race conditions in multi-threaded workflows.
+* **Dynamic Handler Construction**: Branch handlers (`IBranchHandler`) are constructed on demand inside `bookHistograms()` and `fillHistograms()`.
+* **Clean Root Directory Placement**: All trees are registered at the root of the output `TFile` via `store->cd()`, eliminating duplicate trees or conflicting directory structures (such as `Events/CollectionTree`).
+
 Convenience presets are also available for standard data tiers:
 - `RootStreamAODMakerCfg(...)`
 - `RootStreamESDMakerCfg(...)`
@@ -182,20 +189,44 @@ hit_streamer = RootStreamHITMakerCfg(
 )
 ```
 
-### 4.4. Flat Analysis Ntuples (`RootStreamNtupleMaker`)
+### 4.4. Flat Analysis Ntuples (`RootStreamNtupleMaker` / `ntuple_trf.py`)
+
+`RootStreamNtupleMaker` extracts analysis-level variables (event metrics, cluster kinematics, sampling energies, shower shapes, calorimeter rings, electron PID, and truth particles) from an AOD file into a flat `TTree` named `physics`:
 
 ```python
-from RootStreamBuilder import RootStreamNtupleMakerCfg
+from RootStreamBuilder import RootStreamAODReader, RootStreamNtupleMaker, recordable
+from GaugiKernel import ComponentAccumulator
 
-ntuple_maker = RootStreamNtupleMakerCfg(
-    name="NtupleMaker",
-    InputEventKey="EventInfo",
-    InputTruthKey="Particles",
-    InputClusterKey="CaloClusters",
-    InputRingerKeys=["Rings"],
-    InputElectronKey="Electrons",
-    OutputNtupleName="events"
+# Reader uses automatic branch discovery
+AOD = RootStreamAODReader(
+    "AODReader",
+    InputFile="sample.AOD.root",
+    TreeName="CollectionTree",
 )
+
+acc = ComponentAccumulator("ComponentAccumulator", "output.NTUPLE.root", AOD)
+
+ntuple = RootStreamNtupleMaker(
+    "NtupleMaker",
+    InputEventKey=recordable("Events"),
+    InputTruthKey=recordable("Particles"),
+    InputSeedsKey=recordable("Seeds"),
+    InputClusterKey=recordable("Clusters"),
+    InputTruthClusterKey=recordable("TruthClusters"),
+    InputElectronKey=recordable("Electrons"),
+    InputTruthElectronKey=recordable("TruthElectrons"),
+    InputRingerKeys=[recordable("Rings")],
+    InputTruthRingerKeys=[recordable("TruthRings")],
+    OutputNtupleName="physics",
+)
+acc += ntuple
+acc.run()
+```
+
+#### Command-Line Usage (`ntuple_trf.py`):
+```bash
+# Generate flat analysis ntuple:
+ntuple_trf.py -i sample.AOD.root -o sample.NTUPLE.root --nov 1000
 ```
 
 ### 4.5. ESD Tier & Online Noise Suppression Reading (`RootStreamESDReader` / ATLAS Run 4)
@@ -253,5 +284,69 @@ reco_trf.py -i Zee.ESD.root -o Zee_3sigma.AOD.root --filter-by-sigma --sigma-thr
 # Study / calibration mode (retain all cells, no noise cut):
 reco_trf.py -i Zee.ESD.root -o Zee_all.AOD.root --no-filter-by-sigma
 ```
+
+---
+
+### 4.6. Apache Parquet Direct Serialization (`RootStreamParquetMaker` / `parquet_trf.py`)
+
+`RootStreamParquetMaker` is a high-performance C++ algorithm that directly transforms an AOD dataset into an **Apache Parquet** (`.parquet`) file using **Apache Arrow** (`parquet/arrow/writer.h`).
+
+It dumps the exact same features and variables as `RootStreamNtupleMaker`, allowing direct integration with modern Data Science and Machine Learning pipelines (Polars, Pandas, DuckDB, PyTorch, TensorFlow) without requiring ROOT during analysis.
+
+#### Column Schema (1:1 with Ntuple):
+* **Event**: `EventNumber` (`int32`), `RunNumber` (`int32`), `avgmu` (`float32`).
+* **Cluster Kinematics**: `cl_eta`, `cl_phi`, `cl_e`, `cl_et`, `cl_deta`, `cl_dphi` (`float32`).
+* **Calo Samplings**: `cl_e0` through `cl_e3`, `cl_ehad1` through `cl_ehad3`, `cl_etot` (`float32`).
+* **Shower Shapes**: `cl_e233`, `cl_e237`, `cl_e277`, `cl_emaxs1`, `cl_emaxs2`, `cl_e2tsts1`, `cl_reta`, `cl_rphi`, `cl_rhad`, `cl_rhad1`, `cl_eratio`, `cl_f0`..`cl_f3`, `cl_weta2` (`float32`).
+* **Moments**: `cl_secondR`, `cl_lambdaCenter`, `cl_secondLambda`, `cl_fracMax`, `cl_lateralMom`, `cl_longitudinalMom` (`float32`).
+* **Calorimeter Rings (Native Lists)**: `cl_rings_<key>` (`list<float32>`), `cl_ringsL0` (`list<float32>`).
+* **Electron PID**: `el_eta`, `el_et`, `el_phi` (`float32`), `el_tight`, `el_medium`, `el_loose`, `el_vloose` (`bool`).
+* **Seed & MC Truth Particles**: `seed_eta`, `seed_phi` (`float32`), `mc_pdgid`, `mc_eta`, `mc_phi`, `mc_e`, `mc_et` (`list<float32>`).
+* **Truth Cluster & Electron**: `truth_cl_*`, `truth_cl_rings_*` (`list<float32>`), `truth_el_*`.
+
+#### Key Architecture Principles:
+* **PIMPL Idiom**: Header uses `struct Impl; std::unique_ptr<Impl> m_impl;` to isolate Arrow C++20 headers from the ROOT dictionary generator (`rootcling`).
+* **In-Memory StoreGate Mode**: When output is `.parquet`, `StoreGate` operates purely in memory, preventing empty or corrupt ROOT files on disk.
+* **Parallel Chunk Merging**: `Parallel.py` automatically merges intermediate worker `.parquet` files via `pyarrow.concat_tables`.
+
+#### Python Usage (`parquet_trf.py`):
+```python
+from RootStreamBuilder import RootStreamAODReader, RootStreamParquetMaker, recordable
+from GaugiKernel import ComponentAccumulator
+
+AOD = RootStreamAODReader(
+    "AODReader",
+    InputFile="sample.AOD.root",
+    TreeName="CollectionTree",
+)
+
+acc = ComponentAccumulator("ComponentAccumulator", "output.parquet", AOD)
+
+parquet = RootStreamParquetMaker(
+    "ParquetMaker",
+    OutputFile="output.parquet",
+    InputEventKey=recordable("Events"),
+    InputTruthKey=recordable("Particles"),
+    InputSeedsKey=recordable("Seeds"),
+    InputClusterKey=recordable("Clusters"),
+    InputTruthClusterKey=recordable("TruthClusters"),
+    InputElectronKey=recordable("Electrons"),
+    InputTruthElectronKey=recordable("TruthElectrons"),
+    InputRingerKeys=[recordable("Rings")],
+    InputTruthRingerKeys=[recordable("TruthRings")],
+)
+acc += parquet
+acc.run()
+```
+
+#### Command-Line Usage:
+```bash
+# Transform AOD to Parquet:
+parquet_trf.py -i sample.AOD.root -o sample.parquet --nov 1000
+
+# Parallel transformation across multiple workers with automatic chunk merge:
+parquet_trf.py -i sample.AOD.root -o sample.parquet -nw 4 -m
+```
+
 
 
