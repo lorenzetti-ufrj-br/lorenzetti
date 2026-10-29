@@ -214,11 +214,8 @@ ntuple = RootStreamNtupleMaker(
     InputTruthKey=recordable("Particles"),
     InputSeedsKey=recordable("Seeds"),
     InputClusterKey=recordable("Clusters"),
-    InputTruthClusterKey=recordable("TruthClusters"),
     InputElectronKey=recordable("Electrons"),
-    InputTruthElectronKey=recordable("TruthElectrons"),
     InputRingerKeys=[recordable("Rings")],
-    InputTruthRingerKeys=[recordable("TruthRings")],
     OutputNtupleName="physics",
 )
 acc += ntuple
@@ -229,6 +226,9 @@ acc.run()
 ```bash
 # Generate flat analysis ntuple:
 ntuple_trf.py -i sample.AOD.root -o sample.NTUPLE.root --nov 1000
+
+# With custom schema JSON:
+ntuple_trf.py -i sample.AOD.root -o sample.NTUPLE.root --schema schema.json
 ```
 
 ### 4.5. ESD Tier & Online Noise Suppression Reading (`RootStreamESDReader` / ATLAS Run 4)
@@ -296,15 +296,14 @@ reco_trf.py -i Zee.ESD.root -o Zee_all.AOD.root --no-filter-by-sigma
 It dumps the exact same features and variables as `RootStreamNtupleMaker`, allowing direct integration with modern Data Science and Machine Learning pipelines (Polars, Pandas, DuckDB, PyTorch, TensorFlow) without requiring ROOT during analysis.
 
 #### Column Schema (1:1 with Ntuple):
-* **Event**: `EventNumber` (`int32`), `RunNumber` (`int32`), `avgmu` (`float32`).
+* **Event**: `EventNumber` (`int32`), `RunNumber` (`int32`), `avgmu` (`float32`), `totmu` (`float32`).
 * **Cluster Kinematics**: `cl_eta`, `cl_phi`, `cl_e`, `cl_et`, `cl_deta`, `cl_dphi` (`float32`).
 * **Calo Samplings**: `cl_e0` through `cl_e3`, `cl_ehad1` through `cl_ehad3`, `cl_etot` (`float32`).
 * **Shower Shapes**: `cl_e233`, `cl_e237`, `cl_e277`, `cl_emaxs1`, `cl_emaxs2`, `cl_e2tsts1`, `cl_reta`, `cl_rphi`, `cl_rhad`, `cl_rhad1`, `cl_eratio`, `cl_f0`..`cl_f3`, `cl_weta2` (`float32`).
 * **Moments**: `cl_secondR`, `cl_lambdaCenter`, `cl_secondLambda`, `cl_fracMax`, `cl_lateralMom`, `cl_longitudinalMom` (`float32`).
-* **Calorimeter Rings (Native Lists)**: `cl_rings_<key>` (`list<float32>`), `cl_ringsL0` (`list<float32>`).
-* **Electron PID**: `el_eta`, `el_et`, `el_phi` (`float32`), `el_tight`, `el_medium`, `el_loose`, `el_vloose` (`bool`).
-* **Seed & MC Truth Particles**: `seed_eta`, `seed_phi` (`float32`), `mc_pdgid`, `mc_eta`, `mc_phi`, `mc_e`, `mc_et` (`list<float32>`).
-* **Truth Cluster & Electron**: `truth_cl_*`, `truth_cl_rings_*` (`list<float32>`), `truth_el_*`.
+* **Calorimeter Rings (Native Lists)**: `cl_rings_<key>` (`list<float32>`).
+* **Electron PID**: `el_eta`, `el_et`, `el_phi`, `el_e` (`float32`), `el_tight`, `el_medium`, `el_loose`, `el_vloose` (`bool`).
+* **Seed & MC Truth Particles**: `seed_eta`, `seed_phi`, `seed_e`, `seed_et`, `seed_id` (`float32`), `mc_pdgid`, `mc_eta`, `mc_phi`, `mc_e`, `mc_et` (`float32`).
 
 #### Key Architecture Principles:
 * **PIMPL Idiom**: Header uses `struct Impl; std::unique_ptr<Impl> m_impl;` to isolate Arrow C++20 headers from the ROOT dictionary generator (`rootcling`).
@@ -331,11 +330,8 @@ parquet = RootStreamParquetMaker(
     InputTruthKey=recordable("Particles"),
     InputSeedsKey=recordable("Seeds"),
     InputClusterKey=recordable("Clusters"),
-    InputTruthClusterKey=recordable("TruthClusters"),
     InputElectronKey=recordable("Electrons"),
-    InputTruthElectronKey=recordable("TruthElectrons"),
     InputRingerKeys=[recordable("Rings")],
-    InputTruthRingerKeys=[recordable("TruthRings")],
 )
 acc += parquet
 acc.run()
@@ -349,6 +345,46 @@ parquet_trf.py -i sample.AOD.root -o sample.parquet --nov 1000
 # Parallel transformation across multiple workers with automatic chunk merge:
 parquet_trf.py -i sample.AOD.root -o sample.parquet -nw 4 -m
 ```
+
+---
+
+### 4.7. Schema-Driven Output Configuration (`RootStreamSchema`)
+
+`RootStreamBuilder` provides a declarative schema mapping system allowing users to select and rename branches output by `RootStreamNtupleMaker` and `RootStreamParquetMaker`.
+
+#### Schema Descriptor Format:
+Each entry maps an output branch/column name to an EDM target:
+```
+"<OutputBranch>" : "<EDMType>#<ContainerKey>#<Property>"
+```
+Examples:
+- `"cl_eta": "CaloCluster#Clusters#eta"`
+- `"ring_0": "CaloRings#Rings#rings[0]"` (scalar ring indexing)
+- `"cl_rings_Rings": "CaloRings#Rings#rings"` (vector branch/list)
+- `"mc_pdgid": "TruthParticle#Particles#pdgid"`
+
+#### Helper Functions (`RootStreamSchema.py`):
+- **`get_default_schema()`**: Returns a unified dictionary with all 61 standard default variables.
+- **`get_scalar_rings_schema(prefix="ring_", key="Rings", n_rings=100)`**: Generates unpacked scalar ring mappings (`ring_0` .. `ring_99`).
+- **`build_custom_schema(include_default=..., include_scalar_rings=..., extra_branches=...)`**: Assembles custom schemas conveniently.
+
+#### Example Usage:
+```python
+from RootStreamBuilder import build_custom_schema, RootStreamNtupleMaker
+
+# Dump default schema + individual scalar ring branches
+custom_schema = build_custom_schema(
+    include_default=True,
+    include_scalar_rings=True,
+)
+
+ntuple = RootStreamNtupleMaker(
+    "NtupleMaker",
+    Schema=custom_schema,
+    OutputNtupleName="physics",
+)
+```
+
 
 
 

@@ -15,6 +15,7 @@ This document details the major architectural enhancements, modernization effort
 7. [Python-C++ Integration: `Configurable` & `ComponentAccumulator`](#7-python-c-integration-configurable--componentaccumulator)
 8. [Direct Parquet Pipeline & Columnar Serialization (`RootStreamParquetMaker` & `parquet_trf.py`)](#8-direct-parquet-pipeline--columnar-serialization-rootstreamparquetmaker--parquet_trfpy)
 9. [Active Persistence Registry & Stream Auto-Configuration (`recordable()`)](#9-active-persistence-registry--stream-auto-configuration-recordable)
+10. [Declarative Output Schema & Streamlined Reconstruction Stack](#10-declarative-output-schema--streamlined-reconstruction-stack)
 
 ---
 
