@@ -60,27 +60,10 @@ def main(
         OutputLevel=outputLevel,
     )
 
-    cluster_truth = CaloClusterMaker(
-        "CaloClusterMaker_Truth",
-        InputCellsKey=recordable("TruthCells"),
-        InputSeedsKey=recordable("Seeds"),
-        OutputClusterKey=recordable("TruthClusters"),
-        HistogramPath="Expert/TruthClusters",
-        OutputLevel=outputLevel,
-    )
-
     hypo = ElectronBuilderCfg(
         "ElectronBuilder",
         InputClusterKey=recordable("Clusters"),
         OutputElectronKey=recordable("Electrons"),
-        OutputLevel=outputLevel,
-    )
-
-    hypo_truth = ElectronBuilderCfg(
-        "ElectronBuilder_Truth",
-        InputClusterKey=recordable("TruthClusters"),
-        OutputElectronKey=recordable("TruthElectrons"),
-        HistogramPath="Expert/TruthElectrons",
         OutputLevel=outputLevel,
     )
 
@@ -92,25 +75,14 @@ def main(
         OutputLevel=outputLevel,
     )
 
-    acc_rings_truth = CaloRingsBuilderCfg(
-        "CaloRingsBuilder_Truth",
-        InputClusterKey=recordable("TruthClusters"),
-        OutputRingerKey=recordable("TruthRings"),
-        HistogramPath="Expert/TruthRings",
-        OutputLevel=outputLevel,
-    )
-
     AOD = RootStreamAODMaker(
         "RootStreamAODMaker",
         OutputLevel=outputLevel,
     )
 
     acc += cluster
-    acc += cluster_truth
     acc += acc_rings
-    acc += acc_rings_truth
     acc += hypo
-    acc += hypo_truth
     acc += AOD
     acc.run(nov)
 

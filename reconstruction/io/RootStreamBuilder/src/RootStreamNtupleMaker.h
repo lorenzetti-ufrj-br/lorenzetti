@@ -43,13 +43,9 @@ private:
   std::string m_truthKey;
   std::string m_clusterKey;
   std::string m_electronKey;
-  std::string m_ringerL0Key;
-  std::string m_truthClusterKey;
-  std::string m_truthElectronKey;
   std::string m_outputNtupleName;
 
   std::vector<std::string> m_ringerKeys;
-  std::vector<std::string> m_truthRingerKeys;
 
   std::map<std::string, std::string> m_schema;
 

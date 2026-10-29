@@ -12,10 +12,6 @@ def RootStreamNtupleMakerCfg(
     InputSeedsKey: str = "Seeds",
     InputClusterKey: str = "CaloClusters",
     InputRingerKeys: Optional[List[str]] = None,
-    InputRingerL0Key: str = "RingsL0",
-    InputTruthClusterKey: str = "TruthClusters",
-    InputTruthRingerKeys: Optional[List[str]] = None,
-    InputTruthElectronKey: str = "TruthElectrons",
     InputElectronKey: str = "Electrons",
     OutputNtupleName: str = "events",
     Schema: Optional[Dict[str, str]] = None,
@@ -29,11 +25,6 @@ def RootStreamNtupleMakerCfg(
     elif isinstance(InputRingerKeys, str):
         InputRingerKeys = [InputRingerKeys]
 
-    if InputTruthRingerKeys is None:
-        InputTruthRingerKeys = ["TruthRings"]
-    elif isinstance(InputTruthRingerKeys, str):
-        InputTruthRingerKeys = [InputTruthRingerKeys]
-
     if Schema is None:
         Schema = {}
 
@@ -45,10 +36,6 @@ def RootStreamNtupleMakerCfg(
         InputSeedsKey=InputSeedsKey,
         InputClusterKey=InputClusterKey,
         InputRingerKeys=InputRingerKeys,
-        InputRingerL0Key=InputRingerL0Key,
-        InputTruthClusterKey=InputTruthClusterKey,
-        InputTruthRingerKeys=InputTruthRingerKeys,
-        InputTruthElectronKey=InputTruthElectronKey,
         InputElectronKey=InputElectronKey,
         OutputNtupleName=OutputNtupleName,
         Schema=Schema,

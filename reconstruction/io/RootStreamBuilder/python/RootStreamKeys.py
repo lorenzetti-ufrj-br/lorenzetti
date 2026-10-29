@@ -31,27 +31,17 @@ DEFAULT_KEY_TO_TYPE_MAP: Dict[str, str] = {
     "TruthParticles": "TruthParticleContainer",
     # Clusters
     "Clusters": "CaloClusterContainer",
-    "TruthClusters": "CaloClusterContainer",
     "CaloClusters": "CaloClusterContainer",
     # Electrons
     "Electrons": "ElectronContainer",
-    "TruthElectrons": "ElectronContainer",
     # Rings
     "Rings": "CaloRingsContainer",
     "RingsSigmaNoise": "CaloRingsContainer",
-    "TruthRings": "CaloRingsContainer",
     "AsymRings": "CaloRingsContainer",
-    "TruthAsymRings": "CaloRingsContainer",
     "CornerRings": "CaloRingsContainer",
-    "TruthCornerRings": "CaloRingsContainer",
     "StripsRings": "CaloRingsContainer",
-    "TruthStripsRings": "CaloRingsContainer",
     "CrossRings": "CaloRingsContainer",
-    "TruthCrossRings": "CaloRingsContainer",
     "CustomRings": "CaloRingsContainer",
-    "TruthCustomRings": "CaloRingsContainer",
-    "RingsL0": "CaloRingsContainer",
-    "TruthRingsL0": "CaloRingsContainer",
 }
 
 valid_keys = list(DEFAULT_KEY_TO_TYPE_MAP.keys())

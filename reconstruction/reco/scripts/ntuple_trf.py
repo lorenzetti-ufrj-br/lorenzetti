@@ -49,11 +49,8 @@ def main(
         InputTruthKey=recordable("Particles"),
         InputSeedsKey=recordable("Seeds"),
         InputClusterKey=recordable("Clusters"),
-        InputTruthClusterKey=recordable("TruthClusters"),
         InputElectronKey=recordable("Electrons"),
-        InputTruthElectronKey=recordable("TruthElectrons"),
         InputRingerKeys=[recordable("Rings")],
-        InputTruthRingerKeys=[recordable("TruthRings")],
         OutputNtupleName="physics",
         Schema=schema_dict,
     )

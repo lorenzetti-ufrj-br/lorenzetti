@@ -76,10 +76,12 @@ def main(
 
     HIT = RootStreamHITMaker(
         "RootStreamHITMaker",
-        InputHitsKey="Hits_Merged",
-        InputEventKey="Events_Merged",
-        InputTruthKey=recordable("Particles"),
-        InputSeedsKey=recordable("Seeds"),
+        ItemList=[
+            "EventInfoContainer#Events_Merged",
+            "CaloHitContainer#Hits_Merged",
+            "TruthParticleContainer#Particles",
+            "SeedContainer#Seeds",
+        ],
         OutputLevel=outputLevel,
     )
     acc += HIT

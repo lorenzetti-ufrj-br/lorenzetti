@@ -55,12 +55,8 @@ struct RootStreamParquetMaker::Impl
 
   xAOD::EventInfo_parquet event_parquet;
   xAOD::CaloCluster_parquet clus_parquet;
-  xAOD::CaloCluster_parquet truth_clus_parquet;
-  xAOD::CaloRings_parquet ringsL0_parquet;
   std::vector<xAOD::CaloRings_parquet> rings_parquets;
-  std::vector<xAOD::CaloRings_parquet> truth_rings_parquets;
   xAOD::Electron_parquet el_parquet;
-  xAOD::Electron_parquet truth_el_parquet;
   xAOD::Seed_parquet seed_parquet;
   xAOD::TruthParticle_parquet mc_parquet;
 };
@@ -74,10 +70,6 @@ RootStreamParquetMaker::RootStreamParquetMaker(std::string name) : IMsgService(n
   declareProperty("InputSeedsKey", m_seedsKey = "Seeds");
   declareProperty("InputClusterKey", m_clusterKey = "Clusters");
   declareProperty("InputRingerKeys", m_ringerKeys = {"Rings"});
-  declareProperty("InputRingerL0Key", m_ringerL0Key = "RingsL0");
-  declareProperty("InputTruthClusterKey", m_truthClusterKey = "TruthClusters");
-  declareProperty("InputTruthRingerKeys", m_truthRingerKeys = {"TruthRings"});
-  declareProperty("InputTruthElectronKey", m_truthElectronKey = "TruthElectrons");
   declareProperty("InputElectronKey", m_electronKey = "Electrons");
   declareProperty("OutputLevel", m_outputLevel = 0);
   declareProperty("Schema", m_schema = {});
@@ -92,7 +84,6 @@ StatusCode RootStreamParquetMaker::initialize()
   CHECK_INIT();
   m_impl = std::make_unique<Impl>();
   m_impl->rings_parquets.resize(m_ringerKeys.size());
-  m_impl->truth_rings_parquets.resize(m_truthRingerKeys.size());
 
   xAOD::EventInfoConverter eventCnv;
   xAOD::CaloClusterConverter clusterCnv;
@@ -124,21 +115,7 @@ StatusCode RootStreamParquetMaker::initialize()
     registerBlock(m_impl->clus_parquet.builders);
   }
 
-  // 3. TruthClusters
-  auto spTruthClus = getSpecsFor(groups, "CaloCluster", m_truthClusterKey);
-  if (!customSchema || !spTruthClus.empty()) {
-    clusterCnv.book_parquet(m_impl->fields, m_impl->truth_clus_parquet, spTruthClus, "truth_cl_");
-    registerBlock(m_impl->truth_clus_parquet.builders);
-  }
-
-  // 4. RingsL0
-  auto spRingsL0 = getSpecsFor(groups, "CaloRings", m_ringerL0Key);
-  if (!customSchema || !spRingsL0.empty()) {
-    ringsCnv.book_parquet(m_impl->fields, m_impl->ringsL0_parquet, spRingsL0, "cl_ringsL0");
-    registerBlock(m_impl->ringsL0_parquet.builders);
-  }
-
-  // 5. Rings
+  // 3. Rings
   for (size_t i = 0; i < m_ringerKeys.size(); ++i) {
     auto spR = getSpecsFor(groups, "CaloRings", m_ringerKeys[i]);
     if (!customSchema || !spR.empty()) {
@@ -147,30 +124,14 @@ StatusCode RootStreamParquetMaker::initialize()
     }
   }
 
-  // 6. TruthRings
-  for (size_t i = 0; i < m_truthRingerKeys.size(); ++i) {
-    auto spTR = getSpecsFor(groups, "CaloRings", m_truthRingerKeys[i]);
-    if (!customSchema || !spTR.empty()) {
-      ringsCnv.book_parquet(m_impl->fields, m_impl->truth_rings_parquets[i], spTR, "truth_cl_rings_" + m_truthRingerKeys[i]);
-      registerBlock(m_impl->truth_rings_parquets[i].builders);
-    }
-  }
-
-  // 7. Electrons
+  // 4. Electrons
   auto spEl = getSpecsFor(groups, "Electron", m_electronKey);
   if (!customSchema || !spEl.empty()) {
     electronCnv.book_parquet(m_impl->fields, m_impl->el_parquet, spEl, "el_");
     registerBlock(m_impl->el_parquet.builders);
   }
 
-  // 8. TruthElectrons
-  auto spTruthEl = getSpecsFor(groups, "Electron", m_truthElectronKey);
-  if (!customSchema || !spTruthEl.empty()) {
-    electronCnv.book_parquet(m_impl->fields, m_impl->truth_el_parquet, spTruthEl, "truth_el_");
-    registerBlock(m_impl->truth_el_parquet.builders);
-  }
-
-  // 9. Seeds
+  // 5. Seeds
   auto spSeed = getSpecsFor(groups, "Seed", m_seedsKey);
   if (!customSchema || !spSeed.empty()) {
     seedCnv.book_parquet(m_impl->fields, m_impl->seed_parquet, spSeed, "seed_");
@@ -238,17 +199,9 @@ StatusCode RootStreamParquetMaker::fillHistograms(SG::EventContext &ctx) const
     return StatusCode::FAILURE;
   }
 
-  SG::ReadHandle<xAOD::CaloRingsContainer> ringerL0_container(m_ringerL0Key, ctx);
-  SG::ReadHandle<xAOD::CaloClusterContainer> truth_cluster_container(m_truthClusterKey, ctx);
-  SG::ReadHandle<xAOD::ElectronContainer> truth_electron_container(m_truthElectronKey, ctx);
-
   std::vector<SG::ReadHandle<xAOD::CaloRingsContainer>> ringer_containers;
   for (const auto &key : m_ringerKeys)
     ringer_containers.emplace_back(key, ctx);
-
-  std::vector<SG::ReadHandle<xAOD::CaloRingsContainer>> truth_ringer_containers;
-  for (const auto &key : m_truthRingerKeys)
-    truth_ringer_containers.emplace_back(key, ctx);
 
   xAOD::EventInfoConverter eventCnv;
   xAOD::CaloClusterConverter clusterCnv;
@@ -275,18 +228,6 @@ StatusCode RootStreamParquetMaker::fillHistograms(SG::EventContext &ctx) const
     // Seed
     seedCnv.to_parquet(seed, m_impl->seed_parquet);
 
-    // RingsL0
-    const xAOD::CaloRings *cl_ringerL0 = nullptr;
-    if (ringerL0_container.isValid() && clus) {
-      for (auto ring : *ringerL0_container) {
-        if (ring->caloCluster() == clus) {
-          cl_ringerL0 = ring;
-          break;
-        }
-      }
-    }
-    ringsCnv.to_parquet(cl_ringerL0, m_impl->ringsL0_parquet);
-
     // Other rings
     for (size_t i = 0; i < m_ringerKeys.size(); ++i) {
       const xAOD::CaloRings *ringMatch = nullptr;
@@ -300,44 +241,6 @@ StatusCode RootStreamParquetMaker::fillHistograms(SG::EventContext &ctx) const
       }
       ringsCnv.to_parquet(ringMatch, m_impl->rings_parquets[i]);
     }
-
-    // Truth Cluster matched by seed
-    const xAOD::CaloCluster *truth_clus = nullptr;
-    if (truth_cluster_container.isValid() && seed) {
-      for (auto tr_cl : *truth_cluster_container) {
-        if (tr_cl->seed() == seed) {
-          truth_clus = tr_cl;
-          break;
-        }
-      }
-    }
-    clusterCnv.to_parquet(truth_clus, m_impl->truth_clus_parquet);
-
-    // Truth rings matched by truth_clus
-    for (size_t i = 0; i < m_truthRingerKeys.size(); ++i) {
-      const xAOD::CaloRings *truthRingMatch = nullptr;
-      if (truth_ringer_containers[i].isValid() && truth_clus) {
-        for (auto tr_ring : *truth_ringer_containers[i]) {
-          if (tr_ring->caloCluster() == truth_clus) {
-            truthRingMatch = tr_ring;
-            break;
-          }
-        }
-      }
-      ringsCnv.to_parquet(truthRingMatch, m_impl->truth_rings_parquets[i]);
-    }
-
-    // Truth Electron matched by seed
-    const xAOD::Electron *truth_el = nullptr;
-    if (truth_electron_container.isValid() && seed) {
-      for (auto tr_el : *truth_electron_container) {
-        if (tr_el->caloCluster() && tr_el->caloCluster()->seed() == seed) {
-          truth_el = tr_el;
-          break;
-        }
-      }
-    }
-    electronCnv.to_parquet(truth_el, m_impl->truth_el_parquet);
 
     // MC Particles matched by seedid
     truthCnv.to_parquet(truth_container.ptr(), seed ? seed->id() : -1, m_impl->mc_parquet);

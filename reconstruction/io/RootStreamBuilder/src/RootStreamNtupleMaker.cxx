@@ -58,10 +58,6 @@ RootStreamNtupleMaker::RootStreamNtupleMaker(std::string name) : IMsgService(nam
   declareProperty("InputSeedsKey", m_seedsKey = "Seeds");
   declareProperty("InputClusterKey", m_clusterKey = "Clusters");
   declareProperty("InputRingerKeys", m_ringerKeys = {"Rings"});
-  declareProperty("InputRingerL0Key", m_ringerL0Key = "RingsL0");
-  declareProperty("InputTruthClusterKey", m_truthClusterKey = "TruthClusters");
-  declareProperty("InputTruthRingerKeys", m_truthRingerKeys = {"TruthRings"});
-  declareProperty("InputTruthElectronKey", m_truthElectronKey = "TruthElectrons");
   declareProperty("InputElectronKey", m_electronKey = "Electrons");
   declareProperty("OutputLevel", m_outputLevel = 0);
   declareProperty("OutputNtupleName", m_outputNtupleName = "events");
@@ -100,20 +96,11 @@ StatusCode RootStreamNtupleMaker::bookHistograms(EventContext &ctx) const
 
   xAOD::EventInfo_t event_buf;
   xAOD::CaloCluster_t clus_buf;
-  xAOD::CaloCluster_t truth_clus_buf;
-  xAOD::CaloRings_t ringsL0_buf;
-  std::vector<float> *ringsL0_ptr = nullptr;
-  std::map<std::string, float> scalarRingsL0;
   std::vector<xAOD::CaloRings_t> rings_bufs(m_ringerKeys.size());
   std::vector<std::vector<float> *> rings_ptrs(m_ringerKeys.size(), nullptr);
   std::vector<std::map<std::string, float>> scalarRings(m_ringerKeys.size());
-  std::vector<xAOD::CaloRings_t> truth_rings_bufs(m_truthRingerKeys.size());
-  std::vector<std::vector<float> *> truth_rings_ptrs(m_truthRingerKeys.size(), nullptr);
-  std::vector<std::map<std::string, float>> scalarTruthRings(m_truthRingerKeys.size());
   xAOD::Electron_t el_buf;
   xAOD::ElectronNtupleScalars el_scalars;
-  xAOD::Electron_t truth_el_buf;
-  xAOD::ElectronNtupleScalars truth_el_scalars;
   xAOD::Seed_t seed_buf;
   xAOD::TruthParticleNtupleBuffers truth_buf;
   truth_buf.init();
@@ -131,16 +118,6 @@ StatusCode RootStreamNtupleMaker::bookHistograms(EventContext &ctx) const
     clusterCnv.book_ntuple(tree, clus_buf, spClus, "cl_");
   }
 
-  auto spTruthClus = getSpecsFor(groups, "CaloCluster", m_truthClusterKey);
-  if (!customSchema || !spTruthClus.empty()) {
-    clusterCnv.book_ntuple(tree, truth_clus_buf, spTruthClus, "truth_cl_");
-  }
-
-  auto spRingsL0 = getSpecsFor(groups, "CaloRings", m_ringerL0Key);
-  if (!customSchema || !spRingsL0.empty()) {
-    ringsCnv.book_ntuple(tree, ringsL0_buf, ringsL0_ptr, scalarRingsL0, spRingsL0, "cl_ringsL0");
-  }
-
   for (size_t i = 0; i < m_ringerKeys.size(); ++i) {
     auto spR = getSpecsFor(groups, "CaloRings", m_ringerKeys[i]);
     if (!customSchema || !spR.empty()) {
@@ -148,21 +125,9 @@ StatusCode RootStreamNtupleMaker::bookHistograms(EventContext &ctx) const
     }
   }
 
-  for (size_t i = 0; i < m_truthRingerKeys.size(); ++i) {
-    auto spTR = getSpecsFor(groups, "CaloRings", m_truthRingerKeys[i]);
-    if (!customSchema || !spTR.empty()) {
-      ringsCnv.book_ntuple(tree, truth_rings_bufs[i], truth_rings_ptrs[i], scalarTruthRings[i], spTR, "truth_cl_rings_" + m_truthRingerKeys[i]);
-    }
-  }
-
   auto spEl = getSpecsFor(groups, "Electron", m_electronKey);
   if (!customSchema || !spEl.empty()) {
     electronCnv.book_ntuple(tree, el_buf, el_scalars, spEl, "el_");
-  }
-
-  auto spTruthEl = getSpecsFor(groups, "Electron", m_truthElectronKey);
-  if (!customSchema || !spTruthEl.empty()) {
-    electronCnv.book_ntuple(tree, truth_el_buf, truth_el_scalars, spTruthEl, "truth_el_");
   }
 
   auto spSeed = getSpecsFor(groups, "Seed", m_seedsKey);
@@ -227,17 +192,9 @@ StatusCode RootStreamNtupleMaker::fillHistograms(EventContext &ctx) const
     return StatusCode::FAILURE;
   }
 
-  SG::ReadHandle<xAOD::CaloRingsContainer> ringerL0_container(m_ringerL0Key, ctx);
-  SG::ReadHandle<xAOD::CaloClusterContainer> truth_cluster_container(m_truthClusterKey, ctx);
-  SG::ReadHandle<xAOD::ElectronContainer> truth_electron_container(m_truthElectronKey, ctx);
-
   std::vector<SG::ReadHandle<xAOD::CaloRingsContainer>> ringer_containers;
   for (const auto &key : m_ringerKeys)
     ringer_containers.emplace_back(key, ctx);
-
-  std::vector<SG::ReadHandle<xAOD::CaloRingsContainer>> truth_ringer_containers;
-  for (const auto &key : m_truthRingerKeys)
-    truth_ringer_containers.emplace_back(key, ctx);
 
   auto store = ctx.getStoreGateSvc();
   store->cd();
@@ -256,20 +213,11 @@ StatusCode RootStreamNtupleMaker::fillHistograms(EventContext &ctx) const
 
   xAOD::EventInfo_t event_buf;
   xAOD::CaloCluster_t clus_buf;
-  xAOD::CaloCluster_t truth_clus_buf;
-  xAOD::CaloRings_t ringsL0_buf;
-  std::vector<float> *ringsL0_ptr = nullptr;
-  std::map<std::string, float> scalarRingsL0;
   std::vector<xAOD::CaloRings_t> rings_bufs(m_ringerKeys.size());
   std::vector<std::vector<float> *> rings_ptrs(m_ringerKeys.size(), nullptr);
   std::vector<std::map<std::string, float>> scalarRings(m_ringerKeys.size());
-  std::vector<xAOD::CaloRings_t> truth_rings_bufs(m_truthRingerKeys.size());
-  std::vector<std::vector<float> *> truth_rings_ptrs(m_truthRingerKeys.size(), nullptr);
-  std::vector<std::map<std::string, float>> scalarTruthRings(m_truthRingerKeys.size());
   xAOD::Electron_t el_buf;
   xAOD::ElectronNtupleScalars el_scalars;
-  xAOD::Electron_t truth_el_buf;
-  xAOD::ElectronNtupleScalars truth_el_scalars;
   xAOD::Seed_t seed_buf;
   xAOD::TruthParticleNtupleBuffers truth_buf;
   truth_buf.init();
@@ -279,27 +227,17 @@ StatusCode RootStreamNtupleMaker::fillHistograms(EventContext &ctx) const
 
   auto spEvt = getSpecsFor(groups, "EventInfo", m_eventKey);
   auto spClus = getSpecsFor(groups, "CaloCluster", m_clusterKey);
-  auto spTruthClus = getSpecsFor(groups, "CaloCluster", m_truthClusterKey);
-  auto spRingsL0 = getSpecsFor(groups, "CaloRings", m_ringerL0Key);
   auto spEl = getSpecsFor(groups, "Electron", m_electronKey);
-  auto spTruthEl = getSpecsFor(groups, "Electron", m_truthElectronKey);
   auto spSeed = getSpecsFor(groups, "Seed", m_seedsKey);
   auto spMC = getSpecsFor(groups, "TruthParticle", m_truthKey);
 
   if (!customSchema || !spEvt.empty()) eventCnv.book_ntuple(tree, event_buf, spEvt, "");
   if (!customSchema || !spClus.empty()) clusterCnv.book_ntuple(tree, clus_buf, spClus, "cl_");
-  if (!customSchema || !spTruthClus.empty()) clusterCnv.book_ntuple(tree, truth_clus_buf, spTruthClus, "truth_cl_");
-  if (!customSchema || !spRingsL0.empty()) ringsCnv.book_ntuple(tree, ringsL0_buf, ringsL0_ptr, scalarRingsL0, spRingsL0, "cl_ringsL0");
   for (size_t i = 0; i < m_ringerKeys.size(); ++i) {
     auto spR = getSpecsFor(groups, "CaloRings", m_ringerKeys[i]);
     if (!customSchema || !spR.empty()) ringsCnv.book_ntuple(tree, rings_bufs[i], rings_ptrs[i], scalarRings[i], spR, "cl_rings_" + m_ringerKeys[i]);
   }
-  for (size_t i = 0; i < m_truthRingerKeys.size(); ++i) {
-    auto spTR = getSpecsFor(groups, "CaloRings", m_truthRingerKeys[i]);
-    if (!customSchema || !spTR.empty()) ringsCnv.book_ntuple(tree, truth_rings_bufs[i], truth_rings_ptrs[i], scalarTruthRings[i], spTR, "truth_cl_rings_" + m_truthRingerKeys[i]);
-  }
   if (!customSchema || !spEl.empty()) electronCnv.book_ntuple(tree, el_buf, el_scalars, spEl, "el_");
-  if (!customSchema || !spTruthEl.empty()) electronCnv.book_ntuple(tree, truth_el_buf, truth_el_scalars, spTruthEl, "truth_el_");
   if (!customSchema || !spSeed.empty()) seedCnv.book_ntuple(tree, seed_buf, spSeed, "seed_");
   if (!customSchema || !spMC.empty()) truthCnv.book_ntuple(tree, truth_buf, spMC, "mc_");
 
@@ -314,17 +252,6 @@ StatusCode RootStreamNtupleMaker::fillHistograms(EventContext &ctx) const
     clusterCnv.to_ntuple(clus, clus_buf);
     seedCnv.to_ntuple(seed, seed_buf);
 
-    const xAOD::CaloRings *cl_ringerL0 = nullptr;
-    if (ringerL0_container.isValid() && clus) {
-      for (auto ring : *ringerL0_container) {
-        if (ring->caloCluster() == clus) {
-          cl_ringerL0 = ring;
-          break;
-        }
-      }
-    }
-    ringsCnv.to_ntuple(cl_ringerL0, ringsL0_buf, scalarRingsL0, spRingsL0);
-
     for (size_t i = 0; i < m_ringerKeys.size(); ++i) {
       const xAOD::CaloRings *ringMatch = nullptr;
       if (ringer_containers[i].isValid() && clus) {
@@ -338,42 +265,6 @@ StatusCode RootStreamNtupleMaker::fillHistograms(EventContext &ctx) const
       auto spR = getSpecsFor(groups, "CaloRings", m_ringerKeys[i]);
       ringsCnv.to_ntuple(ringMatch, rings_bufs[i], scalarRings[i], spR);
     }
-
-    const xAOD::CaloCluster *truth_clus = nullptr;
-    if (truth_cluster_container.isValid() && seed) {
-      for (auto tr_cl : *truth_cluster_container) {
-        if (tr_cl->seed() == seed) {
-          truth_clus = tr_cl;
-          break;
-        }
-      }
-    }
-    clusterCnv.to_ntuple(truth_clus, truth_clus_buf);
-
-    for (size_t i = 0; i < m_truthRingerKeys.size(); ++i) {
-      const xAOD::CaloRings *truthRingMatch = nullptr;
-      if (truth_ringer_containers[i].isValid() && truth_clus) {
-        for (auto tr_ring : *truth_ringer_containers[i]) {
-          if (tr_ring->caloCluster() == truth_clus) {
-            truthRingMatch = tr_ring;
-            break;
-          }
-        }
-      }
-      auto spTR = getSpecsFor(groups, "CaloRings", m_truthRingerKeys[i]);
-      ringsCnv.to_ntuple(truthRingMatch, truth_rings_bufs[i], scalarTruthRings[i], spTR);
-    }
-
-    const xAOD::Electron *truth_el = nullptr;
-    if (truth_electron_container.isValid() && seed) {
-      for (auto tr_el : *truth_electron_container) {
-        if (tr_el->caloCluster() && tr_el->caloCluster()->seed() == seed) {
-          truth_el = tr_el;
-          break;
-        }
-      }
-    }
-    electronCnv.to_ntuple(truth_el, truth_el_buf, truth_el_scalars);
 
     if (seed) {
       truthCnv.to_ntuple(truth_container.ptr(), seed->id(), truth_buf);
