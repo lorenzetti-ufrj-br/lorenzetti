@@ -91,6 +91,8 @@ class Configurable(Logger):
                 except TypeError:
                     raise
 
+        self._name = name
+
         properties = [str(p) for p in self._c_ptr.getProperties()] if hasattr(self._c_ptr, "getProperties") else []
         self._properties = set(properties)
 
@@ -104,6 +106,79 @@ class Configurable(Logger):
     def c_ptr(self):
         return self._c_ptr
 
+    def name(self) -> str:
+        if hasattr(self, '_c_ptr') and hasattr(self._c_ptr, 'name'):
+            return self._c_ptr.name()
+        return getattr(self, '_name', self.__class__.__name__)
+
+    def getTypeName(self) -> str:
+        """Returns the C++ class name or Python Configurable class name."""
+        if hasattr(self, '_c_ptr') and self._c_ptr:
+            return self._c_ptr.__class__.__name__
+        return self.__class__.__name__
+
+    def getPropertiesDict(self) -> dict:
+        """
+        Returns a dictionary of all declared algorithm properties and their current values,
+        filtering out internal pointers and private attributes.
+        """
+        props = {}
+        if hasattr(self, '_properties'):
+            for prop_name in sorted(self._properties):
+                if prop_name.startswith('_'):
+                    continue
+                try:
+                    val = getattr(self, prop_name)
+                    if hasattr(val, '__iter__') and not isinstance(val, (str, bytes, dict)):
+                        val = list(val)
+                    props[prop_name] = val
+                except Exception:
+                    pass
+        for k, v in sorted(self.__dict__.items()):
+            if k.startswith('_') or k in props or k == 'level':
+                continue
+            if hasattr(v, '__iter__') and not isinstance(v, (str, bytes, dict)):
+                props[k] = list(v)
+            else:
+                props[k] = v
+        return props
+
+    def getInputContainers(self) -> list:
+        """
+        Automatically identifies input (consumed) container keys from properties.
+        Recognizes Input*Key, Input*Keys, and ItemList entries.
+        """
+        inputs = []
+        props = self.getPropertiesDict()
+        for key, val in props.items():
+            if not val:
+                continue
+            if key.startswith("Input") and key.endswith("Key") and isinstance(val, str):
+                inputs.append(val)
+            elif key.startswith("Input") and key.endswith("Keys") and isinstance(val, list):
+                inputs.extend([str(item) for item in val if item])
+            elif key == "ItemList" and isinstance(val, list):
+                for item in val:
+                    if "#" in item:
+                        inputs.append(item.split("#")[1])
+        return sorted(list(set(inputs)))
+
+    def getOutputContainers(self) -> list:
+        """
+        Automatically identifies output (produced) container keys from properties.
+        Recognizes Output*Key and Output*Keys.
+        """
+        outputs = []
+        props = self.getPropertiesDict()
+        for key, val in props.items():
+            if not val:
+                continue
+            if key.startswith("Output") and key.endswith("Key") and isinstance(val, str):
+                outputs.append(val)
+            elif key.startswith("Output") and key.endswith("Keys") and isinstance(val, list):
+                outputs.extend([str(item) for item in val if item])
+        return sorted(list(set(outputs)))
+
     def setProperty(self, key, value):
         setattr(self, key, value)
 
@@ -115,7 +190,7 @@ class Configurable(Logger):
         acc += self
 
     def __setattr__(self, name, value):
-        if name in ('_properties', '_c_ptr'):
+        if name in ('_properties', '_c_ptr', '_name'):
             super().__setattr__(name, value)
             return
 

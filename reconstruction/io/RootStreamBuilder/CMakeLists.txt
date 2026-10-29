@@ -22,7 +22,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../events/EventInfo)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../events/TruthParticle)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../events/CaloRings)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../kernel/GaugiKernel)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../kernel/G4Kernel)
 
 ROOT_GENERATE_DICTIONARY(RootStreamBuilderDict ${HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h MODULE RootStreamBuilder)
 

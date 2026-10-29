@@ -61,6 +61,7 @@ def main(
         HistogramPath="Expert/Hits",
         OutputLevel=outputLevel,
         OutputHitsKey=recordable("Hits"),
+        OnlyRoI=not save_all_hits,
     )
 
     calorimeter.merge(acc)
@@ -68,11 +69,11 @@ def main(
     HIT = RootStreamHITMaker(
         "RootStreamHITMaker",
         OutputLevel=outputLevel,
-        OnlyRoI=not save_all_hits,
     )
     acc += HIT
 
     exec(pre_exec)
+    print(acc)
     acc.run(number_of_events)
     exec(post_exec)
 

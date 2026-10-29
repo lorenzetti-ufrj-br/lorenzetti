@@ -4,9 +4,7 @@ from GaugiKernel import EnumStringification
 
 
 class RootStreamHITFlags(EnumStringification):
-    OnlyRoI: bool = True
-    EtaWindow: float = 0.4
-    PhiWindow: float = 0.4
+    pass
 
 
 class RootStreamESDFlags(EnumStringification):

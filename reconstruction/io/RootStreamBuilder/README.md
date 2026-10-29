@@ -56,7 +56,6 @@ graph TD
 | :--- | :--- |
 | `IBranchHandler` | Polymorphic interface for binding, reading, and writing branches in the `TTree`. |
 | `GenericBranchHandler<TContainer, TStruct, TConverter>` | Type-safe C++ template handler for any standard `xAOD` container type. |
-| `CaloHitBranchHandler` | Specialized branch handler for `CaloHitContainer` supporting selective Region of Interest (RoI) filtering during serialization. |
 | `CaloCellBranchHandler` | Specialized branch handler for `CaloCellContainer` supporting online independent noise sigma filtering ($E > N\sigma$, ATLAS Run 4) during deserialization. |
 | `BranchHandlerFactory` | Central factory instantiating typed handlers based strictly on EDM container names (`*Container`). |
 | `RootStreamReader` | Algorithm that discovers branches dynamically from the input tree via `discoverBranches()` and records containers into `StoreGate`. |
@@ -142,53 +141,47 @@ Convenience presets are available for standard data tiers:
 - `RootStreamESDMakerCfg(...)` (or `RootStreamESDMaker(...)`)
 - `RootStreamHITMakerCfg(...)` (or `RootStreamHITMaker(...)`)
 
-### 4.3. HIT Tier & Online Region of Interest (RoI) Filtering (`RootStreamHITMaker`)
+### 4.3. HIT Tier Serialization (`RootStreamHITMaker`)
 
-During Geant4 detector shower simulation, particles shower extensively throughout the calorimeter, producing tens of thousands of energy deposits (`CaloHit`) across all layers and sampling cells. Persisting every detector hit indiscriminately results in massive file sizes (often gigabytes per job).
+During Geant4 detector shower simulation, particles shower extensively throughout the calorimeter. To prevent excessive file sizes, online Region of Interest (RoI) hit filtering is managed directly upstream at the container creation stage by `CaloHitBuilder` (`CaloHitMerge`), ensuring hits outside the RoI cone are not allocated in memory.
 
-To solve this efficiently, `RootStreamBuilder` provides an **online RoI filtering strategy** implemented in `CaloHitBranchHandler`:
+`RootStreamHITMaker` acts as a pure, lightweight stream maker persisting the standard simulation EDM containers (`EventInfo`, `TruthParticle`, `CaloHit`, `Seed`) using standard `GenericBranchHandler`:
 
 ```mermaid
 graph LR
-    Hits["CaloHits in StoreGate<br/>('Hits')"] --> Check{"OnlyRoI Enabled?"}
-    Check -->|False| SaveAll["Serialize All Hits"]
-    Check -->|True| Filter["Evaluate Spatial Distance to Truth Particles:<br/>|Δη| < EtaWindow/2 and |Δφ| < PhiWindow/2"]
-    Truth["xAOD::TruthParticleContainer<br/>('Particles')"] --> Filter
-    Filter -->|Inside RoI or Cell Defect| SaveRoI["Serialize to TTree Branch<br/>('CaloHitContainer_Hits')"]
-    Filter -->|Outside RoI| Discard["Discard (Do Not Write)"]
-    SaveAll --> SaveRoI
+    SubHits["Sampling Hits<br/>('Hits_EMB1', 'Hits_EMB2', ...)"] --> HitMerge["CaloHitBuilder / CaloHitMerge<br/>(OnlyRoI filtering)"]
+    Truth["xAOD::TruthParticleContainer<br/>('Particles')"] --> HitMerge
+    HitMerge --> MasterHits["Filtered Master Hits in StoreGate<br/>('Hits')"]
+    MasterHits --> Streamer["RootStreamHITMaker<br/>(GenericBranchHandler)"]
+    Streamer --> File["Persistent HIT Tier<br/>(CollectionTree)"]
 ```
 
 #### Key Architecture Principles:
-* **Zero In-Memory Duplication**: Filtering is evaluated on the fly within `CaloHitBranchHandler::writeFromContext` directly during branch serialization. No temporary filtered collections are cloned into `StoreGate`.
-* **Angular Modulo Correction**: $\Delta\phi$ calculation uses `CaloPhiRange::diff` to correctly handle azimuthal coordinate wrapping at $[-\pi, +\pi]$.
-* **Hardware Defect Preservation**: An optional `CellHashes` list preserves designated detector channels (e.g., dead or hot cells) even if they lie outside all truth particle RoIs.
-
-#### Configuration Options:
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `OnlyRoI` | `bool` | `True` | Toggles whether to filter hits within the RoI cone (`True`) or persist all detector hits (`False`). |
-| `EtaWindow` | `float` | `0.4` | Full $\eta$ window size centered at each truth particle ($|\eta_{\text{hit}} - \eta_{\text{truth}}| < \Delta\eta / 2$). |
-| `PhiWindow` | `float` | `0.4` | Full $\phi$ window size centered at each truth particle ($|\Delta\phi| < \Delta\phi / 2$). |
-| `InputTruthKey` | `str` | `"Particles"` | StoreGate key of the truth particles providing RoI centroid coordinates. |
-| `CellHashes` | `list[int]` | `[]` | Optional list of specific cell hashes to always persist. |
+* **Separation of Concerns**: `RootStreamBuilder` is strictly dedicated to serialization and deserialization, free of calorimeter geometry cuts or detector-specific filtering.
+* **Zero Overhead Persistence**: Hits are serialized transparently without per-branch custom handlers.
+* **StoreGate Consistency**: In-memory representations match on-disk persistent files 1:1 across all output formats (ROOT and Parquet).
 
 #### Usage Example (`simu_trf.py`):
 ```python
-from RootStreamBuilder import RootStreamHITMakerCfg, recordable
+from CaloHitBuilder import CaloHitBuilder
+from RootStreamBuilder import RootStreamHITMaker, recordable
 
-# Save only hits inside the active Region of Interest (around truth particles)
-hit_streamer = RootStreamHITMakerCfg(
+# 1. CaloHitBuilder handles RoI filtering upstream during collection merge
+calorimeter = CaloHitBuilder(
+    "CaloHitBuilder",
+    HistogramPath="Expert/Hits",
+    OutputLevel=output_level,
+    OutputHitsKey=recordable("Hits"),
+    OnlyRoI=not save_all_hits,  # False by default in builder; True in simu_trf when save_all_hits is not passed
+)
+calorimeter.merge(acc)
+
+# 2. RootStreamHITMaker automatically resolves recorded items and streams
+HIT = RootStreamHITMaker(
     "RootStreamHITMaker",
     OutputLevel=output_level,
-    OnlyRoI=not save_all_hits,  # True by default; False when --save-all-hits is passed
-    EtaWindow=0.4,
-    PhiWindow=0.4,
-    InputHitsKey=recordable("Hits"),
-    InputEventKey=recordable("Events"),
-    InputTruthKey=recordable("Particles"),
-    InputSeedsKey=recordable("Seeds"),
 )
+acc += HIT
 ```
 
 ### 4.4. Flat Analysis Ntuples (`RootStreamNtupleMaker` / `ntuple_trf.py`)

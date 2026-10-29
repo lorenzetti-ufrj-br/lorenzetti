@@ -21,10 +21,6 @@ def RootStreamMakerCfg(
     ItemList: Optional[List[str]] = None,
     TreeName: str = "CollectionTree",
     OutputLevel: int = 0,
-    OnlyRoI: bool = False,
-    EtaWindow: float = 0.4,
-    PhiWindow: float = 0.4,
-    TruthKey: str = "Particles",
 ) -> Configurable:
     """
     Creates a generic RootStreamMaker algorithm that serializes any requested
@@ -37,10 +33,6 @@ def RootStreamMakerCfg(
     :param ItemList: List of items to record, formatted as 'TypeName#Key' (e.g. 'CaloClusterContainer#CaloClusters').
     :param TreeName: Name of the output TTree.
     :param OutputLevel: Verbosity level (0=INFO, 1=DEBUG, etc.).
-    :param OnlyRoI: Enable Region of Interest (RoI) hit filtering.
-    :param EtaWindow: Eta window size for RoI matching.
-    :param PhiWindow: Phi window size for RoI matching.
-    :param TruthKey: StoreGate key for truth particles used in RoI matching.
     """
     if ItemList is None:
         ItemList = get_recorded_items()
@@ -51,10 +43,6 @@ def RootStreamMakerCfg(
         ItemList=ItemList,
         TreeName=TreeName,
         OutputLevel=OutputLevel,
-        OnlyRoI=OnlyRoI,
-        EtaWindow=EtaWindow,
-        PhiWindow=PhiWindow,
-        TruthKey=TruthKey,
     )
 
 
@@ -177,10 +165,6 @@ def RootStreamHITMakerCfg(
     ItemList: Optional[List[str]] = None,
     TreeName: str = "CollectionTree",
     OutputLevel: int = 0,
-    OnlyRoI: bool = True,
-    EtaWindow: float = 0.4,
-    PhiWindow: float = 0.4,
-    TruthKey: str = "Particles",
 ) -> Configurable:
     """
     Convenience preset configuring a RootStreamMaker for HIT tier output.
@@ -201,17 +185,11 @@ def RootStreamHITMakerCfg(
         }
         item_list = [item for item in recorded if item.split("#")[0] in hit_valid_types]
 
-        # Resolve truth key for RoI filtering from recorded items if available
-        for item in item_list:
-            if item.startswith("TruthParticleContainer#"):
-                TruthKey = item.split("#")[1]
-                break
-
         # Fallback to standard defaults if nothing recorded
         if not item_list:
             item_list = [
                 "EventInfoContainer#EventInfo",
-                f"TruthParticleContainer#{TruthKey}",
+                "TruthParticleContainer#Particles",
                 "CaloHitContainer#Hits",
                 "SeedContainer#Seeds",
             ]
@@ -221,10 +199,6 @@ def RootStreamHITMakerCfg(
         ItemList=item_list,
         TreeName=TreeName,
         OutputLevel=OutputLevel,
-        OnlyRoI=OnlyRoI,
-        EtaWindow=EtaWindow,
-        PhiWindow=PhiWindow,
-        TruthKey=TruthKey,
     )
 
 

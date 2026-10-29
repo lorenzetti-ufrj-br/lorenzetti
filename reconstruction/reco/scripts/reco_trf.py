@@ -84,6 +84,8 @@ def main(
     acc += acc_rings
     acc += hypo
     acc += AOD
+
+    print(acc)
     acc.run(nov)
 
 

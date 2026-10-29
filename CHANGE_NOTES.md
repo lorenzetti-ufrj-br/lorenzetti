@@ -528,6 +528,19 @@ In `master`:
    - Replaced redundant truth reconstruction with direct matching against simulation Monte Carlo particles (`TruthParticleContainer#Particles` $\to$ `mc_pdgid`, `mc_eta`, `mc_phi`, `mc_e`, `mc_et`).
    - Cleaned up C++ properties (`InputTruthClusterKey`, `InputTruthRingerKeys`, `InputTruthElectronKey`) and internal matching loops in `RootStreamNtupleMaker` and `RootStreamParquetMaker`.
 
+4. **Execution Introspection & Data Flow Tree (`print(acc)`):**
+   - Added sequence tracking to `ComponentAccumulator` and automatic container/property introspection to `Configurable`.
+   - Calling `print(acc)` or `acc.print()` outputs an eAthena/Gaugi-style visual diagram detailing:
+     - The exact sequence of algorithms with their configured properties.
+     - The StoreGate EDM container lineage tree displaying every transient/persistent container, its producer algorithm/reader, and all consumer algorithms.
+
+5. **Upstream RoI Hit Filtering in `CaloHitBuilder`:**
+   - Relocated Region of Interest (RoI) hit filtering from `RootStreamBuilder` into `CaloHitBuilder` (`CaloHitMerge`), adhering strictly to Single Responsibility principles.
+   - Deleted `CaloHitBranchHandler.h`, standardizing `CaloHitContainer` on `GenericBranchHandler`.
+   - Cleaned up `RootStreamMaker.h/.cxx` (removed `OnlyRoI`, `EtaWindow`, `PhiWindow`, `TruthKey`, `CellHashes`), making it purely item-list driven, and eliminated `RootStreamBuilder`'s dependency on `G4Kernel`.
+   - In `CaloHitBuilder`, `OnlyRoI` defaults to `False`; `simu_trf.py` toggles it via `OnlyRoI=not save_all_hits`.
+   - Hits outside the RoI cone are filtered prior to heap allocation in `StoreGate`, reducing memory consumption and ensuring identical hit content across ROOT and Parquet output tiers.
+
 ---
 
 ## Summary of Benefits
@@ -542,5 +555,6 @@ In `master`:
 | **C++ Configuration** | Manual `setProperty()` calls | Dynamic `Configurable` + `PropertyList` | Natural Python syntax, `+=` tool accumulation, type coercion |
 | **Modern Parquet ML** | Non-existent (ROOT TTree only) | Direct C++ `RootStreamParquetMaker` | Direct ML integration (PyTorch/Pandas), native Arrow list support, zero ROOT dependency |
 | **Persistence Registry** | Manual 15-key argument passing per maker | Active registry via `recordable()` | Zero boilerplate in `simu_trf`, `digit_trf`, and `reco_trf`; auto-discovers tier items |
-| **Analysis Schema & Reco Stack** | Hardcoded branches, duplicate `RingsL0` & truth reco algs | Declarative `RootStreamSchema`, single-stack reco + MC matching | >60% faster reconstruction, flexible custom schemas, scalar ring unpacking |
+| **Analysis Schema & Reco Stack** | Hardcoded branches, duplicate `RingsL0` & truth reco algs | Declarative `RootStreamSchema`, single-stack reco + MC matching, `print(acc)` tree | >60% faster reconstruction, flexible custom schemas, instant pipeline introspection |
+| **Simulation Hit Filtering** | Specialized `CaloHitBranchHandler` in I/O tier | Upstream in `CaloHitBuilder` (`CaloHitMerge`) | Removed `CaloHitBranchHandler.h` & `G4Kernel` dependency from I/O; reduced event RAM; ROOT & Parquet parity |
 

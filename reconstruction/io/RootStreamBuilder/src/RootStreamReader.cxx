@@ -63,8 +63,7 @@ std::vector<std::unique_ptr<IBranchHandler>> RootStreamReader::createHandlers(TT
     std::string key = bname.substr(sepPos + 1);
 
     auto handler = BranchHandlerFactory::createHandler(
-        typeName, key, false, 0.4f, 0.4f, "Particles", {},
-        m_filterBySigma, m_sigmaThreshold, m_descriptorsKey);
+        typeName, key, m_filterBySigma, m_sigmaThreshold, m_descriptorsKey);
     if (handler) {
       MSG_DEBUG("Discovered branch '" << bname << "' -> Type: " << typeName << ", Key: " << key);
       handlers.push_back(std::move(handler));

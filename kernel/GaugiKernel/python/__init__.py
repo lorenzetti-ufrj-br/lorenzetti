@@ -85,13 +85,13 @@ from . import constants
 __all__.extend(constants.__all__)
 from .constants import *
 
-from . import ComponentAccumulator
-__all__.extend(ComponentAccumulator.__all__)
-from .ComponentAccumulator import *
-
 from . import Configurable
 __all__.extend(Configurable.__all__)
 from .Configurable import *
+
+from . import ComponentAccumulator
+__all__.extend(ComponentAccumulator.__all__)
+from .ComponentAccumulator import *
 
 from . import Parallel
 __all__.extend(Parallel.__all__)

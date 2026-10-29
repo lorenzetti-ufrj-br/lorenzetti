@@ -55,6 +55,7 @@ def main(
         Schema=schema_dict,
     )
     acc += parquet
+    print(acc)
     acc.run(nov)
 
 

@@ -43,6 +43,39 @@ class TestCaloHitEDM(unittest.TestCase):
         self.assertAlmostEqual(t_obj.phi, 2.10, places=4)
         self.assertEqual(t_obj.hash, 999111)
 
+    def test_calohit_builder_roi_defaults(self):
+        from CaloHitBuilder import CaloHitBuilder
+        builder = CaloHitBuilder("CaloHitBuilder")
+        self.assertFalse(builder.OnlyRoI, "CaloHitBuilder.OnlyRoI must default to False")
+        self.assertAlmostEqual(builder.EtaWindow, 0.4)
+        self.assertAlmostEqual(builder.PhiWindow, 0.4)
+        self.assertEqual(builder.TruthKey, "Particles")
+
+        builder_roi = CaloHitBuilder("CaloHitBuilder", OnlyRoI=True, EtaWindow=0.5)
+        self.assertTrue(builder_roi.OnlyRoI)
+        self.assertAlmostEqual(builder_roi.EtaWindow, 0.5)
+
+    def test_calohit_merge_roi_properties(self):
+        from GaugiKernel import Configurable
+        merge = Configurable(
+            ROOT.CaloHitMerge,
+            "CaloHitMerge",
+            OnlyRoI=False,
+            EtaWindow=0.3,
+            PhiWindow=0.3,
+            TruthKey="CustomParticles",
+        )
+        self.assertFalse(merge.OnlyRoI)
+        self.assertAlmostEqual(merge.EtaWindow, 0.3, places=4)
+        self.assertAlmostEqual(merge.PhiWindow, 0.3, places=4)
+        self.assertEqual(merge.TruthKey, "CustomParticles")
+
+    def test_rootstream_hitmaker_generic_schema(self):
+        from RootStreamBuilder import RootStreamHITMaker
+        maker = RootStreamHITMaker("RootStreamHITMaker")
+        self.assertIn("ItemList", maker.getPropertiesDict())
+        self.assertNotIn("OnlyRoI", maker.getPropertiesDict())
+
 
 if __name__ == "__main__":
     unittest.main()

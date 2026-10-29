@@ -30,6 +30,11 @@ class CaloHitBuilder(Logger):
         self,
         name: str,
         OutputHitsKey: str = "Hits",
+        OnlyRoI: bool = False,
+        EtaWindow: float = 0.4,
+        PhiWindow: float = 0.4,
+        TruthKey: str = "Particles",
+        CellHashes: Optional[List[int]] = None,
         FilterEmptyHits: bool = False,
         MinEnergy: float = 0.0,
         HistogramPath: str = "Expert",
@@ -41,6 +46,11 @@ class CaloHitBuilder(Logger):
         Args:
             name: Name of the builder instance.
             OutputHitsKey: StoreGate key for the output merged CaloHitContainer.
+            OnlyRoI: Enable Region of Interest (RoI) hit filtering around truth particles (default False).
+            EtaWindow: Eta window size for RoI matching.
+            PhiWindow: Phi window size for RoI matching.
+            TruthKey: StoreGate key for truth particles used in RoI matching.
+            CellHashes: Specific detector cell hashes to retain regardless of RoI.
             FilterEmptyHits: Flag to filter out hits with energy <= MinEnergy.
             MinEnergy: Minimum energy threshold for hit retention in MeV.
             HistogramPath: Root path for monitoring histograms.
@@ -51,6 +61,11 @@ class CaloHitBuilder(Logger):
         self.HistogramPath: str = HistogramPath
         self.OutputLevel: int = OutputLevel
         self.OutputHitsKey: str = OutputHitsKey
+        self.OnlyRoI: bool = OnlyRoI
+        self.EtaWindow: float = EtaWindow
+        self.PhiWindow: float = PhiWindow
+        self.TruthKey: str = TruthKey
+        self.CellHashes: Optional[List[int]] = CellHashes
         self.FilterEmptyHits: bool = FilterEmptyHits
         self.MinEnergy: float = MinEnergy
         self.OutputCollectionKeys: List[str] = []
@@ -92,6 +107,11 @@ class CaloHitBuilder(Logger):
             "CaloHitMerge",
             InputCollectionKeys=self.OutputCollectionKeys,
             OutputHitsKey=self.OutputHitsKey,
+            OnlyRoI=self.OnlyRoI,
+            EtaWindow=self.EtaWindow,
+            PhiWindow=self.PhiWindow,
+            TruthKey=self.TruthKey,
+            CellHashes=self.CellHashes if self.CellHashes is not None else [],
             FilterEmptyHits=self.FilterEmptyHits,
             MinEnergy=self.MinEnergy,
             OutputLevel=self.OutputLevel,

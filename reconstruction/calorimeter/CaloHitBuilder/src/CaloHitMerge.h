@@ -59,6 +59,21 @@ private:
 
   /*! Minimum energy threshold for hit retention when filtering is active (in MeV) */
   float m_minEnergy;
+
+  /*! Filter hits within Region of Interest (RoI) around truth particles */
+  bool m_onlyRoI;
+
+  /*! RoI window size in eta */
+  float m_etaWindow;
+
+  /*! RoI window size in phi */
+  float m_phiWindow;
+
+  /*! Input truth particle container key */
+  std::string m_truthKey;
+
+  /*! Specific cell hashes to always keep even if outside RoI */
+  std::vector<int> m_cellHashes;
 };
 
 #endif

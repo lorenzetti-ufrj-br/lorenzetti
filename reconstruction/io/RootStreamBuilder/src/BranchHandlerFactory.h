@@ -2,7 +2,6 @@
 #define BranchHandlerFactory_h
 
 #include "GenericBranchHandler.h"
-#include "CaloHitBranchHandler.h"
 #include "CaloCellBranchHandler.h"
 
 // EDM Includes
@@ -48,11 +47,6 @@ namespace Gaugi {
     static std::unique_ptr<IBranchHandler> createHandler(
         const std::string &rawTypeName,
         const std::string &key,
-        bool onlyRoI = false,
-        float etaWindow = 0.4f,
-        float phiWindow = 0.4f,
-        const std::string &truthKey = "Particles",
-        const std::vector<int> &cellHashes = {},
         bool filterBySigma = false,
         float sigmaThreshold = 2.0f,
         const std::string &descriptorsKey = "CaloDetDescriptors")
@@ -64,7 +58,9 @@ namespace Gaugi {
       }
 
       if (typeName == "CaloHitContainer") {
-        return std::make_unique<CaloHitBranchHandler>(key, onlyRoI, etaWindow, phiWindow, truthKey, cellHashes);
+        return std::make_unique<GenericBranchHandler<xAOD::CaloHitContainer,
+                                                     xAOD::CaloHit_t,
+                                                     xAOD::CaloHitConverter>>("CaloHitContainer", key);
       }
       else if (typeName == "EventInfoContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::EventInfoContainer,
