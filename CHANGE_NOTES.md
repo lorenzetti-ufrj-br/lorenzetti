@@ -504,6 +504,32 @@ In earlier iterations, configuring any `RootStream*Maker` required passing every
 
 ---
 
+## 10. Declarative Output Schema & Streamlined Reconstruction Stack
+
+### What was in `master`
+In `master`:
+1. **Rigid Output Structures:** `RootStreamNtupleMaker` unconditionally booked fixed sets of hardcoded branches. Users had no fine-grained control to filter or select specific variables without modifying C++ code.
+2. **Redundant `RingsL0` Stage:** Ring construction was split across an intermediate uncalibrated ring container (`RingsL0`) and subsequent noise-filtered rings (`Rings`), forcing maker algorithms to book dual containers and cluttering output datasets.
+3. **Redundant Truth Reconstruction Stack:** Reconstruction scripts executed duplicate algorithms (`cluster_truth`, `hypo_truth`, and `ringer_truth`) that re-ran clustering, PID, and ring construction specifically on `TruthCells` (producing `TruthClusters`, `TruthElectrons`, and `TruthRings`). This tripled the execution time of `reco_trf.py`, produced redundant data on disk, and complicated ntuple and parquet makers with cumbersome cross-matching loops.
+
+### The Refactored Solution
+
+1. **Declarative Output Schema (`RootStreamSchema`):**
+   - Implemented a flexible schema mapping engine in `RootStreamNtupleMaker` and `RootStreamParquetMaker` allowing users to configure output branches via a dictionary of `<BranchName> : "<TypeName>#<ContainerKey>#<Property>"`.
+   - EDM converters (`EventInfoConverter`, `CaloClusterConverter`, `CaloRingsConverter`, `ElectronConverter`, `SeedConverter`, `TruthParticleConverter`) parse schema descriptors dynamically, booking and serializing only requested variables.
+   - Vector ring unpacking: `get_scalar_rings_schema(prefix='ring_', n_rings=100)` maps nested ring vectors directly into scalar branches (`ring_0` .. `ring_99`).
+   - Unified default schema: `get_default_schema()` consolidates all 61 standard baseline variables into a single dictionary, eliminating global state fragmentation.
+
+2. **Removal of `RingsL0`:**
+   - With direct calorimeter ring calculation incorporating noise thresholds (`SigmaCut`), the separate `RingsL0` tier was eliminated across C++ converters, makers, and Python configurations.
+
+3. **Streamlined Single-Stack Reconstruction:**
+   - Removed `cluster_truth`, `hypo_truth`, and `ringer_truth` from `reco_trf.py`.
+   - Replaced redundant truth reconstruction with direct matching against simulation Monte Carlo particles (`TruthParticleContainer#Particles` $\to$ `mc_pdgid`, `mc_eta`, `mc_phi`, `mc_e`, `mc_et`).
+   - Cleaned up C++ properties (`InputTruthClusterKey`, `InputTruthRingerKeys`, `InputTruthElectronKey`) and internal matching loops in `RootStreamNtupleMaker` and `RootStreamParquetMaker`.
+
+---
+
 ## Summary of Benefits
 
 | Feature | `master` | `python_refactory` | Benefit |
@@ -516,4 +542,5 @@ In earlier iterations, configuring any `RootStream*Maker` required passing every
 | **C++ Configuration** | Manual `setProperty()` calls | Dynamic `Configurable` + `PropertyList` | Natural Python syntax, `+=` tool accumulation, type coercion |
 | **Modern Parquet ML** | Non-existent (ROOT TTree only) | Direct C++ `RootStreamParquetMaker` | Direct ML integration (PyTorch/Pandas), native Arrow list support, zero ROOT dependency |
 | **Persistence Registry** | Manual 15-key argument passing per maker | Active registry via `recordable()` | Zero boilerplate in `simu_trf`, `digit_trf`, and `reco_trf`; auto-discovers tier items |
+| **Analysis Schema & Reco Stack** | Hardcoded branches, duplicate `RingsL0` & truth reco algs | Declarative `RootStreamSchema`, single-stack reco + MC matching | >60% faster reconstruction, flexible custom schemas, scalar ring unpacking |
 
