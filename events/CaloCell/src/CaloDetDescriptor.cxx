@@ -30,6 +30,8 @@ CaloDetDescriptor::CaloDetDescriptor(
   m_deta(deta),
   m_dphi(dphi),
   m_e(0),
+  m_tau(0),
+  m_sigma(0),
   /* Bunch crossing information */
   m_bcid_start( bcid_start ),
   m_bcid_end( bcid_end ),
@@ -66,6 +68,7 @@ CaloDetDescriptor * CaloDetDescriptor::copy()
   det->setE(e()); // estimated energy from OF
   det->setPulse( pulse() ); // pulse from generator
   det->setTau( tau() );
+  det->setSigma( sigma() );
   for ( int bcid = bcid_start();  bcid <= bcid_end(); ++bcid )
   {
     det->edep( bcid, edep(bcid) ); // truth energy for each bunch crossing
