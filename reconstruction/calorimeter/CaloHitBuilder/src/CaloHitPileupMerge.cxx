@@ -1,6 +1,6 @@
 
 
-#include "PileupMerge.h"
+#include "CaloHitPileupMerge.h"
 #include "GaugiKernel/Timer.h"
 #include "CaloHit/CaloHitConverter.h"
 #include "EventInfo/EventInfoConverter.h"
@@ -28,7 +28,7 @@ using namespace Gaugi;
  * - PileupSigma: Fluctuations in mu.
  * - BunchIdStart/End: Time window in bunch crossings (-20 to 20 usually).
  */
-PileupMerge::PileupMerge( std::string name ) : 
+CaloHitPileupMerge::CaloHitPileupMerge( std::string name ) : 
   IMsgService(name),
   Algorithm(),
   m_rng(128)
@@ -52,12 +52,12 @@ PileupMerge::PileupMerge( std::string name ) :
 
 //!=====================================================================
 
-PileupMerge::~PileupMerge()
+CaloHitPileupMerge::~CaloHitPileupMerge()
 {}
 
 //!=====================================================================
 
-StatusCode PileupMerge::initialize()
+StatusCode CaloHitPileupMerge::initialize()
 {
   CHECK_INIT();
   setMsgLevel(m_outputLevel);
@@ -67,7 +67,7 @@ StatusCode PileupMerge::initialize()
 
 //!=====================================================================
 
-StatusCode PileupMerge::finalize()
+StatusCode CaloHitPileupMerge::finalize()
 {
   return StatusCode::SUCCESS;
 }
@@ -75,7 +75,7 @@ StatusCode PileupMerge::finalize()
 //!=====================================================================
 
 
-StatusCode PileupMerge::bookHistograms( EventContext &ctx ) const
+StatusCode CaloHitPileupMerge::bookHistograms( EventContext &ctx ) const
 {
   Read(ctx, m_lowPileupInputFiles , "low_minbias" );
   Read(ctx, m_highPileupInputFiles, "high_minbias");
@@ -91,21 +91,21 @@ StatusCode PileupMerge::bookHistograms( EventContext &ctx ) const
 
 //!=====================================================================
 
-StatusCode PileupMerge::pre_execute( EventContext &/*ctx*/ ) const
+StatusCode CaloHitPileupMerge::pre_execute( EventContext &/*ctx*/ ) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode PileupMerge::execute( EventContext &/*ctx*/, const G4Step * /*step*/ ) const
+StatusCode CaloHitPileupMerge::execute( EventContext &/*ctx*/, const G4Step * /*step*/ ) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode PileupMerge::execute( EventContext &ctx, int /*evt*/ ) const
+StatusCode CaloHitPileupMerge::execute( EventContext &ctx, int /*evt*/ ) const
 {
   return post_execute(ctx);
 }
@@ -118,7 +118,7 @@ StatusCode PileupMerge::execute( EventContext &ctx, int /*evt*/ ) const
  * 2. Attempts to merge the pileup hits (with retries in case of I/O errors).
  * 3. Saves the merged hit container and updated EventInfo (with new avgMu).
  */
-StatusCode PileupMerge::post_execute( EventContext &ctx ) const
+StatusCode CaloHitPileupMerge::post_execute( EventContext &ctx ) const
 {
 
 
@@ -213,7 +213,7 @@ StatusCode PileupMerge::post_execute( EventContext &ctx ) const
  * 
  * @return The average number of pileup interactions added per bunch crossing.
  */
-float PileupMerge::merge( EventContext &ctx, std::vector<xAOD::CaloHit*> &vec_hits ) const{
+float CaloHitPileupMerge::merge( EventContext &ctx, std::vector<xAOD::CaloHit*> &vec_hits ) const{
 
   MSG_INFO( "Link all branches..." );
   auto store = ctx.getStoreGateSvc();
@@ -341,7 +341,7 @@ float PileupMerge::merge( EventContext &ctx, std::vector<xAOD::CaloHit*> &vec_hi
 
 //!=====================================================================
 
-void PileupMerge::allocate( SG::ReadHandle<xAOD::CaloHitContainer> &container , std::vector<xAOD::CaloHit*> &vec_hits ) const{
+void CaloHitPileupMerge::allocate( SG::ReadHandle<xAOD::CaloHitContainer> &container , std::vector<xAOD::CaloHit*> &vec_hits ) const{
 
   MSG_INFO( "Convert hits to hash map with size " << container.ptr()->size() <<"...");
   for( const auto& const_hit : **container.ptr())
@@ -370,7 +370,7 @@ void PileupMerge::allocate( SG::ReadHandle<xAOD::CaloHitContainer> &container , 
   
 }
 
-void PileupMerge::deallocate( std::vector<xAOD::CaloHit*> &vec_hits ) const{
+void CaloHitPileupMerge::deallocate( std::vector<xAOD::CaloHit*> &vec_hits ) const{
   for (auto hit : vec_hits)
   {
     delete hit;
@@ -382,7 +382,7 @@ void PileupMerge::deallocate( std::vector<xAOD::CaloHit*> &vec_hits ) const{
 
 //!=====================================================================
 
- StatusCode PileupMerge::fillHistograms( SG::EventContext &/*ctx*/ ) const
+ StatusCode CaloHitPileupMerge::fillHistograms( SG::EventContext &/*ctx*/ ) const
  {
     return StatusCode::SUCCESS;
  }
@@ -390,7 +390,7 @@ void PileupMerge::deallocate( std::vector<xAOD::CaloHit*> &vec_hits ) const{
 //!=====================================================================
 
 template <class T>
-TBranch* PileupMerge::InitBranch(TTree* fChain, std::string branch_name, T* param) const
+TBranch* CaloHitPileupMerge::InitBranch(TTree* fChain, std::string branch_name, T* param) const
 {
   std::string bname = branch_name;
   if (fChain->GetAlias(bname.c_str()))
@@ -408,7 +408,7 @@ TBranch* PileupMerge::InitBranch(TTree* fChain, std::string branch_name, T* para
 
 //!=====================================================================
 
-int PileupMerge::poisson(double nAvg) const
+int CaloHitPileupMerge::poisson(double nAvg) const
 {
   // Random number.
   double rPoisson = m_rng.Uniform(0,1) * exp(nAvg);
@@ -430,7 +430,7 @@ int PileupMerge::poisson(double nAvg) const
 //!=====================================================================
 
 
-void PileupMerge::Read( EventContext &ctx, const std::vector<std::string> &paths, std::string name ) const
+void CaloHitPileupMerge::Read( EventContext &ctx, const std::vector<std::string> &paths, std::string name ) const
 {
   auto store = ctx.getStoreGateSvc();
   TChain *file = new TChain();

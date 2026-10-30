@@ -1,8 +1,8 @@
 #include "GaugiKernel/MsgStream.h"
 #include "GaugiKernel/Property.h"
 #include "GaugiKernel/Algorithm.h"
-#include "GaugiKernel/AlgTool.h"
-#include "GaugiKernel/IAlgTool.h"
+#include "GaugiKernel/Tool.h"
+#include "GaugiKernel/ITool.h"
 #include "GaugiKernel/Timer.h"
 #include "GaugiKernel/ComponentAccumulator.h"
 
@@ -11,7 +11,7 @@
 #include "GaugiKernel/EDM.h"
 #include "GaugiKernel/StringHash.h"
 #include "GaugiKernel/ElementLink.h"
-
+#include <vector>
 
 #ifdef __CINT__
 
@@ -26,8 +26,9 @@
 #pragma link C++ class IMsgService+;
 #pragma link C++ class PropertyService+;
 #pragma link C++ class Algorithm+;
-#pragma link C++ class AlgTool+;
-#pragma link C++ class IAlgTool+;
+#pragma link C++ class Gaugi::Tool+;
+#pragma link C++ class Gaugi::ITool+;
+#pragma link C++ class std::vector<Gaugi::Tool*>+;
 #pragma link C++ class Gaugi::ComponentAccumulator+;
 
 #pragma link C++ class Gaugi::EDM+;

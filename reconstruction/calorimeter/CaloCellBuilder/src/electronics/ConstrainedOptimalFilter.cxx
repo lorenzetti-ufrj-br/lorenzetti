@@ -20,7 +20,7 @@ using namespace Gaugi;
  */
 ConstrainedOptimalFilter::ConstrainedOptimalFilter( std::string name ) : 
   IMsgService(name),
-  AlgTool()
+  Tool()
 {
   declareProperty( "PulsePath"        , m_pulsepath       );
   declareProperty( "Threshold"        , m_threshold=0.0   );

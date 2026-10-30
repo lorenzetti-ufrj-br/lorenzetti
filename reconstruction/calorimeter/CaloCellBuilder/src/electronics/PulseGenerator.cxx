@@ -24,7 +24,7 @@ using namespace Gaugi;
  */
 PulseGenerator::PulseGenerator( std::string name ) : 
   IMsgService(name),
-  AlgTool(),
+  Tool(),
   m_shaperZeroIndex(0),
   m_shaperResolution(0),
   m_rng(0)

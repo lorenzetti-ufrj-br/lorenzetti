@@ -2,7 +2,7 @@
 #define PulseGenerator_h
 
 #include "GaugiKernel/StatusCode.h"
-#include "GaugiKernel/AlgTool.h"
+#include "GaugiKernel/Tool.h"
 #include "GaugiKernel/EDM.h"
 #include "TRandom3.h"
 
@@ -15,7 +15,7 @@
  * electronic pulse (using a shaper function). It also adds electronic noise
  * and can simulate defects.
  */
-class PulseGenerator : public Gaugi::AlgTool
+class PulseGenerator : public Gaugi::Tool
 {
 
   public:

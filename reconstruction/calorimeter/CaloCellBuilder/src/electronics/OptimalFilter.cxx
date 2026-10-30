@@ -18,7 +18,7 @@ using namespace Gaugi;
  */
 OptimalFilter::OptimalFilter( std::string name ) : 
   IMsgService(name),
-  AlgTool()
+  Tool()
 {
   declareProperty( "WeightsEnergy"    , m_ofweightsEnergy={}  );
   declareProperty( "WeightsTime"      , m_ofweightsTime={}    );

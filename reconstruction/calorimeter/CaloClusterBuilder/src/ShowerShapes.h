@@ -1,6 +1,6 @@
 #ifndef ShowerShapes_h
 #define ShowerShapes_h
-#include "GaugiKernel/AlgTool.h"
+#include "GaugiKernel/Tool.h"
 #include "GaugiKernel/EDM.h"
 #include "CaloCluster/CaloClusterContainer.h"
 #include "CaloCell/CaloCell.h"
@@ -17,7 +17,7 @@
  * Calculates discriminating variables used for particle identification
  * (e.g., e/gamma separation) based on the energy distribution within a cluster.
  */
-class ShowerShapes : public Gaugi::AlgTool
+class ShowerShapes : public Gaugi::Tool
 {
 
   public:

@@ -3,7 +3,7 @@
 
 #include "GaugiKernel/Algorithm.h"
 #include "GaugiKernel/DataHandle.h"
-#include "GaugiKernel/AlgTool.h"
+#include "GaugiKernel/Tool.h"
 #include "CaloHit/CaloHit.h"
 
 

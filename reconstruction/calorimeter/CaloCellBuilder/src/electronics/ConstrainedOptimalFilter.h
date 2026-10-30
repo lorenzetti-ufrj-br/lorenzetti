@@ -1,7 +1,7 @@
 #ifndef ConstrainedOptimalFilter_h
 #define ConstrainedOptimalFilter_h
 
-#include "GaugiKernel/AlgTool.h"
+#include "GaugiKernel/Tool.h"
 #include "GaugiKernel/EDM.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
@@ -10,13 +10,13 @@
 
 /**
  * @class ConstrainedOptimalFilter
- * @brief AlgTool for signal reconstruction using a Constrained Optimal Filter.
+ * @brief Tool for signal reconstruction using a Constrained Optimal Filter.
  * 
  * Reconstructs the amplitude and time of the signal from the digitized
  * samples using the Optimal Filtering technique with additional constraints
  * (e.g., pedestal constraints).
  */
-class ConstrainedOptimalFilter : public Gaugi::AlgTool
+class ConstrainedOptimalFilter : public Gaugi::Tool
 {
 
   public:

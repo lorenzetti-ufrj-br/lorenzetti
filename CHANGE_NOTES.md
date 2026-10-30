@@ -16,6 +16,7 @@ This document details the major architectural enhancements, modernization effort
 8. [Direct Parquet Pipeline & Columnar Serialization (`RootStreamParquetMaker` & `parquet_trf.py`)](#8-direct-parquet-pipeline--columnar-serialization-rootstreamparquetmaker--parquet_trfpy)
 9. [Active Persistence Registry & Stream Auto-Configuration (`recordable()`)](#9-active-persistence-registry--stream-auto-configuration-recordable)
 10. [Declarative Output Schema & Streamlined Reconstruction Stack](#10-declarative-output-schema--streamlined-reconstruction-stack)
+11. [Component Modernization: `Gaugi::Tool`, Pileup Migration & `CaloCellBuilder` Electronics](#11-component-modernization-gaugitool-pileup-migration--calocellbuilder-electronics)
 
 ---
 
@@ -446,7 +447,7 @@ class Configurable(Logger):
 
 ### Improvements
 - Delivers an intuitive, Pythonic syntax matching modern experiment frameworks (such as Athena ComponentAccumulator).
-- Automatically converts Python primitives, lists, and nested lists to `std::vector` and `Gaugi::AlgTool*`.
+- Automatically converts Python primitives, lists, and nested lists to `std::vector` and `Gaugi::Tool*`.
 - Seamless error handling with clear messages if unknown properties are assigned.
 
 ---
@@ -548,6 +549,35 @@ In `master`:
 
 ---
 
+## 11. Component Modernization: `Gaugi::Tool`, Pileup Migration & `CaloCellBuilder` Electronics
+
+### Context & Motivation
+In legacy `master`:
+1. Sub-algorithm helper components were inherited from 1990s Gaudi nomenclature (`Gaugi::AlgTool` / `IAlgTool`).
+2. The hit pileup overlay algorithm (`PileupMerge`) was erroneously located inside `CaloCellBuilder/src/`, despite operating 100% on `xAOD::CaloHitContainer` and `xAOD::EventInfoContainer` with zero dependency on `CaloCell`.
+3. `CaloCellBuilder/src` mixed high-level reconstruction algorithms with low-level analog/digital electronics signal modeling tools (`PulseGenerator`, `OptimalFilter`, `ConstrainedOptimalFilter`, `PulsePerturber`) in a flat directory.
+4. `merge_trf.py` lacked a Python `Configurable` wrapper and invoked `ROOT.PileupMerge` directly.
+
+### Enhancements & Refactoring
+1. **Modernized Component Base Class (`Gaugi::Tool`):**
+   - Replaced legacy `Gaugi::AlgTool` / `IAlgTool` with **`Gaugi::Tool`** / **`Gaugi::ITool`**, establishing the clean modern pair: `Algorithm` & `Tool`.
+   - Updated `Property.h` and `Configurable.py` to seamlessly accept `Gaugi::Tool*`.
+   - Migrated all reconstruction tools (`PulseGenerator`, `OptimalFilter`, `ConstrainedOptimalFilter`, `PulsePerturber`, `ShowerShapes`) to inherit from `Gaugi::Tool`.
+
+2. **Pileup Merge Relocation to `CaloHitBuilder`:**
+   - Moved hit pileup overlay from `CaloCellBuilder/src/PileupMerge` to `CaloHitBuilder/src/CaloHitPileupMerge` where it logically belongs.
+   - Renamed class to **`CaloHitPileupMerge`** with backward compatibility alias `using PileupMerge = CaloHitPileupMerge;`.
+   - Created Python configurable wrapper `CaloHitPileupMergeCfg` in `CaloHitBuilder/python/CaloHitPileupMerge.py`.
+   - Modernized `merge_trf.py` to import and instantiate `CaloHitPileupMergeCfg`.
+
+3. **Internal Reorganization of `CaloCellBuilder`:**
+   - Retained core reconstruction algorithms in `CaloCellBuilder/src/` (`CaloCellMaker`, `CaloCellMerge`, `CaloCellNoiseSuppression`, and `CaloCellCrossTalk`).
+   - Renamed `CrossTalkMaker` to **`CaloCellCrossTalk`** (with alias `CrossTalkMaker`) and re-activated it in the ROOT dictionary.
+   - Created dedicated subfolder `CaloCellBuilder/src/electronics/` for signal modeling and filtering tools (`PulseGenerator`, `OptimalFilter`, `ConstrainedOptimalFilter`, `PulsePerturber`).
+   - Configured `CaloCellBuilder/CMakeLists.txt` with recursive source/header discovery, proper include directories, and `LinkDef.h` exclusion.
+
+---
+
 ## Summary of Benefits
 
 | Feature | `master` | `python_refactory` | Benefit |
@@ -562,4 +592,5 @@ In `master`:
 | **Persistence Registry** | Manual 15-key argument passing per maker | Active registry via `recordable()` | Zero boilerplate in `simu_trf`, `digit_trf`, and `reco_trf`; auto-discovers tier items |
 | **Analysis Schema & Reco Stack** | Hardcoded branches, duplicate `RingsL0` & truth reco algs | Declarative `RootStreamSchema`, single-stack reco + MC matching, `print(acc)` tree | >60% faster reconstruction, flexible custom schemas, instant pipeline introspection |
 | **Simulation Hit Filtering** | Specialized `CaloHitBranchHandler` in I/O tier | Upstream in `CaloHitBuilder` (`CaloHitMerge`) | Removed `CaloHitBranchHandler.h` & `G4Kernel` dependency from I/O; reduced event RAM; ROOT & Parquet parity |
+| **Component Hierarchy & Pileup** | Legacy `AlgTool`, `PileupMerge` in `CaloCellBuilder` | Modern `Gaugi::Tool`, `CaloHitPileupMerge` in `CaloHitBuilder`, `src/electronics/` | Idiomatic C++ terminology; clean separation of HIT overlay vs Cell digitization; dedicated electronics folder |
 

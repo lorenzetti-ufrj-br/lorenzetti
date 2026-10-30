@@ -1,32 +1,30 @@
-#ifndef PileupMerge_h
-#define PileupMerge_h
+#ifndef CaloHitPileupMerge_h
+#define CaloHitPileupMerge_h
 
 #include "GaugiKernel/Algorithm.h"
-#include "CaloCell/enumeration.h"
 #include "CaloHit/CaloHitContainer.h"
 #include "EventInfo/EventInfoContainer.h"
 #include "TruthParticle/TruthParticleContainer.h"
 #include "CaloHit/CaloHitConverter.h"
-//#include "EventInfo/EventInfoConverter.h"
 #include "TRandom3.h"
 
 
 /**
- * @class PileupMerge
+ * @class CaloHitPileupMerge
  * @brief Algorithm to overlay pileup events onto a hard-scatter event.
  * 
- * reads simulated hits from "minbias" events (pileup) and adds their
+ * Reads simulated hits from "minbias" events (pileup) and adds their
  * energy contributions to the hits of the main signal event, simulating
  * high-luminosity conditions.
  */
-class PileupMerge : public Gaugi::Algorithm
+class CaloHitPileupMerge : public Gaugi::Algorithm
 {
 
   public:
     /** Constructor **/
-    PileupMerge( std::string );
+    CaloHitPileupMerge( std::string );
     
-    virtual ~PileupMerge();
+    virtual ~CaloHitPileupMerge();
 
     virtual StatusCode initialize() override;
 
@@ -47,18 +45,13 @@ class PileupMerge : public Gaugi::Algorithm
 
   private:
  
-
-
     template <class T> TBranch* InitBranch(TTree* fChain, std::string branch_name, T* param) const;
     int poisson(double nAvg) const;
     void Read( SG::EventContext &ctx, const std::vector<std::string> &paths, std::string name ) const;
 
-
     void allocate( SG::ReadHandle<xAOD::CaloHitContainer> &container , std::vector<xAOD::CaloHit*> &vec_hits ) const;
     void deallocate( std::vector<xAOD::CaloHit*> &vec_hits ) const;
     float merge( SG::EventContext &ctx, std::vector<xAOD::CaloHit*> &vec_hits ) const;
-
-
 
     std::string m_inputHitsKey;
     std::string m_outputHitsKey;
@@ -81,8 +74,8 @@ class PileupMerge : public Gaugi::Algorithm
     std::vector<std::string> m_highPileupInputFiles;
     std::string m_ntupleName;
 
-
-
 };
+
+using PileupMerge = CaloHitPileupMerge;
 
 #endif

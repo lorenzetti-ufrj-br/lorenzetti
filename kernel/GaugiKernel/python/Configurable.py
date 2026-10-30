@@ -46,7 +46,7 @@ def treatPropertyValue(value):
             return value
         if hasattr(value[0], "c_ptr"):
             from ROOT.std import vector
-            vec = vector("Gaugi::AlgTool*")()
+            vec = vector("Gaugi::Tool*")()
             for tool in value:
                 vec.push_back(tool.c_ptr())
             return vec

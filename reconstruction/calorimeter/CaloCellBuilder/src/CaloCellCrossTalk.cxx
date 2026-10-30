@@ -1,4 +1,4 @@
-#include "CrossTalkMaker.h"
+#include "CaloCellCrossTalk.h"
 
 #include "CaloCell/CaloDetDescriptor.h"
 #include "CaloCell/CaloCellContainer.h"
@@ -26,7 +26,7 @@ using namespace Gaugi;
  * - AmpCapacitive/Inductive: Coupling amplitudes.
  * - MinEnergy: Process only cells above this energy threshold.
  */
-CrossTalkMaker::CrossTalkMaker( std::string name ) : 
+CaloCellCrossTalk::CaloCellCrossTalk( std::string name ) : 
   IMsgService(name),
   Algorithm()
 {
@@ -43,7 +43,7 @@ CrossTalkMaker::CrossTalkMaker( std::string name ) :
 
 //!=====================================================================
 
-StatusCode CrossTalkMaker::initialize()
+StatusCode CaloCellCrossTalk::initialize()
 {
   CHECK_INIT();
   setMsgLevel(m_outputLevel);
@@ -60,28 +60,28 @@ StatusCode CrossTalkMaker::initialize()
 }
 //!=====================================================================
 
-void CrossTalkMaker::push_back( Gaugi::AlgTool* tool )
+void CaloCellCrossTalk::push_back( Gaugi::Tool* tool )
 {
   m_toolHandles.push_back(tool);
 }
 
 //!=====================================================================
 
-StatusCode CrossTalkMaker::bookHistograms( SG::EventContext &/*ctx*/ ) const
+StatusCode CaloCellCrossTalk::bookHistograms( SG::EventContext &/*ctx*/ ) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CrossTalkMaker::pre_execute( SG::EventContext &/*ctx*/ ) const
+StatusCode CaloCellCrossTalk::pre_execute( SG::EventContext &/*ctx*/ ) const
 {
   return StatusCode::SUCCESS;
 }
 
 //!=====================================================================
 
-StatusCode CrossTalkMaker::execute( SG::EventContext &/*ctx*/ , const G4Step * /*step*/ ) const
+StatusCode CaloCellCrossTalk::execute( SG::EventContext &/*ctx*/ , const G4Step * /*step*/ ) const
 {
   return StatusCode::SUCCESS;
 }
@@ -98,7 +98,7 @@ StatusCode CrossTalkMaker::execute( SG::EventContext &/*ctx*/ , const G4Step * /
  * 5. Updates the central cell's pulse with the distorted version.
  * 6. Runs downstream tools (e.g. OptimalFilter) on the modified cells.
  */
-StatusCode CrossTalkMaker::execute( SG::EventContext &ctx , int /*evt*/ ) const
+StatusCode CaloCellCrossTalk::execute( SG::EventContext &ctx , int /*evt*/ ) const
 {
   MSG_INFO("Executing CrossTalkMaker module...");
 
@@ -261,7 +261,7 @@ StatusCode CrossTalkMaker::execute( SG::EventContext &ctx , int /*evt*/ ) const
 //!=====================================================================
 
 
-StatusCode CrossTalkMaker::fillHistograms( SG::EventContext &/*ctx*/ ) const
+StatusCode CaloCellCrossTalk::fillHistograms( SG::EventContext &/*ctx*/ ) const
 {
   return StatusCode::SUCCESS;
 }
@@ -270,7 +270,7 @@ StatusCode CrossTalkMaker::fillHistograms( SG::EventContext &/*ctx*/ ) const
 //!=====================================================================
 
 
-StatusCode CrossTalkMaker::finalize()
+StatusCode CaloCellCrossTalk::finalize()
 {
   // MSG_INFO("Finalizing CrossTalkMaker module...");
   for ( auto tool : m_toolHandles )
@@ -286,13 +286,13 @@ StatusCode CrossTalkMaker::finalize()
 
 //!=====================================================================
 
-StatusCode CrossTalkMaker::post_execute( SG::EventContext &/*ctx*/ ) const
+StatusCode CaloCellCrossTalk::post_execute( SG::EventContext &/*ctx*/ ) const
 {
   return StatusCode::SUCCESS;
 }
 
 
-float CrossTalkMaker::XTalkTF(float sample, int samp_index, bool diagonal, bool inductive) const
+float CaloCellCrossTalk::XTalkTF(float sample, int samp_index, bool diagonal, bool inductive) const
 {
 
   float BaseAmpXTc = m_AmpXt_C/100*sample ;
@@ -319,7 +319,7 @@ float CrossTalkMaker::XTalkTF(float sample, int samp_index, bool diagonal, bool 
 
 }
 
-double CrossTalkMaker::XTalk(double x, bool type) const
+double CaloCellCrossTalk::XTalk(double x, bool type) const
 {
   TF1* XT_cellTF = new TF1("XT_cellTF","((exp(-x/[0])*x*x)/(2 *[0]*[0]*([0] - [1])) - (exp(-(x/[0]))*x*[1])/([0]*pow([0] - [1],2)) + exp(-(x/[0]))*[1]*[1]/pow([0] - [1],3) + (exp(-(x/[1]))*[1]*[1])/pow(-[0] + [1],3) + (1/(2*[2]*[0] *pow(([0] - [1]),3)))*exp(-x* (1/[0] + 1/[1]))* (-2 *exp(x *(1/[0] + 1/[1]))*[0] *pow(([0] - [1]),3) - 2 *exp(x/[0])*[0]*pow([1],3) + exp(x/[1]) *(x*x *pow(([0] - [1]),2) + 2*x*[0]*([0]*[0] - 3*[0]*[1] + 2*[1]*[1]) + 2*[0]*[0]*([0]*[0] - 3*[0]*[1] + 3*[1]*[1]))) + ((1 - (exp((-x + [2])/[0])*(x - [2])*([0] - 2*[1]))/pow(([0] - [1]),2) - (exp((-x + [2])/[0])*(x - [2])*(x- [2]))/(2*[0]*([0] - [1])) + (exp((-x + [2])/[1])*[1]*[1]*[1])/pow(([0] - [1]),3) - (exp((-x + [2])/[0])*[0]*([0]*[0] - 3*[0]*[1] + 3*[1]*[1]))/pow(([0] - [1]),3))* 0.5*( 1+sign(1, x -[2]) ) )/[2])*[3]*[4]*[3]*[0]*[0]",0., m_tmax2);
   XT_cellTF->SetParameter(0, m_taud);
@@ -343,7 +343,7 @@ double CrossTalkMaker::XTalk(double x, bool type) const
 }// end of function
 
 
-double CrossTalkMaker::CellFunction(double x, bool type) const
+double CaloCellCrossTalk::CellFunction(double x, bool type) const
 {
   TF1* CellM = new TF1("CellM","[5]*((exp(-x/[0])*x*x)/(2 *[0]*[0]*([0] - [1])) - (exp(-(x/[0]))*x*[1])/([0]*pow([0] - [1],2)) + exp(-(x/[0]))*[1]*[1]/pow([0] - [1],3) + (exp(-(x/[1]))*[1]*[1])/pow(-[0] + [1],3) + (1/(2*[2]*[0] *pow(([0] - [1]),3)))*exp(-x* (1/[0] + 1/[1]))* (-2 *exp(x *(1/[0] + 1/[1]))*[0] *pow(([0] - [1]),3) - 2 *exp(x/[0])*[0]*pow([1],3) + exp(x/[1]) *(x*x *pow(([0] - [1]),2) + 2*x*[0]*([0]*[0] - 3*[0]*[1] + 2*[1]*[1]) + 2*[0]*[0]*([0]*[0] - 3*[0]*[1] + 3*[1]*[1]))) + ((1 - (exp((-x + [2])/[0])*(x - [2])*([0] - 2*[1]))/pow(([0] - [1]),2) - (exp((-x + [2])/[0])*(x - [2])*(x- [2]))/(2*[0]*([0] - [1])) + (exp((-x + [2])/[1])*[1]*[1]*[1])/pow(([0] - [1]),3) - (exp((-x + [2])/[0])*[0]*([0]*[0] - 3*[0]*[1] + 3*[1]*[1]))/pow(([0] - [1]),3))* 0.5*( 1+sign(1,x -[2]) ) )/[2])*[3]*[4]*[3]*[0]*[0]",0., m_tmax2);
 

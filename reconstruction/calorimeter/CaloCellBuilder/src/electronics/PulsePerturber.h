@@ -1,7 +1,7 @@
 #ifndef PulsePerturber_h
 #define PulsePerturber_h
 
-#include "GaugiKernel/AlgTool.h"
+#include "GaugiKernel/Tool.h"
 #include "GaugiKernel/EDM.h"
 #include "GaugiKernel/StatusCode.h"
 #include "TRandom3.h"
@@ -13,7 +13,7 @@
  * This tool can simulate dead modules or add extra noise to specific cells
  * to mimic realistic detector conditions.
  */
-class PulsePerturber : public Gaugi::AlgTool {
+class PulsePerturber : public Gaugi::Tool {
 
 public:
   /** Constructor **/

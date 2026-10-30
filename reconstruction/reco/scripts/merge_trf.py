@@ -7,9 +7,9 @@ from typing import List
 from typing_extensions import Annotated
 import typer
 
-import ROOT
 from GaugiKernel import file_parallel_job, ComponentAccumulator, LoggingLevel
 from RootStreamBuilder import RootStreamHITReader, recordable, clear_recorded_items, RootStreamHITMaker
+from CaloHitBuilder import CaloHitPileupMergeCfg
 
 
 @file_parallel_job(ntuple_name="CollectionTree", output_replace=(".HIT.", ".HIT_Merged."))
@@ -60,8 +60,8 @@ def main(
     )
     reader.merge(acc)
 
-    pileup = ROOT.PileupMerge(
-        "PileupMerge",
+    pileup = CaloHitPileupMergeCfg(
+        "CaloHitPileupMerge",
         LowPileupInputFiles=low_list,
         HighPileupInputFiles=high_list,
         PileupAvg=pileup_avg,

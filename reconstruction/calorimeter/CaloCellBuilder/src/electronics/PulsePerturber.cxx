@@ -25,7 +25,7 @@ using namespace Gaugi;
  * - EventNumberRange: Range of event numbers where the anomaly is active.
  */
 PulsePerturber::PulsePerturber(std::string name)
-    : IMsgService(name), AlgTool(), m_rng(0) {
+    : IMsgService(name), Tool(), m_rng(0) {
   declareProperty("DeadModules", m_deadModules = {});
   declareProperty("Cells", m_cells = {});
   declareProperty("NoiseMean", m_noiseMean = 0);

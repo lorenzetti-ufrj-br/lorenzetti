@@ -1,7 +1,7 @@
-#ifndef CrossTalkMaker_h
-#define CrossTalkMaker_h
+#ifndef CaloCellCrossTalk_h
+#define CaloCellCrossTalk_h
 
-#include "GaugiKernel/AlgTool.h"
+#include "GaugiKernel/Tool.h"
 #include "GaugiKernel/Algorithm.h" 
 #include "GaugiKernel/DataHandle.h"
 #include "GaugiKernel/EDM.h"
@@ -10,21 +10,19 @@
 #include "TF1.h"
 
 
-
 /**
- * @class CrossTalkMaker
+ * @class CaloCellCrossTalk
  * @brief Algorithm to simulate cell-to-cell cross-talk.
  * 
  * Simulates the leakage of signal from one cell to its neighbors due to
- * capacitive or inductive coupling in the readout electronics.
+ * capacitive, inductive, or resistive coupling in the readout electronics.
  */
-class CrossTalkMaker : public Gaugi::Algorithm
+class CaloCellCrossTalk : public Gaugi::Algorithm
 {
   public:
     /** Constructor **/
-    CrossTalkMaker( std::string name );
-    // virtual ~CrossTalkMaker();
-    ~CrossTalkMaker()=default;
+    CaloCellCrossTalk( std::string name );
+    ~CaloCellCrossTalk() = default;
 
     virtual StatusCode initialize() override;    
     /*! Book all histograms into the current storegate **/
@@ -45,11 +43,9 @@ class CrossTalkMaker : public Gaugi::Algorithm
     
     /**
      * @brief Add a tool to the post-processing chain.
-     * @param tool Pointer to the AlgTool.
+     * @param tool Pointer to the Tool.
      */
-    void push_back( Gaugi::AlgTool *tool);
-
-
+    void push_back( Gaugi::Tool *tool );
 
   private:
 
@@ -58,40 +54,39 @@ class CrossTalkMaker : public Gaugi::Algorithm
     float   XTalkTF( float sample, int samp_index, bool diagonal, bool inductive) const;
 
     /*! The tool list that will be executed into the post execute step */
-    std::vector< Gaugi::AlgTool* > m_toolHandles;
+    std::vector< Gaugi::Tool* > m_toolHandles;
 
     float m_minEnergy;
     std::string m_collectionKey;
     std::string m_xtcollectionKey;
     std::string m_histPath;
 
-    uint m_Nsamples = 5 ;
-    uint m_tSamp = 25 ;
+    uint m_Nsamples = 5;
+    uint m_tSamp = 25;
 
     // cts modelling xtalk
-    double m_Cx      =  47.000 ;
-    double m_Rf      =   0.078 ;
-    double m_Rin     =   1.200 ;
-    double m_taud    =  15.820 ;
-    double m_taupa   =  17.310 ;
-    double m_td      = 420.000 ;
-    double m_tmax2   = 600.000 ;
-    double m_C1      =  50.000 ;
+    double m_Cx      =  47.000;
+    double m_Rf      =   0.078;
+    double m_Rin     =   1.200;
+    double m_taud    =  15.820;
+    double m_taupa   =  17.310;
+    double m_td      = 420.000;
+    double m_tmax2   = 600.000;
+    double m_C1      =  50.000;
 
     // This value normalize amplitude of the Xt_C to unit
-    double m_ToNormXtC = 0.022206 ;       
-    // This value normalize amplitude of the Xt_L to unit
-    //double m_ToNormXtL = 0.0539463;
-    // Noise amplitude on LAr is 50 MeV
+    double m_ToNormXtC = 0.022206;       
 
     // XTalk amplitude on % values of the Energy
-    double m_AmpXt_C; //4.2/100  ;
-    double m_AmpXt_L; //2.3/100  ;       // XTalk amplitude on % values of the Energy
-    double m_AmpXt_R; //1.0/100  ;       // XTalk amplitude on % values of the Energy
-    double m_AmpNoise  = 50 ;             // Noise amplitude 50 MeV
-    double tau_0_mean  = 0 ;
-    double tau_std     = 0.5 ;
+    double m_AmpXt_C;
+    double m_AmpXt_L;
+    double m_AmpXt_R;
+    double m_AmpNoise  = 50;             // Noise amplitude 50 MeV
+    double tau_0_mean  = 0;
+    double tau_std     = 0.5;
 
 };
+
+using CrossTalkMaker = CaloCellCrossTalk;
 
 #endif

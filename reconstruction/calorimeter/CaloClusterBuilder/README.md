@@ -51,7 +51,7 @@ graph TD
 * **Shower Shape Invocation**: Executes `ShowerShapes` to calculate discriminating variables.
 
 ### `ShowerShapes` (`C++`)
-Utility `AlgTool` that populates cluster discriminating features:
+Utility `Tool` that populates cluster discriminating features:
 * **Longitudinal Development**: `f0` (Pre-Sampler), `f1` (EM1), `f2` (EM2), `f3` (EM3), `ehad1`, `ehad2`, `ehad3`.
 * **Lateral Development (EM2)**: `weta2` (shower width), `reta` ($E_{3\times7}/E_{7\times7}$), `rphi` ($E_{3\times3}/E_{3\times7}$).
 * **Strip Development (EM1)**: `eratio` ($(E_{\text{max1}} - E_{\text{max2}})/(E_{\text{max1}} + E_{\text{max2}})$) for $\gamma / \pi^0$ separation.
@@ -136,7 +136,7 @@ def configure_clustering(acc: ComponentAccumulator) -> None:
 ---
 
 ## 5. Dependencies
-* `kernel/GaugiKernel`: Algorithm and AlgTool base classes, StoreGate `EventContext`, Data Handles, `ElementLink`.
+* `kernel/GaugiKernel`: Algorithm and Tool base classes, StoreGate `EventContext`, Data Handles, `ElementLink`.
 * `events/CaloCell`: `xAOD::CaloCell`, `xAOD::CaloCellContainer`, `xAOD::CaloDetDescriptor`.
 * `events/EventInfo`: `xAOD::Seed`, `xAOD::SeedContainer`.
 * `events/CaloCluster`: `xAOD::CaloCluster`, `xAOD::CaloClusterContainer`.

@@ -159,9 +159,10 @@ class CaloCellBuilder(Logger):
             self.RecoAlgs.append(maker)
 
             if do_crosstalk:
+                cross_talk_cls = getattr(ROOT, "CaloCellCrossTalk", getattr(ROOT, "CrossTalkMaker", None))
                 cx: Configurable = Configurable(
-                    ROOT.CrossTalkMaker,
-                    f"CrossTalkMaker_{samp.CollectionKey}",
+                    cross_talk_cls,
+                    f"CaloCellCrossTalk_{samp.CollectionKey}",
                     InputCollectionKey=f"{samp.CollectionKey}_Aux",
                     OutputCollectionKey=samp.CollectionKey,
                     MinEnergy=CrossTalkFlags.MinEnergy,

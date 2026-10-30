@@ -38,7 +38,7 @@ flowchart LR
 | **`digit_trf.py`** | `*.HIT.root` | `*.ESD.root` | `CaloCellBuilder` (Optimal Filtering, Pulse Shaping) | `CollectionTree` |
 | **`reco_trf.py`** | `*.ESD.root` | `*.AOD.root` | `CaloClusterBuilder`, `CaloRingsBuilder`, `EgammaBuilder` | `CollectionTree` |
 | **`ntuple_trf.py`** | `*.AOD.root` | `*.NTUPLE.root` | `RootStreamNtupleMaker` (Analysis flat tuples) | `physics` |
-| **`merge_trf.py`** | `*.HIT.root` | `*.HIT_Merged.root` | `PileupMerge` (Superposition of MinBias hits) | `CollectionTree` |
+| **`merge_trf.py`** | `*.HIT.root` | `*.HIT_Merged.root` | `CaloHitPileupMerge` (Superposition of MinBias hits) | `CollectionTree` |
 
 ---
 

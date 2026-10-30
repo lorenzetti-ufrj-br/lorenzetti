@@ -1,7 +1,7 @@
 #ifndef CaloCellMaker_h
 #define CaloCellMaker_h
 
-#include "GaugiKernel/AlgTool.h"
+#include "GaugiKernel/Tool.h"
 #include "GaugiKernel/Algorithm.h"
 #include "GaugiKernel/DataHandle.h"
 #include <vector>
@@ -49,9 +49,9 @@ public:
 
   /**
    * @brief Add a tool to the execution list.
-   * @param tool Pointer to the AlgTool to be added.
+   * @param tool Pointer to the Tool to be added.
    */
-  void addTool(Gaugi::AlgTool *tool) {
+  void addTool(Gaugi::Tool *tool) {
     m_toolHandles.push_back(tool);
   }
 
@@ -59,7 +59,7 @@ public:
    * @brief Set the pulse generator tool.
    * @param tool Pointer to the PulseGenerator tool.
    */
-  void setPulseGenerator(Gaugi::AlgTool *tool) {
+  void setPulseGenerator(Gaugi::Tool *tool) {
     m_pulseGenerator = tool;
   }
 
@@ -100,9 +100,9 @@ private:
   unsigned int m_nPhiBins;
 
   /*! Pulse generator */
-  Gaugi::AlgTool *m_pulseGenerator;
+  Gaugi::Tool *m_pulseGenerator;
   /*! The tool list that will be executed into the post execute step */
-  std::vector<Gaugi::AlgTool *> m_toolHandles;
+  std::vector<Gaugi::Tool *> m_toolHandles;
 };
 
 #endif

@@ -15,7 +15,7 @@ using namespace SG;
  */
 ShowerShapes::ShowerShapes( std::string name ) : 
   IMsgService(name),
-  AlgTool()
+  Tool()
 {;}
 //!=====================================================================
 StatusCode ShowerShapes::initialize()

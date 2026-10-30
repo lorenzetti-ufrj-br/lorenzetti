@@ -14,7 +14,7 @@
 graph TD
     subgraph Execution["Execution & Configuration"]
         CA[ComponentAccumulator] --> Alg[Algorithm / IAlgorithm]
-        CA --> Tool[AlgTool / IAlgTool]
+        CA --> Tool[Tool / ITool]
         PJ[ParallelJob Engine / @parallel_job] -.-> CA
     end
 
@@ -40,29 +40,61 @@ graph TD
 
 ## 2. Core Framework Components
 
-### 2.1 Component Model (`Algorithm` & `AlgTool`)
+### 2.1 Component Model (`Algorithm` & `Tool`)
 
-All data processing tasks in Lorenzetti are encapsulated within **Algorithms** or **AlgTools**:
+All data processing tasks in Lorenzetti are encapsulated within **Algorithms** or **Tools**:
 
 - **`Algorithm` (`GaugiKernel/Algorithm.h`)**: Primary unit of execution. Follows the standard state machine lifecycle:
   1. `initialize()`: Configuration validation, resource allocation, and histogram booking.
   2. `execute()`: Invoked once per physics event.
   3. `finalize()`: Summary reporting, efficiency calculations, and cleanup.
-- **`AlgTool` (`GaugiKernel/AlgTool.h`)**: Reusable helper components callable from one or more algorithms (e.g. calorimeter calibrations, cluster position corrections).
+- **`Tool` (`GaugiKernel/Tool.h`)**: Reusable helper components callable from one or more algorithms (e.g. calorimeter pulse shaping, optimal filtering, shower shape calculations). Inherits from `Gaugi::ITool`, `MsgService`, and `PropertyService`.
 - **`ComponentAccumulator` (`GaugiKernel/ComponentAccumulator.h`)**: Modern configuration container coordinating algorithms, private/public tools, and service dependencies.
 
-#### C++ Algorithm Example
+#### C++ Algorithm & Tool Examples
 
 ```cpp
 #include "GaugiKernel/Algorithm.h"
+#include "GaugiKernel/Tool.h"
 #include "GaugiKernel/StatusCode.h"
 
-class MyAnalysisAlg : public Gaugi::Algorithm {
+// 1. Defining a reusable Tool
+class MyHelperTool : public Gaugi::Tool {
 public:
-  MyAnalysisAlg(const std::string& name) : Algorithm(name) {}
+  MyHelperTool() : Tool() {
+    declareProperty("CorrectionFactor", m_factor = 1.05);
+  }
 
   virtual StatusCode initialize() override {
-    MSG_INFO("Initializing " << name());
+    MSG_INFO("Initializing helper tool: " << name());
+    return StatusCode::SUCCESS;
+  }
+
+  virtual StatusCode execute(SG::EventContext &ctx, Gaugi::EDM *obj) const override {
+    MSG_DEBUG("Processing EDM object with factor " << m_factor);
+    return StatusCode::SUCCESS;
+  }
+
+  virtual StatusCode finalize() override {
+    return StatusCode::SUCCESS;
+  }
+
+private:
+  double m_factor;
+};
+
+// 2. Defining an Algorithm that consumes Tools
+class MyAnalysisAlg : public Gaugi::Algorithm {
+public:
+  MyAnalysisAlg(const std::string& name) : Algorithm(name) {
+    declareProperty("Tools", m_tools);
+  }
+
+  virtual StatusCode initialize() override {
+    MSG_INFO("Initializing " << name() << " with " << m_tools.size() << " tools");
+    for (auto* tool : m_tools) {
+      if (tool->initialize().isFailure()) return StatusCode::FAILURE;
+    }
     return StatusCode::SUCCESS;
   }
 
@@ -72,10 +104,31 @@ public:
   }
 
   virtual StatusCode finalize() override {
-    MSG_INFO("Finalizing " << name());
+    for (auto* tool : m_tools) tool->finalize();
     return StatusCode::SUCCESS;
   }
+
+private:
+  std::vector<Gaugi::Tool*> m_tools;
 };
+```
+
+#### Python Configuration Binding
+
+In Python, `Configurable` automatically converts Python lists containing tools into `std::vector<Gaugi::Tool*>`:
+
+```python
+from GaugiKernel import ComponentAccumulator
+from MyPackage import MyAnalysisAlgCfg, MyHelperToolCfg
+
+acc = ComponentAccumulator("AnalysisAcc")
+
+# Instantiate and configure
+helper_tool = MyHelperToolCfg("EnergyCorrector", CorrectionFactor=1.08)
+alg = MyAnalysisAlgCfg("MyAnalysis")
+alg.Tools += helper_tool  # Seamlessly converts and pushes to std::vector<Gaugi::Tool*>
+
+acc += alg
 ```
 
 ---

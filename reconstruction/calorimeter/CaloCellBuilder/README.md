@@ -25,7 +25,7 @@ graph TD
     end
 
     subgraph CrossTalkStage ["Cross-Talk Simulation (Optional)"]
-        CrossTalk["CrossTalkMaker: Simulates coupling between neighboring cells"]
+        CrossTalk["CaloCellCrossTalk: Simulates coupling between neighboring cells"]
     end
 
     subgraph MergingPipeline ["CaloCellMerge Algorithm"]
@@ -48,19 +48,19 @@ graph TD
 
 ---
 
-## 2. Algorithms and AlgTools
+## 2. Algorithms and Electronics Tools
 
-### Core Algorithms
+### Core Algorithms (`src/`)
 * **`CaloCellMaker` (`C++`)**:
-  Manages sampling-level digitization. Discretizes calorimeter geometry into $\eta$-$\phi$ cell descriptors, transfers hit bunch-crossing energy deposits, executes `PulseGenerator`, and invokes configured `AlgTool` filters.
+  Manages sampling-level digitization. Discretizes calorimeter geometry into $\eta$-$\phi$ cell descriptors, transfers hit bunch-crossing energy deposits, executes `PulseGenerator`, and invokes configured `Gaugi::Tool` filters.
 * **`CaloCellMerge` (`C++`)**:
   Merges sampling descriptor collections into a master `xAOD::CaloDetDescriptorContainer` and unified reconstructed (`"Cells"`) and truth (`"TruthCells"`) containers. Establishes relational `ElementLink<xAOD::CaloDetDescriptor>` with lazy resolution capability.
 * **`CaloCellNoiseSuppression` (`C++`)**:
   Dedicated offline algorithm performing cell noise suppression ($E > \text{threshold} \times \sigma$). Reads an input `CaloCellContainer` (e.g., `"Cells_original"`), evaluates energy against the cell's `CaloDetDescriptor` electronic noise level ($\sigma$), and records the surviving cells into an output `CaloCellContainer` (e.g., `"Cells"`).
-* **`CrossTalkMaker` (`C++`)**:
+* **`CaloCellCrossTalk` (`C++`, alias `CrossTalkMaker`)**:
   Simulates capacitive, inductive, and resistive cross-talk between neighboring cells in dense calorimeter layers (`EMB2`, `EMEC2`).
 
-### AlgTools
+### Electronics Modeling Tools (`src/electronics/`, inheriting from `Gaugi::Tool`)
 * **`PulseGenerator` (`C++`)**:
   Convolves energy deposits with realistic shaper response curves and adds Gaussian noise.
 * **`OptimalFilter` (`C++`)**:
@@ -69,6 +69,9 @@ graph TD
   Constrained Optimal Filter (COF) for signal reconstruction in the Tile calorimeter.
 * **`PulsePerturber` (`C++`)**:
   Injects detector defects (dead modules, abnormal noise levels) based on Bad Run List (BRL) specifications.
+
+> [!NOTE]
+> Hit-level pileup merging (`PileupMerge`) has been migrated to `CaloHitBuilder` as `CaloHitPileupMerge`, operating directly on `xAOD::CaloHitContainer`.
 
 ---
 
@@ -207,6 +210,6 @@ This architecture allows analysts to compare filtered and unfiltered physics obj
 ---
 
 ## 6. Dependencies
-* `kernel/GaugiKernel`: Algorithm and AlgTool interfaces, StoreGate `EventContext`, Data Handles, `ElementLink`.
+* `kernel/GaugiKernel`: Algorithm and Tool interfaces, StoreGate `EventContext`, Data Handles, `ElementLink`.
 * `events/CaloCell`: `xAOD::CaloCell`, `xAOD::CaloDetDescriptor`, `xAOD::CaloCellContainer`, `xAOD::CaloDetDescriptorContainer`.
 * `events/CaloHit`: `xAOD::CaloHitContainer`.
