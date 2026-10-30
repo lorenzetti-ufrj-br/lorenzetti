@@ -55,6 +55,8 @@ graph TD
   Manages sampling-level digitization. Discretizes calorimeter geometry into $\eta$-$\phi$ cell descriptors, transfers hit bunch-crossing energy deposits, executes `PulseGenerator`, and invokes configured `AlgTool` filters.
 * **`CaloCellMerge` (`C++`)**:
   Merges sampling descriptor collections into a master `xAOD::CaloDetDescriptorContainer` and unified reconstructed (`"Cells"`) and truth (`"TruthCells"`) containers. Establishes relational `ElementLink<xAOD::CaloDetDescriptor>` with lazy resolution capability.
+* **`CaloCellNoiseSuppression` (`C++`)**:
+  Dedicated offline algorithm performing cell noise suppression ($E > \text{threshold} \times \sigma$). Reads an input `CaloCellContainer` (e.g., `"Cells_original"`), evaluates energy against the cell's `CaloDetDescriptor` electronic noise level ($\sigma$), and records the surviving cells into an output `CaloCellContainer` (e.g., `"Cells"`).
 * **`CrossTalkMaker` (`C++`)**:
   Simulates capacitive, inductive, and resistive cross-talk between neighboring cells in dense calorimeter layers (`EMB2`, `EMEC2`).
 
@@ -183,20 +185,24 @@ Reconstructed and truth cells are filtered independently without cross-matching 
 * If neither passes the threshold, the descriptor is omitted entirely from `CaloDetDescriptors`.
 * For surviving cells, the `ElementLink<xAOD::CaloDetDescriptor>` points to the common master descriptor index in `CaloDetDescriptors`.
 
-### 5.4 Command-Line Configuration (`digit_trf.py`)
+### 5.4 Operational Deployment: ESD Preservation & Reconstruction Filtering
 
-The filter is enabled by default in `digit_trf.py`:
+Following ATLAS Athena recommendations, calorimeter digitization (`digit_trf.py`) preserves complete cell information by default (`FilterBySigma=False`), outputting an unattenuated Event Summary Data (ESD) tier.
+
+Noise suppression is cleanly decoupled into offline reconstruction (`reco_trf.py`), where `RootStreamESDReader` loads the input cells into `"Cells_original"`, and `CaloCellNoiseSuppression` produces the filtered `"Cells"` container:
 
 ```bash
-# Default execution (2-sigma filtering enabled):
-digit_trf.py -i Zee.HIT.root -o Zee.ESD.root --nov 100
+# Standard reconstruction with Run 4 2-sigma noise cut:
+reco_trf.py -i Zee.ESD.root -o Zee_2sigma.AOD.root --filter-by-sigma --sigma-threshold 2.0
 
-# Custom threshold (e.g. 3-sigma):
-digit_trf.py -i Zee.HIT.root -o Zee.ESD.root --sigma-threshold 3.0
+# Alternate 3-sigma noise cut:
+reco_trf.py -i Zee.ESD.root -o Zee_3sigma.AOD.root --filter-by-sigma --sigma-threshold 3.0
 
-# Disable noise filtering (legacy behavior):
-digit_trf.py -i Zee.HIT.root -o Zee.ESD.root --no-filter-by-sigma
+# Full cell analysis / calibration (default, no noise cut):
+reco_trf.py -i Zee.ESD.root -o Zee_all.AOD.root
 ```
+
+This architecture allows analysts to compare filtered and unfiltered physics objects (clusters, rings, electrons) from the exact same ESD dataset without re-running Geant4 or electronics digitization.
 
 ---
 

@@ -55,9 +55,8 @@ graph TD
 | Class / Interface | Description |
 | :--- | :--- |
 | `IBranchHandler` | Polymorphic interface for binding, reading, and writing branches in the `TTree`. |
-| `GenericBranchHandler<TContainer, TStruct, TConverter>` | Type-safe C++ template handler for any standard `xAOD` container type. |
-| `CaloCellBranchHandler` | Specialized branch handler for `CaloCellContainer` supporting online independent noise sigma filtering ($E > N\sigma$, ATLAS Run 4) during deserialization. |
-| `BranchHandlerFactory` | Central factory instantiating typed handlers based strictly on EDM container names (`*Container`). |
+| `GenericBranchHandler<TContainer, TStruct, TConverter>` | Type-safe C++ template handler used uniformly across all 9 standard `xAOD` container types. |
+| `BranchHandlerFactory` | Central factory instantiating typed generic handlers based strictly on EDM container names (`createHandler(typeName, key, branchName)`). |
 | `RootStreamReader` | Algorithm that discovers branches dynamically from the input tree via `discoverBranches()` and records containers into `StoreGate`. |
 | `RootStreamMaker` | Algorithm that reads containers from `EventContext` specified in `ItemList` and fills the `TTree`, with dynamic on-demand handler construction. |
 | `RootStreamNtupleMaker` | Analysis algorithm producing flat `TTree` structures (e.g. `cl_et`, `cl_rings`, etc.). |
@@ -98,13 +97,11 @@ Where `<TypeName>` strictly matches the EDM collection name (always ending in `C
 ```python
 from RootStreamBuilder import RootStreamReaderCfg
 
-# Automatically reads all branches in the input ROOT file and TTree
+# Automatically discovers and reads all branches in the input ROOT file and TTree
 reader = RootStreamReaderCfg(
     name="StreamReader",
     InputFile="output_aod.root",
     TreeName="CollectionTree",
-    FilterBySigma=False,      # Set to True to enable online noise suppression
-    SigmaThreshold=2.0,       # E > N * sigma (default: 2.0)
 )
 ```
 
@@ -224,48 +221,51 @@ ntuple_trf.py -i sample.AOD.root -o sample.NTUPLE.root --nov 1000
 ntuple_trf.py -i sample.AOD.root -o sample.NTUPLE.root --schema schema.json
 ```
 
-### 4.5. ESD Tier & Online Noise Suppression Reading (`RootStreamESDReader` / ATLAS Run 4)
+### 4.5. ESD Tier Reading & Modular Noise Suppression (`CaloCellNoiseSuppression` / ATLAS Run 4)
 
-In offline reconstruction (`reco_trf.py`), `RootStreamESDReader` provides **on-the-fly cell noise filtering** ($E > N\sigma$, default $2\sigma$) via `CaloCellBranchHandler`.
+In offline reconstruction (`reco_trf.py`), `RootStreamESDReader` uses `GenericBranchHandler` to read `CaloCellContainer` transparently into `StoreGate`.
+When noise filtering is enabled (`--filter-by-sigma`), the raw cells are read into `"Cells_original"`, and the dedicated algorithm `CaloCellNoiseSuppression` (from `CaloCellBuilder`) performs on-the-fly cell noise filtering ($E > N\sigma$, default $2\sigma$) writing to `recordable("Cells")`.
 
 This decouples the storage policy from reconstruction: a **single complete ESD** produced by `digit_trf.py` can be used to generate both Run 4 baseline AODs ($2\sigma$ cut) and control/calibration AODs (no cut or alternate thresholds) without repeating the CPU-intensive digitization step.
 
 ```mermaid
 graph LR
-    ESD["ESD File on Disk<br/>(Complete or Pre-filtered)"] --> Reader["RootStreamESDReader<br/>(CaloCellBranchHandler)"]
-    Reader --> Check{"FilterBySigma Enabled?"}
-    Check -->|False| SG_All["Record All Cells & TruthCells to StoreGate"]
-    Check -->|True| FilterCells["Filter 'Cells':<br/>E_reco > N * &sigma;_noise"]
-    Check -->|True| FilterTruth["Filter 'TruthCells':<br/>E_truth > N * &sigma;_noise"]
-    FilterCells -->|E > 2&sigma;| SG_Filt["Record to StoreGate ('Cells')"]
-    FilterTruth -->|E > 2&sigma;| SG_Truth["Record to StoreGate ('TruthCells')"]
+    ESD["ESD File on Disk<br/>(Complete ESD)"] --> Reader["RootStreamESDReader<br/>(GenericBranchHandler)"]
+    Reader --> Check{"--filter-by-sigma?"}
+    Check -->|False| SG_Cells["Record directly to StoreGate ('Cells')"]
+    Check -->|True| SG_Orig["Record to StoreGate ('Cells_original')"]
+    SG_Orig --> Filter["CaloCellNoiseSuppression<br/>(E > N * &sigma;_noise)"]
+    Filter --> SG_Cells
+    SG_Cells --> Downstream["CaloClusterMaker / Downstream Algorithms ('Cells')"]
 ```
 
 #### Key Advantages:
+* **100% Generic I/O**: `RootStreamReader` and `BranchHandlerFactory` use `GenericBranchHandler` uniformly across all 9 Lorenzetti containers without container-specific read branches.
+* **Modular Algorithm**: Noise filtering logic is encapsulated in `CaloCellNoiseSuppression` within `CaloCellBuilder`, following ATLAS Athena EDM separation of concerns.
 * **Workflow Efficiency**: Avoids re-running `digit_trf.py` to create separate ESD files for different cell energy thresholds.
-* **Independent Filtering**: Both reconstructed cells (`Cells`) and truth cells (`TruthCells`) are filtered independently according to their own energy ($E > 2\sigma$) without cross-matching dependencies.
-* **Zero Algorithmic Changes Downstream**: `CaloClusterMaker`, `CaloRingsMaker`, and `ElectronMaker` transparently process the filtered cells from StoreGate.
-
-#### Configuration Options:
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `FilterBySigma` | `bool` | `False` | Enables online cell noise suppression during read. |
-| `SigmaThreshold` | `float` | `2.0` | Threshold multiplier for noise cut ($E > N\sigma$). |
-| `DescriptorsKey` | `str` | `"CaloDetDescriptors"` | StoreGate key of master descriptor container. |
+* **Zero Algorithmic Changes Downstream**: `CaloClusterMaker`, `CaloRingsMaker`, and `ElectronMaker` always transparently process `"Cells"` from StoreGate.
 
 #### Usage Example (`reco_trf.py`):
 ```python
 from RootStreamBuilder import RootStreamESDReader, recordable
+from CaloCellBuilder import CaloCellNoiseSuppression
 
 ESD = RootStreamESDReader(
     "ESDReader",
     InputFile=input_file,
-    OutputCellsKey=recordable("Cells"),
+    OutputCellsKey="Cells_original" if filter_by_sigma else recordable("Cells"),
     OutputCellsTruthKey=recordable("TruthCells"),
-    FilterBySigma=filter_by_sigma,     # Flag from CLI (--filter-by-sigma)
-    SigmaThreshold=sigma_threshold,   # e.g., 2.0
     OutputLevel=outputLevel,
 )
+
+if filter_by_sigma:
+    acc += CaloCellNoiseSuppression(
+        "CaloCellNoiseSuppression",
+        InputCellsKey="Cells_original",
+        OutputCellsKey=recordable("Cells"),
+        SigmaThreshold=sigma_threshold,
+        OutputLevel=outputLevel,
+    )
 ```
 
 #### Command-Line Usage (`reco_trf.py`):

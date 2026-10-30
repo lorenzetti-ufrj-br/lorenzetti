@@ -143,7 +143,7 @@ for (const auto &pair : **collection.ptr()) {
 1. **Independent 2-Sigma Noise Cut:** Removed the coupling/match constraint between real and truth cells. Each cell (truth or reconstructed) is retained if its energy exceeds $2\sigma$ of electronic noise:
    $$\text{threshold} = \text{m\_sigmaThreshold} \times \sigma_{\text{noise}}$$
 2. **Normalized Master Descriptors:** Calo detector descriptors are stored once in a master `CaloDetDescriptorContainer`, and cells link to them via `ElementLink`.
-3. **Read-Time Filtering Support:** `CaloCellBranchHandler` also supports evaluating $E > 2\sigma$ on-the-fly when reading older or unfiltered ROOT files.
+3. **Modular Offline Noise Suppression:** Rather than embedding cell filtering inside I/O deserializers (`CaloCellBranchHandler`), `RootStreamReader` uses `GenericBranchHandler` for all containers. A dedicated algorithm, `CaloCellNoiseSuppression` in `CaloCellBuilder`, applies the $E > \text{threshold} \times \sigma$ cut in the reconstruction sequence (`reco_trf.py`), writing to `Cells` while keeping `RootStreamReader` 100% generic.
 
 ```cpp
 // python_refactory: reconstruction/calorimeter/CaloCellBuilder/src/CaloCellMerge.cxx
@@ -208,15 +208,18 @@ The I/O subsystem in `master` used duplicated, hardcoded classes for each data t
 Each class repeated hundreds of lines of boilerplate registering specific branch names (`Hits`, `Cells`, `Clusters`, `Electrons`). Adding a new EDM container required editing multiple C++ readers/makers and modifying dictionary bindings.
 
 ### The Refactored Solution: `RootStreamMaker`, `RootStreamReader` & `BranchHandlerFactory`
-1. **Generic Branch Handlers:** Abstracted through `IBranchHandler` and `GenericBranchHandler<Container, PODStruct, Converter>`.
-2. **Factory Design:** `BranchHandlerFactory` maps container type names (e.g. `CaloCellContainer`, `ElectronContainer`) to their dedicated handlers.
-3. **Automated Branch Discovery:** `RootStreamReader::discoverBranches()` parses the `CollectionTree` branches matching `<TypeName>_<Key>` and automatically configures handlers without any hardcoded branch lists.
-4. **StoreGate Root-Directory Fix:** Resolved an issue where `simu_trf.py` missed the `CollectionTree` by ensuring `RootStreamMaker::bookHistograms()` hooks into `StoreGate::file()` and registers `m_tree` directly in the root `/` directory.
-5. **Decoupled Execution Lifecycle (Stateless `initialize()`):**
+1. **100% Generic Branch Handlers:** All 9 persistent EDM containers are handled uniformly via `GenericBranchHandler<Container, PODStruct, Converter>`, eliminating specialized handlers (`CaloHitBranchHandler` and `CaloCellBranchHandler` were completely removed).
+2. **Simplified Factory Design:** `BranchHandlerFactory::createHandler(rawTypeName, key, branchName)` maps container type names to their type-safe `GenericBranchHandler` instance, optionally passing an override `branchName` when input branches diverge from output keys.
+3. **Automated Branch Discovery:** `RootStreamReader::discoverBranches()` parses the `CollectionTree` branches matching `<TypeName>_<Key>` and automatically configures handlers without any hardcoded branch lists or container-specific logic.
+4. **Separation of Concerns:**
+   - **RoI Hit Filtering**: Moved upstream to `CaloHitBuilder` (`CaloHitMerge`), keeping `RootStreamHITMaker` and `RootStreamBuilder` decoupled from `G4Kernel` geometry and truth particles.
+   - **Noise Suppression**: Moved to `CaloCellNoiseSuppression` in `CaloCellBuilder`, keeping `RootStreamESDReader` generic and allowing offline reconstruction (`reco_trf.py`) to generate filtered and unfiltered datasets from the same complete ESD.
+5. **StoreGate Root-Directory Fix:** Resolved an issue where `simu_trf.py` missed the `CollectionTree` by ensuring `RootStreamMaker::bookHistograms()` hooks into `StoreGate::file()` and registers `m_tree` directly in the root `/` directory.
+6. **Decoupled Execution Lifecycle (Stateless `initialize()`):**
    - Refactored `RootStreamMaker` so that `initialize()` does not instantiate branch handlers or perform filesystem operations.
    - Handlers are dynamically constructed on-demand within `bookHistograms()` and `fillHistograms()`, preventing invalid thread states, dangling pointers, and premature file locks.
    - Explicit `store->cd()` guarantees that the primary `CollectionTree` resides cleanly at the root of the output `TFile`, eliminating directory duplication inside `Events/`.
-6. **Flat Ntuple Pipeline Hardening (`RootStreamNtupleMaker` & `ntuple_trf.py`):**
+7. **Flat Ntuple Pipeline Hardening (`RootStreamNtupleMaker` & `ntuple_trf.py`):**
    - Added automatic key normalization in Python (single strings converted to `list[str]` for `InputRingerKeys` and `InputTruthRingerKeys`).
    - Integrated immediate `return StatusCode::FAILURE;` upon missing mandatory event containers in `fillHistograms()`.
    - Added defensive `tree->ResetBranchAddresses();` at the end of the event loop to eliminate stale stack addresses.
@@ -236,12 +239,9 @@ StatusCode RootStreamReader::discoverBranches(TTree *tree) {
     std::string typeName = bname.substr(0, sepPos);
     std::string key = bname.substr(sepPos + 1);
 
-    auto handler = BranchHandlerFactory::createHandler(
-        typeName, key, false, 0.4f, 0.4f, "Particles", {},
-        m_filterBySigma, m_sigmaThreshold, m_descriptorsKey);
-
+    auto handler = BranchHandlerFactory::createHandler(typeName, key, bname);
     if (handler) {
-      handler->initReadBranch(tree);
+      handler->prepareRead(tree);
       m_handlers.push_back(std::move(handler));
     }
   }
@@ -253,24 +253,29 @@ StatusCode RootStreamReader::discoverBranches(TTree *tree) {
 // python_refactory: reconstruction/io/RootStreamBuilder/src/BranchHandlerFactory.h
 class BranchHandlerFactory {
 public:
-  static std::unique_ptr<IBranchHandler> createHandler(const std::string &rawTypeName, const std::string &key, ...) {
+  static std::unique_ptr<IBranchHandler> createHandler(
+      const std::string &rawTypeName,
+      const std::string &key,
+      const std::string &branchName = "")
+  {
     std::string typeName = rawTypeName;
     if (typeName.rfind("xAOD::", 0) == 0) typeName = typeName.substr(6);
 
-    if (typeName == "CaloHitContainer") {
-      return std::make_unique<CaloHitBranchHandler>(key, ...);
-    } else if (typeName == "CaloCellContainer") {
-      return std::make_unique<CaloCellBranchHandler>(key, ...);
+    if (typeName == "CaloCellContainer") {
+      return std::make_unique<GenericBranchHandler<xAOD::CaloCellContainer, xAOD::CaloCell_t, xAOD::CaloCellConverter>>("CaloCellContainer", key, branchName);
+    } else if (typeName == "CaloHitContainer") {
+      return std::make_unique<GenericBranchHandler<xAOD::CaloHitContainer, xAOD::CaloHit_t, xAOD::CaloHitConverter>>("CaloHitContainer", key, branchName);
     } else if (typeName == "ElectronContainer") {
-      return std::make_unique<GenericBranchHandler<xAOD::ElectronContainer, xAOD::Electron_t, xAOD::ElectronConverter>>("ElectronContainer", key);
+      return std::make_unique<GenericBranchHandler<xAOD::ElectronContainer, xAOD::Electron_t, xAOD::ElectronConverter>>("ElectronContainer", key, branchName);
     }
-    // Generic fallback for any registered container
+    // Generic handlers for all 9 registered EDM containers
     ...
   }
 };
 ```
 
 ### Improvements
+- **100% Uniform Architecture:** All 9 containers use `GenericBranchHandler`, eliminating container-specific branch handlers and coupling across packages.
 - **Extensibility:** Adding new EDM types only requires registering one line in `BranchHandlerFactory`.
 - **Elimination of Duplication:** Reduced ~2,500 lines of duplicated C++ code across `RootStream*Maker/Reader`.
 - **Self-Describing Files:** Files written by any tier can be read transparently by `RootStreamReader` without hardcoding tier types.

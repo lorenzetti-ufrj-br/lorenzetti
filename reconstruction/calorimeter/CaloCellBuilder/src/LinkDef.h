@@ -8,6 +8,7 @@
 #include "src/PileupMerge.h"
 #include "src/ConstrainedOptimalFilter.h"
 #include "src/PulsePerturber.h"
+#include "src/CaloCellNoiseSuppression.h"
 
 #ifdef __CINT__
 
@@ -23,4 +24,7 @@
 #pragma link C++ class ConstrainedOptimalFilter+;
 #pragma link C++ class PileupMerge+;
 #pragma link C++ class PulsePerturber+;
+#pragma link C++ class CaloCellNoiseSupression+;
+#pragma link C++ class CaloCellNoiseSuppression+;
+#pragma link C++ class CaloCellFilter+;
 #endif

@@ -69,10 +69,10 @@ namespace Gaugi {
   template <typename TContainer, typename TStruct, typename TConverter>
   class GenericBranchHandler : public IBranchHandler {
   public:
-    GenericBranchHandler(const std::string &typeName, const std::string &key)
+    GenericBranchHandler(const std::string &typeName, const std::string &key, const std::string &branchName = "")
       : m_typeName(typeName),
         m_key(key),
-        m_branchName(typeName + "_" + key)
+        m_branchName(branchName.empty() ? (typeName + "_" + key) : branchName)
     {}
 
     virtual ~GenericBranchHandler() = default;

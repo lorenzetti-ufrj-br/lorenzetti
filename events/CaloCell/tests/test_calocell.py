@@ -54,6 +54,33 @@ class TestCaloCellEDM(unittest.TestCase):
         self.assertAlmostEqual(t_obj.tau, 0.8, places=2)
         self.assertEqual(t_obj.hash, 12345)
 
+    def test_calocell_noise_suppression_configuration(self):
+        from CaloCellBuilder import CaloCellNoiseSuppression, CaloCellNoiseSupression, CaloCellFilter
+        # Test primary class
+        filter_alg = CaloCellNoiseSuppression(
+            "CaloCellNoiseSuppression",
+            InputCellsKey="Cells_original",
+            OutputCellsKey="Cells",
+            SigmaThreshold=2.5,
+        )
+        props = filter_alg.getPropertiesDict()
+        self.assertEqual(props["InputCellsKey"], "Cells_original")
+        self.assertEqual(props["OutputCellsKey"], "Cells")
+        self.assertAlmostEqual(props["SigmaThreshold"], 2.5)
+
+        # Test aliases
+        alias_alg1 = CaloCellNoiseSupression("SupressionAlias")
+        self.assertEqual(alias_alg1.getPropertiesDict()["InputCellsKey"], "Cells_original")
+        alias_alg2 = CaloCellFilter("FilterAlias")
+        self.assertEqual(alias_alg2.getPropertiesDict()["InputCellsKey"], "Cells_original")
+
+    def test_rootstream_esd_reader_generic(self):
+        from RootStreamBuilder import RootStreamESDReader
+        reader = RootStreamESDReader("ESDReader", OutputCellsKey="Cells_original")
+        props = reader.getPropertiesDict()
+        self.assertEqual(props["OutputCellsKey"], "Cells_original")
+        self.assertNotIn("FilterBySigma", props)
+
 
 if __name__ == "__main__":
     unittest.main()

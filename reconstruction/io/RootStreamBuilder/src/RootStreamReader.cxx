@@ -11,17 +11,21 @@ RootStreamReader::RootStreamReader(std::string name)
     m_inputFile(""),
     m_ntupleName("CollectionTree"),
     m_outputLevel(1),
-    m_filterBySigma(false),
-    m_sigmaThreshold(2.0f),
-    m_descriptorsKey("CaloDetDescriptors")
+    m_outputCellsKey(""),
+    m_outputHitsKey(""),
+    m_outputEventKey(""),
+    m_outputTruthKey(""),
+    m_outputSeedsKey("")
 {
-  declareProperty("InputFile",        m_inputFile);
-  declareProperty("TreeName",         m_ntupleName);
-  declareProperty("NtupleName",       m_ntupleName);
-  declareProperty("OutputLevel",      m_outputLevel);
-  declareProperty("FilterBySigma",    m_filterBySigma);
-  declareProperty("SigmaThreshold",   m_sigmaThreshold);
-  declareProperty("DescriptorsKey",   m_descriptorsKey);
+  declareProperty("InputFile",           m_inputFile);
+  declareProperty("TreeName",            m_ntupleName);
+  declareProperty("NtupleName",          m_ntupleName);
+  declareProperty("OutputLevel",         m_outputLevel);
+  declareProperty("OutputCellsKey",      m_outputCellsKey);
+  declareProperty("OutputHitsKey",       m_outputHitsKey);
+  declareProperty("OutputEventKey",      m_outputEventKey);
+  declareProperty("OutputTruthKey",      m_outputTruthKey);
+  declareProperty("OutputSeedsKey",      m_outputSeedsKey);
 }
 
 RootStreamReader::~RootStreamReader()
@@ -62,8 +66,19 @@ std::vector<std::unique_ptr<IBranchHandler>> RootStreamReader::createHandlers(TT
     std::string typeName = bname.substr(0, sepPos);
     std::string key = bname.substr(sepPos + 1);
 
-    auto handler = BranchHandlerFactory::createHandler(
-        typeName, key, m_filterBySigma, m_sigmaThreshold, m_descriptorsKey);
+    if (typeName == "CaloCellContainer" && !m_outputCellsKey.empty()) {
+      key = m_outputCellsKey;
+    } else if (typeName == "CaloHitContainer" && !m_outputHitsKey.empty()) {
+      key = m_outputHitsKey;
+    } else if (typeName == "EventInfoContainer" && !m_outputEventKey.empty()) {
+      key = m_outputEventKey;
+    } else if (typeName == "TruthParticleContainer" && !m_outputTruthKey.empty()) {
+      key = m_outputTruthKey;
+    } else if (typeName == "SeedContainer" && !m_outputSeedsKey.empty()) {
+      key = m_outputSeedsKey;
+    }
+
+    auto handler = BranchHandlerFactory::createHandler(typeName, key, bname);
     if (handler) {
       MSG_DEBUG("Discovered branch '" << bname << "' -> Type: " << typeName << ", Key: " << key);
       handlers.push_back(std::move(handler));

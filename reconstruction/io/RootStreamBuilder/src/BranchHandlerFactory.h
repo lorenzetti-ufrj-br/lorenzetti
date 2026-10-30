@@ -2,7 +2,6 @@
 #define BranchHandlerFactory_h
 
 #include "GenericBranchHandler.h"
-#include "CaloCellBranchHandler.h"
 
 // EDM Includes
 #include "EventInfo/EventInfoContainer.h"
@@ -47,9 +46,7 @@ namespace Gaugi {
     static std::unique_ptr<IBranchHandler> createHandler(
         const std::string &rawTypeName,
         const std::string &key,
-        bool filterBySigma = false,
-        float sigmaThreshold = 2.0f,
-        const std::string &descriptorsKey = "CaloDetDescriptors")
+        const std::string &branchName = "")
     {
       std::string typeName = rawTypeName;
       // Strip namespace if present
@@ -60,46 +57,47 @@ namespace Gaugi {
       if (typeName == "CaloHitContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::CaloHitContainer,
                                                      xAOD::CaloHit_t,
-                                                     xAOD::CaloHitConverter>>("CaloHitContainer", key);
+                                                     xAOD::CaloHitConverter>>("CaloHitContainer", key, branchName);
       }
       else if (typeName == "EventInfoContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::EventInfoContainer,
                                                      xAOD::EventInfo_t,
-                                                     xAOD::EventInfoConverter>>("EventInfoContainer", key);
+                                                     xAOD::EventInfoConverter>>("EventInfoContainer", key, branchName);
       }
       else if (typeName == "TruthParticleContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::TruthParticleContainer,
                                                      xAOD::TruthParticle_t,
-                                                     xAOD::TruthParticleConverter>>("TruthParticleContainer", key);
+                                                     xAOD::TruthParticleConverter>>("TruthParticleContainer", key, branchName);
       }
       else if (typeName == "SeedContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::SeedContainer,
                                                      xAOD::Seed_t,
-                                                     xAOD::SeedConverter>>("SeedContainer", key);
+                                                     xAOD::SeedConverter>>("SeedContainer", key, branchName);
       }
       else if (typeName == "CaloDetDescriptorContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::CaloDetDescriptorContainer,
                                                      xAOD::CaloDetDescriptor_t,
-                                                     xAOD::CaloDetDescriptorConverter>>("CaloDetDescriptorContainer", key);
+                                                     xAOD::CaloDetDescriptorConverter>>("CaloDetDescriptorContainer", key, branchName);
       }
       else if (typeName == "CaloCellContainer") {
-        return std::make_unique<CaloCellBranchHandler>(
-            key, filterBySigma, sigmaThreshold, descriptorsKey);
+        return std::make_unique<GenericBranchHandler<xAOD::CaloCellContainer,
+                                                     xAOD::CaloCell_t,
+                                                     xAOD::CaloCellConverter>>("CaloCellContainer", key, branchName);
       }
       else if (typeName == "CaloClusterContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::CaloClusterContainer,
                                                      xAOD::CaloCluster_t,
-                                                     xAOD::CaloClusterConverter>>("CaloClusterContainer", key);
+                                                     xAOD::CaloClusterConverter>>("CaloClusterContainer", key, branchName);
       }
       else if (typeName == "CaloRingsContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::CaloRingsContainer,
                                                      xAOD::CaloRings_t,
-                                                     xAOD::CaloRingsConverter>>("CaloRingsContainer", key);
+                                                     xAOD::CaloRingsConverter>>("CaloRingsContainer", key, branchName);
       }
       else if (typeName == "ElectronContainer") {
         return std::make_unique<GenericBranchHandler<xAOD::ElectronContainer,
                                                      xAOD::Electron_t,
-                                                     xAOD::ElectronConverter>>("ElectronContainer", key);
+                                                     xAOD::ElectronConverter>>("ElectronContainer", key, branchName);
       }
 
       return nullptr;

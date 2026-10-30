@@ -45,9 +45,11 @@ private:
   std::string m_inputFile;
   std::string m_ntupleName;
   int m_outputLevel;
-  bool m_filterBySigma;
-  float m_sigmaThreshold;
-  std::string m_descriptorsKey;
+  std::string m_outputCellsKey;
+  std::string m_outputHitsKey;
+  std::string m_outputEventKey;
+  std::string m_outputTruthKey;
+  std::string m_outputSeedsKey;
 };
 
 #endif

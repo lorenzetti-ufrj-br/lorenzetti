@@ -6,6 +6,7 @@ import typer
 
 from GaugiKernel import file_parallel_job, ComponentAccumulator, LoggingLevel
 from RootStreamBuilder import RootStreamESDReader, recordable, clear_recorded_items, RootStreamAODMaker
+from CaloCellBuilder import CaloCellNoiseSuppression
 from CaloClusterBuilder import CaloClusterMaker
 from CaloRingsBuilder import CaloRingsBuilderCfg
 from EgammaBuilder import ElectronBuilderCfg
@@ -39,17 +40,24 @@ def main(
     ESD = RootStreamESDReader(
         "ESDReader",
         InputFile=input_file,
-        OutputCellsKey=recordable("Cells"),
+        OutputCellsKey="Cells_original" if filter_by_sigma else recordable("Cells"),
         OutputCellsTruthKey=recordable("TruthCells"),
         OutputEventKey=recordable("Events"),
         OutputTruthKey=recordable("Particles"),
         OutputSeedsKey=recordable("Seeds"),
-        FilterBySigma=filter_by_sigma,
-        SigmaThreshold=sigma_threshold,
         OutputLevel=outputLevel,
     )
 
     acc = ComponentAccumulator("ComponentAccumulator", output_file, ESD)
+
+    if filter_by_sigma:
+        acc += CaloCellNoiseSuppression(
+            "CaloCellNoiseSuppression",
+            InputCellsKey="Cells_original",
+            OutputCellsKey=recordable("Cells"),
+            SigmaThreshold=sigma_threshold,
+            OutputLevel=outputLevel,
+        )
 
     cluster = CaloClusterMaker(
         "CaloClusterMaker",

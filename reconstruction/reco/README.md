@@ -65,7 +65,7 @@ Worker concurrency can be set either explicitly via workers or via hierarchical 
 ## 4. Script Reference & Usage Examples
 
 ### 4.1 Simulation (`simu_trf.py`)
-Propagates particles through the ATLAS calorimeter geometry using Geant4.
+Propagates particles through the ATLAS calorimeter geometry using Geant4. Region-of-Interest (RoI) hit filtering is handled upstream by `CaloHitBuilder` (`OnlyRoI=not save_all_hits`), keeping hit file sizes compact by default.
 
 ```bash
 # Process a folder of EVT files using 10 worker processes (4 threads per worker = 40 cores):
@@ -77,12 +77,15 @@ simu_trf.py -i /data/evts/ -o /data/hits/ -nt 40 --threads-per-job 4
 # Run single file with magnetic field and 100 events
 simu_trf.py -i Zee.EVT.root -o Zee.HIT.root --nov 100 --enable-magnetic-field -nt 4
 
+# Retain all simulated hits without RoI cone filtering
+simu_trf.py -i Zee.EVT.root -o Zee.HIT.root --save-all-hits
+
 # Inspect execution plan without running (Dry Run)
 simu_trf.py -i /data/evts/ -o /data/hits/ -nt 16 --dry-run
 ```
 
 ### 4.2 Digitization (`digit_trf.py`)
-Simulates calorimeter electronics response, shaping pulses, injecting electronic noise, and applying Optimal Filtering.
+Simulates calorimeter electronics response, shaping pulses, injecting electronic noise, and applying Optimal Filtering. By default, full unattenuated ESD files are generated (cell noise filtering is disabled during digitization to preserve raw cell information).
 
 ```bash
 # Digitize all HIT files in a directory into ESD files
@@ -93,14 +96,17 @@ digit_trf.py -i Zee.HIT.root -o Zee.ESD.root --nov 50
 ```
 
 ### 4.3 Reconstruction (`reco_trf.py`)
-Performs topological cluster finding, concentric ring energy extraction (Ringer), and electron candidate identification.
+Performs topological cluster finding, concentric ring energy extraction (Ringer), and electron candidate identification. Supports modular Run 4 cell noise suppression via `CaloCellNoiseSuppression`:
 
 ```bash
-# Reconstruct all ESD files in a directory
-reco_trf.py -i /data/esds/ -o /data/aods/ -nt 8
-
-# Reconstruct a single file
+# Standard reconstruction without noise cut (default, retains all ESD cells)
 reco_trf.py -i Zee.ESD.root -o Zee.AOD.root
+
+# Reconstruct with ATLAS Run 4 2-sigma cell noise suppression
+reco_trf.py -i Zee.ESD.root -o Zee_2sigma.AOD.root --filter-by-sigma --sigma-threshold 2.0
+
+# Batch reconstruct all ESD files in a directory with 8 cores
+reco_trf.py -i /data/esds/ -o /data/aods/ -nt 8 --filter-by-sigma
 ```
 
 ### 4.4 Analysis Ntuples (`ntuple_trf.py`)

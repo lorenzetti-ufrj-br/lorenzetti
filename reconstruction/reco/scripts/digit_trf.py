@@ -17,8 +17,6 @@ def main(
     number_of_threads: Annotated[int, typer.Option("-nt", "--number-of-threads", help="Threads allocated per worker")] = 1,
     nov: Annotated[int, typer.Option("--nov", "--number-of-events", help="Number of events to process.")] = -1,
     output_level: Annotated[str, typer.Option("-l", "--output-level", help="Logging verbosity level.")] = "INFO",
-    filter_by_sigma: Annotated[bool, typer.Option("--filter-by-sigma/--no-filter-by-sigma", help="Filter cells by noise sigma threshold.")] = True,
-    sigma_threshold: Annotated[float, typer.Option("--sigma-threshold", help="Noise sigma threshold for cell filtering (E > threshold * sigma).")] = 2.0,
     pre_init: Annotated[str, typer.Option("--pre-init", help="Hook for pre-initialization code.")] = "''",
     pre_exec: Annotated[str, typer.Option("--pre-exec", help="Hook for pre-execution code.")] = "''",
     post_exec: Annotated[str, typer.Option("--post-exec", help="Hook for post-execution code.")] = "''",
@@ -60,8 +58,6 @@ def main(
         OutputCellsKey=recordable("Cells"),
         OutputTruthCellsKey=recordable("TruthCells"),
         InputEventKey=recordable("Events"),
-        FilterBySigma=filter_by_sigma,
-        SigmaThreshold=sigma_threshold,
     )
     calorimeter.merge(acc)
 
