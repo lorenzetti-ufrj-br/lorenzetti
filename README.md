@@ -4,34 +4,35 @@
 [![anomaly](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml/badge.svg)](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml)
 [![maestro](https://github.com/lps-ufrj-br/maestro-lightning/actions/workflows/flow.yml/badge.svg)](https://github.com/lps-ufrj-br/maestro-lightning/actions/workflows/flow.yml)
 
-# 🔬 Lorenzetti Simulator 
+# 🔬 Lorenzetti Simulator
 
 Lorenzetti is a **dedicated HEP framework** conceptualized to streamline the Research & Development (R&D) of **calorimetry signal processing**, **reconstruction**, and **triggering algorithms**. While modern LHC experiments rely on massive, monolithic software stacks, Lorenzetti provides a **lightweight, modular, and stand-alone** environment that grants researchers direct access to high-fidelity simulation data. Built upon the robust **Geant4** toolkit, Lorenzetti simulates the complete physics of particle showers within complex detector geometries. However, unlike general-purpose simulators, it focuses deeply on the **readout chain**: transforming raw energy deposits into realistic electronic pulses, digitizing them, and reconstructing the original particle properties.
 
 This framework addresses a critical gap in the community: **Access to quality data**. Experiment-specific data is often restricted or difficult to generate for outsiders. Lorenzetti democratizes this by establishing a standard reference for:
+
 - 🧠 **Algorithm Development**: Fast prototyping of filters (Optimal Filtering, Wiener), clustering algorithms, and jet reconstruction.
-- 🤖 **Machine Learning**: Generating massive, labelled datasets ideal for training Neural Networks (e.g., for *anomaly detection*, *pileup mitigation*, or *super-resolution*).
+- 🤖 **Machine Learning**: Generating massive, labelled datasets ideal for training Neural Networks (e.g., for _anomaly detection_, _pileup mitigation_, or _super-resolution_).
 - ⚡ **Trigger Studies**: Simulating hardware-level constraints to test fast decision-making logic.
 
 ### 🌪️ Advanced Pileup Simulation via Overlay
-One of Lorenzetti's most defining features is its ability to realistically simulate **high-luminosity environments** through a sophisticated **Overlay Strategy**. High Energy Physics experiments often face the challenge of **Pileup**—multiple proton-proton collisions occurring simultaneously. Lorenzetti accurately models this by overlaying background "Minimum Bias" events onto the signal event of interest. 
+
+One of Lorenzetti's most defining features is its ability to realistically simulate **high-luminosity environments** through a sophisticated **Overlay Strategy**. High Energy Physics experiments often face the challenge of **Pileup**—multiple proton-proton collisions occurring simultaneously. Lorenzetti accurately models this by overlaying background "Minimum Bias" events onto the signal event of interest.
 
 Crucially, it handles both **In-Time Pileup** (simultaneous collisions) and **Out-of-Time Pileup** (signals from previous or subsequent bunch crossings that distort the current measurement). This is achieved by convolving the energy deposits with the detector's realistic **electronic pulse shapes** over a configurable time window. This setup provides a perfect playground for developing cutting-edge **Pileup Mitigation algorithms** (e.g., using timing information or deep learning) to recover clean signals from high-noise backgrounds, mimicking the harsh conditions of the **HL-LHC**.
 
 ## 🧪 CI Status
 
-| Test Job | Target | Status |
-| :--- | :--- | :--- |
-| **Core Build** | Compilation & Install | ![Build](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=build&label=build&branch=master) |
-| **Reco Sequence** | Full Event Chain | ![Reco](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=ntuple&label=reco&branch=master) |
-| **Anomaly Sequence** | Anomaly Injection | ![Anomaly](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/anomaly_sequence.yml?job=digitalization&label=anomaly&branch=master) |
-| **Gen Zee** | Zee Generator | ![Zee](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_zee&label=zee&branch=master) |
-| **Gen Jets** | Jets Generator | ![Jets](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_jets&label=jets&branch=master) |
-| **Gen Minbias** | Minbias Generator | ![Minbias](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_minbias&label=minbias&branch=master) |
-| **Gen Single** | Single Particle | ![Single](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_single_particle&label=single&branch=master) |
-| **Gen Overlapped** | Overlapped Zee | ![Overlapped](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_overlapped_zee&label=overlapped&branch=master) |
-| **Documentation** | GitHub Pages | ![Pages](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/pages.yml?label=pages&branch=master) |
-
+| Test Job             | Target                | Status                                                                                                                                                                     |
+| :------------------- | :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Core Build**       | Compilation & Install | ![Build](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=build&label=build&branch=master)                        |
+| **Reco Sequence**    | Full Event Chain      | ![Reco](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=ntuple&label=reco&branch=master)                         |
+| **Anomaly Sequence** | Anomaly Injection     | ![Anomaly](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/anomaly_sequence.yml?job=digitalization&label=anomaly&branch=master)        |
+| **Gen Zee**          | Zee Generator         | ![Zee](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_zee&label=zee&branch=master)                          |
+| **Gen Jets**         | Jets Generator        | ![Jets](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_jets&label=jets&branch=master)                       |
+| **Gen Minbias**      | Minbias Generator     | ![Minbias](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_minbias&label=minbias&branch=master)              |
+| **Gen Single**       | Single Particle       | ![Single](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_single_particle&label=single&branch=master)        |
+| **Gen Overlapped**   | Overlapped Zee        | ![Overlapped](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/reco_sequence.yml?job=gen_overlapped_zee&label=overlapped&branch=master) |
+| **Documentation**    | GitHub Pages          | ![Pages](https://img.shields.io/github/actions/workflow/status/lorenzetti-ufrj-br/lorenzetti/pages.yml?label=pages&branch=master)                                          |
 
 ## Citations
 
@@ -40,7 +41,7 @@ Crucially, it handles both **In-Time Pileup** (simultaneous collisions) and **Ou
 Please cite the following paper if you use the software:
 
 > **Lorenzetti Showers: A general-purpose framework for supporting signal reconstruction and triggering with calorimeters**  
-> *Computer Physics Communications*, Volume 286, 2023, 108671.  
+> _Computer Physics Communications_, Volume 286, 2023, 108671.  
 > DOI: [10.1016/j.cpc.2023.108671](https://doi.org/10.1016/j.cpc.2023.108671)
 
 [![DOI](https://zenodo.org/badge/370090835.svg)](https://zenodo.org/badge/latestdoi/370090835)
@@ -68,13 +69,16 @@ Here is an overview of the repository structure:
 The recommended way to use Lorenzetti is via pre-built container images (**Docker** or **Singularity**), which come with all dependencies pre-installed.
 
 ### Singularity (Recommended)
+
 ```bash
 singularity pull docker://lorenzetti/lorenzetti:latest
 singularity run lorenzetti_latest.sif
 ```
 
 ### Manual Build
+
 For development, you can clone and build the source inside the container:
+
 ```bash
 git clone https://github.com/lorenzetti-ufrj-br/lorenzetti.git && cd lorenzetti
 make
@@ -82,6 +86,26 @@ source build/lzt_setup.sh
 ```
 
 📄 **Full Installation Guide**: [docs/installation.md](docs/installation.md)
+
+### 💻 macOS (Apple Silicon)
+
+> 💡 **Prerequisite:** Lorenzetti requires an `x86_64` architecture. Using **[OrbStack](https://orbstack.dev/)** (`brew install orbstack`) instead of Docker Desktop is strongly recommended for much faster Rosetta 2 emulation (_OrbStack Settings > System > Use Rosetta to run Intel code_).
+
+Create a local workspace folder and run the container (`--platform linux/amd64` forces Rosetta emulation):
+
+```bash
+mkdir -p ~/lorenzetti_work
+cd ~/lorenzetti_work
+
+docker run --platform linux/amd64 -it --rm \
+  --name lorenzetti_session \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  lorenzetti/lorenzetti:latest\
+
+```
+
+Once inside the container, proceed with the **Manual Build** instructions above to clone the repository into /workspace, compile, and load the environment.
 
 ## 📚 Tutorials
 
@@ -97,22 +121,27 @@ We provide several Jupyter Notebooks to help you get started:
 Run a full chain reconstruction for $Z \to e^+e^-$ events (without pileup) directly from your terminal:
 
 1. **Generate 10 physics events** (Z boson decaying to electrons):
+
    ```bash
    gen_zee.py --nov 10 -o Zee.EVT.root
    ```
 
 2. **Simulate detector response** (Energy hits in calorimeters):
+
    ```bash
    simu_trf.py -i Zee.EVT.root -o Zee.HIT.root -nt 10
    ```
+
    > **Note**: `-nt` specifies the number of events to process.
 
 3. **Digitization** (Convert energy hits to electronic signals):
+
    ```bash
    digit_trf.py -i Zee.HIT.root -o Zee.ESD.root
    ```
 
 4. **Reconstruction** (Build cluster objects):
+
    ```bash
    reco_trf.py -i Zee.ESD.root -o Zee.AOD.root
    ```
@@ -135,8 +164,6 @@ Lorenzetti is rigorously tested using Github Actions. The validation workflow in
 
 You can run these commands manually (as seen in `.github/workflows/reco_sequence.yml`) to validate your local environment.
 
-
-
 ## 🌐 Web Pages
 
 - [Official WebPage](https://sites.google.com/lps.ufrj.br/lorenzetti/início?authuser=0)
@@ -147,43 +174,47 @@ You can run these commands manually (as seen in `.github/workflows/reco_sequence
 The standard detector in Lorenzetti aims to mimic the properties of modern high-granularity calorimeters used in LHC experiments (such as ATLAS). It is constructed as a **cylindrical 4π detector** with two main systems:
 
 ### 1. Electromagnetic Calorimeter (ECAL)
+
 A sampling calorimeter designed to measure electrons and photons with high precision.
+
 - **Material**: **Lead** ($Pb$) absorber plates interleaved with **Liquid Argon** ($LAr$) as the active medium.
 - **Structure**:
-    - **Pre-Sampler**: A thin layer to correct for energy loss upstream.
-    - **Layer 1 (Strips)**: Finely segmented ($\Delta\eta \approx 0.003$) for $\pi^0/\gamma$ separation.
-    - **Layer 2 (Middle)**: The thickest layer (55 radiation lengths) containing most of the shower energy.
-    - **Layer 3 (Back)**: Estimates energy leakage into the hadronic calorimeter.
+  - **Pre-Sampler**: A thin layer to correct for energy loss upstream.
+  - **Layer 1 (Strips)**: Finely segmented ($\Delta\eta \approx 0.003$) for $\pi^0/\gamma$ separation.
+  - **Layer 2 (Middle)**: The thickest layer (55 radiation lengths) containing most of the shower energy.
+  - **Layer 3 (Back)**: Estimates energy leakage into the hadronic calorimeter.
 
 ### 2. Hadronic Calorimeter (HCAL)
+
 Located outside the ECAL, this sampling calorimeter measures jets and missing energy.
+
 - **Material**: **Iron** ($Fe$) absorber plates with **Plastic Scintillator** tiles.
 - **Structure**: Divided into 3 longitudinal layers with coarser granularity ($\Delta\eta \times \Delta\phi \approx 0.1 \times 0.1$).
 
 ### 📊 Detector Layers & Granularity
 
-| System | Layer | Name | Material | Granularity (Δη × Δφ) |
-| :--- | :---: | :--- | :--- | :---: |
-| **ECAL (Barrel)** | 0 | Pre-Sampler | LAr / Pb | 0.025 × 0.1 |
-| | 1 | Front (Strips) | LAr / Pb | 0.003125 × 0.1 |
-| | 2 | Middle | LAr / Pb | 0.025 × 0.025 |
-| | 3 | Back | LAr / Pb | 0.050 × 0.025 |
-| **TileCal (Barrel)** | 1 | Front | Scint. / Fe | 0.1 × 0.1 |
-| | 2 | Middle | Scint. / Fe | 0.1 × 0.1 |
-| | 3 | Back | Scint. / Fe | 0.2 × 0.1 |
-| **EMEC (EndCap)** | 0 | Pre-Sampler | LAr / Pb | 0.025 × 0.1 |
-| | 1 | Front | LAr / Pb | varies (0.003-0.006) × 0.1 |
-| | 2 | Middle | LAr / Pb | 0.025 × 0.025 / 0.1 × 0.1|
-| | 3 | Back | LAr / Pb | 0.050 × 0.025 / 0.1 × 0.1|
-| **HEC (EndCap)** | 1-3 | All Layers | LAr / Cu | 0.1 × 0.1 / 0.2 × 0.2 |
+| System               | Layer | Name           | Material    |   Granularity (Δη × Δφ)    |
+| :------------------- | :---: | :------------- | :---------- | :------------------------: |
+| **ECAL (Barrel)**    |   0   | Pre-Sampler    | LAr / Pb    |        0.025 × 0.1         |
+|                      |   1   | Front (Strips) | LAr / Pb    |       0.003125 × 0.1       |
+|                      |   2   | Middle         | LAr / Pb    |       0.025 × 0.025        |
+|                      |   3   | Back           | LAr / Pb    |       0.050 × 0.025        |
+| **TileCal (Barrel)** |   1   | Front          | Scint. / Fe |         0.1 × 0.1          |
+|                      |   2   | Middle         | Scint. / Fe |         0.1 × 0.1          |
+|                      |   3   | Back           | Scint. / Fe |         0.2 × 0.1          |
+| **EMEC (EndCap)**    |   0   | Pre-Sampler    | LAr / Pb    |        0.025 × 0.1         |
+|                      |   1   | Front          | LAr / Pb    | varies (0.003-0.006) × 0.1 |
+|                      |   2   | Middle         | LAr / Pb    | 0.025 × 0.025 / 0.1 × 0.1  |
+|                      |   3   | Back           | LAr / Pb    | 0.050 × 0.025 / 0.1 × 0.1  |
+| **HEC (EndCap)**     |  1-3  | All Layers     | LAr / Cu    |   0.1 × 0.1 / 0.2 × 0.2    |
 
 The geometry is highly customizable via Python scripts, allowing users to modify layer depths, material composition, and segmentation without recompiling the C++ core.
 
 ![Detector Cut View](geometry/doc/cut_view.png)
-*(Cut view of the detector geometry)*
+_(Cut view of the detector geometry)_
 
 ![Detector Front View](geometry/doc/front_view.png)
-*(Front view showing the concentric calorimeter layers)*
+_(Front view showing the concentric calorimeter layers)_
 
 ## 🤝 Contribution
 
@@ -200,4 +231,3 @@ Please ensure your code passes existing tests.
 
 This project is licensed under the **GNU General Public License v3.0 (GPLv3)**.
 See the [LICENSE](LICENSE) file for details.
-
