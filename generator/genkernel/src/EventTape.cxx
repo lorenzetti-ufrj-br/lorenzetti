@@ -187,6 +187,7 @@ void EventTape::clear()
 {
   // Clear the ntuple vectors
   m_p_isMain->clear();
+  m_p_seed_id->clear();
   m_p_pdg_id->clear(); 
   m_p_bc_id->clear();
   m_p_px->clear(); 
