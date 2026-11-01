@@ -30,7 +30,7 @@ namespace generator{
         };
         // A particle is invisible if in current table of such.
         bool isVisibleSave = true;
-        int idSave = particle->pid();
+        int idSave = std::abs(particle->pid());   // the table has the particles only: antineutrinos are invisible too
         for (int i = 0; i < INVISIBLENUMBER; ++i) 
             if (idSave == INVISIBLETABLE[i]) isVisibleSave = false;
 
