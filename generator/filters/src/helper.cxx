@@ -54,7 +54,7 @@ namespace generator{
 
       float et(const HepMC3::GenParticle *particle){
         float eta = particle->momentum().eta();
-        float et = eta != 0.0 ? (particle->momentum().e())/cosh(std::abs(eta)) : 0.0;
+        float et = (particle->momentum().e())/cosh(eta);   // at eta = 0, Et = E (it was 0)
         return et;
       }
 
