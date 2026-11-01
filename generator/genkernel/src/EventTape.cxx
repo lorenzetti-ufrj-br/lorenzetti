@@ -134,12 +134,16 @@ StatusCode EventTape::execute()
     generator::Event event;
 
     try {  
-      // Loop over all physcis tools
+      // Loop over all physcis tools; a failure restarts the event (before, it went on to the next tool and wrote the partial event)
+      bool failed = false;
       for (auto& alg : m_algs ){
         if ( alg->execute(event).isFailure() )
         {
-          --iEvent; continue;
+          failed = true; break;
         }
+      }
+      if (failed){
+        --iEvent; continue;
       }
 
     } catch ( NotInterestingEvent ){
