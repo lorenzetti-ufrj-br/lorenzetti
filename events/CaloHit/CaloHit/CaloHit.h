@@ -35,8 +35,14 @@ namespace xAOD{
                int bcid_end 
               );
 
+      /** Copy Constructor **/
+      CaloHit( const CaloHit &other );
+
       /** Destructor **/
       ~CaloHit()=default;
+
+      /** Clone/copy hit **/
+      CaloHit* copy() const;
       
       /*! Fill the deposit energy into the Hit */
       void fill( const G4Step * );

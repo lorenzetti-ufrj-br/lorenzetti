@@ -1,53 +1,49 @@
-
-
 #include "CaloHitPileupMerge.h"
 #include "GaugiKernel/Timer.h"
 #include "CaloHit/CaloHitConverter.h"
 #include "EventInfo/EventInfoConverter.h"
 #include "TTree.h"
 #include "TChain.h"
-#include <omp.h>
+#include <unordered_map>
 #include <stdexcept> 
 
 using namespace SG;
 using namespace Gaugi;
 
 
-
 /**
- * @class PileupMerge
+ * @class CaloHitPileupMerge
  * @brief Merges pileup events (minbias) into the signal event.
  * 
- * This algorithm simulates the effect of high-luminosity pileup by overlaying
- * hits from pre-generated minimum bias events onto the current signal event.
- * It handles the time window (bunch crossings) and uses Poisson statistics
- * to determine the number of pileup interactions per bunch crossing.
- * 
- * Properties:
- * - PileupAvg: Average number of pileup interactions (mu).
- * - PileupSigma: Fluctuations in mu.
- * - BunchIdStart/End: Time window in bunch crossings (-20 to 20 usually).
+ * Simulates high-luminosity pileup by overlaying hits from pre-simulated
+ * minimum-bias events onto the current hard-scatter signal event.
+ * For each bunch crossing in [BunchIdStart, BunchIdEnd], Poisson(mu)
+ * MinBias events are drawn from a single unified library and their
+ * BC=0 energy deposits are added directly to the cell's edep dictionary
+ * for that bunch crossing.
  */
 CaloHitPileupMerge::CaloHitPileupMerge( std::string name ) : 
   IMsgService(name),
   Algorithm(),
-  m_rng(128)
+  m_rng(128),
+  m_startEntry(-1),
+  m_currentEntry(-1)
 {
   declareProperty( "InputHitsKey"        , m_inputHitsKey="Hits"                 );
   declareProperty( "OutputHitsKey"       , m_outputHitsKey="Hits_Merged"         );
-  declareProperty( "InputEventKey"       , m_inputEventKey="EventInfo"           );
-  declareProperty( "OutputEventKey"      , m_outputEventKey="EventInfo_Merged"   );
+  declareProperty( "InputEventKey"       , m_inputEventKey="Events"              );
+  declareProperty( "OutputEventKey"      , m_outputEventKey="Events_Merged"      );
   declareProperty( "OutputLevel"         , m_outputLevel=1                       );
-  declareProperty( "PileupAvg"           , m_pileupAvg=0                         );
-  declareProperty( "PileupSigma"         , m_pileupSigma=0                       );
-  declareProperty( "TruncMu"             , m_trunc_mu = 1000                     );
+  declareProperty( "PileupAvg"           , m_pileupAvg=0.0f                      );
+  declareProperty( "PileupSigma"         , m_pileupSigma=0.0f                    );
+  declareProperty( "TruncMu"             , m_trunc_mu=1000.0f                    );
   declareProperty( "MergeMaxRetry"       , m_maxRetry=10                         );
-  declareProperty( "Seed"                , m_seed=0                              );
+  declareProperty( "Seed"                , m_seed=0.0f                           );
   declareProperty( "BunchIdStart"        , m_bcid_start=-21                      );
   declareProperty( "BunchIdEnd"          , m_bcid_end=4                          );
   declareProperty( "NtupleName"          , m_ntupleName="CollectionTree"         );
-  declareProperty( "LowPileupInputFiles" , m_lowPileupInputFiles={}              );
-  declareProperty( "HighPileupInputFiles", m_highPileupInputFiles={}             );
+  declareProperty( "PileupFiles"         , m_pileupFiles={}                      );
+  declareProperty( "StartEntry"          , m_startEntry=-1                       );
 }
 
 //!=====================================================================
@@ -61,7 +57,8 @@ StatusCode CaloHitPileupMerge::initialize()
 {
   CHECK_INIT();
   setMsgLevel(m_outputLevel);
-  m_rng.SetSeed(m_seed);
+  m_rng.SetSeed((unsigned int)m_seed);
+  m_currentEntry = (m_startEntry >= 0) ? (long long)m_startEntry : -1;
   return StatusCode::SUCCESS;
 }
 
@@ -74,17 +71,19 @@ StatusCode CaloHitPileupMerge::finalize()
 
 //!=====================================================================
 
-
 StatusCode CaloHitPileupMerge::bookHistograms( EventContext &ctx ) const
 {
-  Read(ctx, m_lowPileupInputFiles , "low_minbias" );
-  Read(ctx, m_highPileupInputFiles, "high_minbias");
+  MSG_INFO( "Loading MinBias pileup files..." );
+  Read(ctx, m_pileupFiles, "minbias_chain");
 
-
-
-  MSG_INFO( "Link all branches..." );
   auto store = ctx.getStoreGateSvc();
-
+  auto chain = (TChain*)store->decorator("minbias_chain");
+  if (!chain || chain->GetListOfFiles()->GetEntries() == 0) {
+    MSG_WARNING("No MinBias pileup files loaded into chain!");
+  } else {
+    MSG_INFO("MinBias chain initialized with " << chain->GetListOfFiles()->GetEntries() << " file(s).");
+    chain->SetCacheSize(30 * 1024 * 1024); // 30 MB prefetch buffer for fast sequential streaming
+  }
 
   return StatusCode::SUCCESS;
 }
@@ -111,87 +110,76 @@ StatusCode CaloHitPileupMerge::execute( EventContext &ctx, int /*evt*/ ) const
 }
 
 //!=====================================================================
-/**
- * @brief Executes the pileup merging process.
- * 
- * 1. Reads the signal event hits.
- * 2. Attempts to merge the pileup hits (with retries in case of I/O errors).
- * 3. Saves the merged hit container and updated EventInfo (with new avgMu).
- */
+
 StatusCode CaloHitPileupMerge::post_execute( EventContext &ctx ) const
 {
-
-
   Timer timer;
   timer.start();
 
   SG::ReadHandle<xAOD::CaloHitContainer> container(m_inputHitsKey, ctx);
-  if( !container.isValid() )
-  {
-    MSG_FATAL("It's not possible to read the xAOD::CaloHitContainer from this Contaxt using this key " << m_inputHitsKey );
+  if (!container.isValid()) {
+    MSG_FATAL("It's not possible to read xAOD::CaloHitContainer with key " << m_inputHitsKey);
+    return StatusCode::FAILURE;
   }
 
   std::vector<xAOD::CaloHit*> vec_hits;
-  unsigned retry=0;
-  bool ok(false);
-  float nPileupMean(0);
+  unsigned retry = 0;
+  float nPileupMean = 0.0f;
 
-  // NOTE: For somereason i got many unzip errors when running a lot of get entry. In order
-  // to avoid lose the event, we implement a retry mechanims with a try-catch to repeat the 
-  // merge procedure in case of failure.
-  while ( (retry < m_maxRetry) )
-  {
-    try{
-      MSG_INFO("Processing retry "<< retry);
-      MSG_INFO("Allocoate unconst hits...");
-      allocate( container, vec_hits );
-      MSG_INFO("Merging...")
+  while (retry < (unsigned)m_maxRetry) {
+    try {
+      MSG_INFO("Processing pileup merge (attempt " << retry + 1 << ")...");
+      allocate(container, vec_hits);
       nPileupMean = merge(ctx, vec_hits);
-      MSG_INFO("Pileup mean: "<< nPileupMean)
+      MSG_INFO("Pileup merge completed. Effective <mu>: " << nPileupMean);
       break;
-    }catch (const std::runtime_error& e) {
-        std::cerr << "Caught an exception: " << e.what() << std::endl;
-        retry++;
-        MSG_INFO("Deallocating hits...");
-        deallocate( vec_hits );
+    } catch (const std::runtime_error& e) {
+      MSG_WARNING("Caught runtime exception during merge: " << e.what() << ". Retrying...");
+      retry++;
+      deallocate(vec_hits);
     }
   }
 
-  MSG_INFO("Number of retries: "<<retry);
-  
-  bool save = retry<m_maxRetry?true:false;
+  if (retry >= (unsigned)m_maxRetry) {
+    MSG_ERROR("Failed to merge pileup after " << m_maxRetry << " attempts!");
+    return StatusCode::FAILURE;
+  }
 
-  if (save){
+  // Record merged hits container
+  {
+    MSG_INFO("Writing merged hits container: " << m_outputHitsKey);
+    SG::WriteHandle<xAOD::CaloHitContainer> hits(m_outputHitsKey, ctx);
+    hits.record(std::make_unique<xAOD::CaloHitContainer>());
+    for (auto* hit : vec_hits) {
+      hits->push_back(hit);
+    }
+  }
 
-    MSG_INFO( "Writing new container hits...");
-    {
-      SG::WriteHandle<xAOD::CaloHitContainer> hits(m_outputHitsKey, ctx);
-      hits.record( std::unique_ptr<xAOD::CaloHitContainer>(new xAOD::CaloHitContainer()) );
-      for (auto hit : vec_hits)
-      {
-        hits->push_back(hit);
+  // Record merged EventInfo container
+  {
+    MSG_INFO("Writing merged event info: " << m_outputEventKey << " with avgmu=" << nPileupMean);
+    SG::ReadHandle<xAOD::EventInfoContainer> event(m_inputEventKey, ctx);
+    if (!event.isValid()) {
+      std::string fallbackKey = (m_inputEventKey == "Events") ? "EventInfo" : "Events";
+      SG::ReadHandle<xAOD::EventInfoContainer> fallbackEvent(fallbackKey, ctx);
+      if (fallbackEvent.isValid()) {
+        event = fallbackEvent;
+      } else {
+        MSG_FATAL("It's not possible to read xAOD::EventInfoContainer with key " << m_inputEventKey);
+        return StatusCode::FAILURE;
       }
     }
 
-    MSG_INFO( "Writing new container event info...");
-    {
-      MSG_INFO("Avgmu: " << nPileupMean);
-      SG::ReadHandle<xAOD::EventInfoContainer> event(m_inputEventKey, ctx);
-      if( !event.isValid() ){
-        MSG_FATAL( "It's not possible to read the xAOD::EventInfoContainer from this Context" );
-      }
-      // get the old ones
-      auto const_evt = (**event.ptr()).front();
-      SG::WriteHandle<xAOD::EventInfoContainer> output_events(m_outputEventKey, ctx);
-      output_events.record( std::unique_ptr<xAOD::EventInfoContainer>(new xAOD::EventInfoContainer()) );
-      auto evt = new xAOD::EventInfo();
-      evt->setAvgmu(nPileupMean);
-      evt->setEventNumber( const_evt->eventNumber() );
-      evt->setTotalEnergy( const_evt->totalEnergy()) ;
-      output_events->push_back(evt);
-    }
-  }else{
-    MSG_WARNING("Its not possible to save this event because of a merge problem!");
+    auto const_evt = (**event.ptr()).front();
+    SG::WriteHandle<xAOD::EventInfoContainer> output_events(m_outputEventKey, ctx);
+    output_events.record(std::make_unique<xAOD::EventInfoContainer>());
+    auto evt = new xAOD::EventInfo();
+    evt->setRunNumber(const_evt->runNumber());
+    evt->setEventNumber(const_evt->eventNumber());
+    evt->setTotalEnergy(const_evt->totalEnergy());
+    evt->setAvgmu(nPileupMean);
+    evt->setTotmu(nPileupMean * (m_bcid_end - m_bcid_start + 1));
+    output_events->push_back(evt);
   }
 
   timer.stop();
@@ -201,191 +189,117 @@ StatusCode CaloHitPileupMerge::post_execute( EventContext &ctx ) const
 
 //!=====================================================================
 
-
-/**
- * @brief Helper function to perform the actual merging.
- * 
- * Iterates through bunch crossings (BCID) from start to end.
- * For each BCID, it determines the number of pileup interactions (Poisson)
- * and randomly selects events from the low/high pileup input files/trees.
- * It then reads the hits from those events and adds their energy to the
- * corresponding signal hits.
- * 
- * @return The average number of pileup interactions added per bunch crossing.
- */
-float CaloHitPileupMerge::merge( EventContext &ctx, std::vector<xAOD::CaloHit*> &vec_hits ) const{
-
-  MSG_INFO( "Link all branches..." );
+float CaloHitPileupMerge::merge( EventContext &ctx, std::vector<xAOD::CaloHit*> &vec_hits ) const
+{
   auto store = ctx.getStoreGateSvc();
+  auto chain = (TChain*)store->decorator("minbias_chain");
 
-  auto tree_low_pileup = ((TChain*)store->decorator("low_minbias"));
-  tree_low_pileup->SetBranchStatus("*",0);
-  tree_low_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".edep").c_str(), 1);
-  //tree_low_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".tof").c_str(), 1);
-  tree_low_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".bcid_start").c_str(), 1);
-  tree_low_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".bcid_end").c_str(), 1);
-  tree_low_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".hash").c_str(), 1);
-  tree_low_pileup->SetBranchStatus(("EventInfoContainer_"+m_inputEventKey+".avgmu").c_str(), 1);
-  
-
-
-
-  std::vector<xAOD::CaloHit_t> *collection_hits_low_pileup=nullptr;
-  InitBranch( tree_low_pileup,  ("CaloHitContainer_"+m_inputHitsKey).c_str(), &collection_hits_low_pileup );
-  std::vector<xAOD::EventInfo_t> *collection_events_low_pileup=nullptr;
-  InitBranch( tree_low_pileup,  ("EventInfoContainer_"+m_inputEventKey).c_str(), &collection_events_low_pileup );
-
-  auto tree_high_pileup = ((TChain*)store->decorator("high_minbias"));
-  tree_high_pileup->SetBranchStatus("*",0);
-  tree_high_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".edep").c_str(), 1);
-  //tree_high_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".tof").c_str(), 1);
-  tree_high_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".bcid_start").c_str(), 1);
-  tree_high_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".bcid_end").c_str(), 1);
-  tree_high_pileup->SetBranchStatus(("CaloHitContainer_"+m_inputHitsKey+".hash").c_str(), 1);
-  tree_high_pileup->SetBranchStatus(("EventInfoContainer_"+m_inputEventKey+".avgmu").c_str(), 1);
-
-
-
-
-
-  std::vector<xAOD::CaloHit_t> *collection_hits_high_pileup=nullptr;
-  InitBranch( tree_high_pileup,  ("CaloHitContainer_"+m_inputHitsKey).c_str(), &collection_hits_high_pileup );
-  std::vector<xAOD::EventInfo_t> *collection_events_high_pileup=nullptr;
-  InitBranch( tree_high_pileup,  ("EventInfoContainer_"+m_inputEventKey).c_str(), &collection_events_high_pileup );
-
-  if (tree_high_pileup->GetEntry( 0 ) < 0){
-    MSG_FATAL("Not possible to read this event. repeat...");
+  if (!chain || chain->GetEntries() == 0) {
+    MSG_FATAL("MinBias TChain is empty or not loaded!");
+    return 0.0f;
   }
 
-  float nHighPileup = collection_events_high_pileup->at(0).avgmu;
-  int nWin = m_bcid_end - m_bcid_start;
-  std::map<unsigned long int, int > hit_map;
+  // 1. Activate only the branches needed for CaloHitContainer
+  chain->SetBranchStatus("*", 0);
+  std::string branch_name = "CaloHitContainer_" + m_inputHitsKey;
+  chain->SetBranchStatus(branch_name.c_str(), 1);
+  chain->SetBranchStatus((branch_name + ".*").c_str(), 1);
 
-  for (unsigned int idx=0; idx<(*collection_hits_high_pileup).size(); idx++ )
-  {
-    auto hit_t = (*collection_hits_high_pileup).at(idx);
-    hit_map.insert( std::make_pair(hit_t.hash, idx) );
+  std::vector<xAOD::CaloHit_t> *collection_hits = nullptr;
+  InitBranch(chain, branch_name, &collection_hits);
+
+  // 2. Hash map for O(1) cell lookup
+  std::unordered_map<unsigned long int, xAOD::CaloHit*> hit_map;
+  hit_map.reserve(vec_hits.size() * 2);
+  for (auto* hit : vec_hits) {
+    hit_map[hit->hash()] = hit;
   }
 
+  // 3. Sample mu for this event
+  float mu_event = (m_pileupSigma > 0.0f) ? (float)m_rng.Gaus(m_pileupAvg, m_pileupSigma) : m_pileupAvg;
+  if (mu_event < 0.0f) mu_event = 0.0f;
 
-  std::vector<xAOD::CaloHit_t>   *collection_hits=nullptr;
-  std::vector<xAOD::EventInfo_t> *collection_events=nullptr;
-  TTree *tree=nullptr;
+  long long total_entries = chain->GetEntries();
+  long long total_interactions = 0;
+  int num_bunch_crossings = (m_bcid_end - m_bcid_start + 1);
 
-  int nPileUpMean(0);
-  int pileupAvg = (int)m_rng.Gaus( m_pileupAvg, m_pileupSigma);
+  xAOD::CaloHitConverter cnv;
 
-  MSG_INFO("Merging with Pileup Avg: "<< pileupAvg);
+  // 4. Loop across the bunch-crossing window
+  for (int bc = m_bcid_start; bc <= m_bcid_end; ++bc) {
+    int n_pileup = poisson(mu_event);
+    total_interactions += n_pileup;
 
-  int eventNumber=-1;
-
-  for ( int bcid = m_bcid_start;  bcid <= m_bcid_end; ++bcid){
-
-    int nPileup = poisson(pileupAvg);
-    int kPileup=nPileup;
-    nPileUpMean+=nPileup;
-
-    while (kPileup>0)
-    {
-      tree                 = kPileup>nHighPileup? tree_high_pileup                 : tree_low_pileup;
-      collection_hits      = kPileup>nHighPileup? collection_hits_high_pileup      : collection_hits_low_pileup;
-      collection_events    = kPileup>nHighPileup? collection_events_high_pileup    : collection_events_low_pileup;
-  
-
-
-      if (eventNumber > (tree->GetEntries()-1)){
-        eventNumber=-1;
+    for (int k = 0; k < n_pileup; ++k) {
+      if (m_currentEntry < 0) {
+        m_currentEntry = m_rng.Integer(total_entries);
+      } else {
+        m_currentEntry = (m_currentEntry + 1) % total_entries;
       }
 
-      if (eventNumber<0){
-        eventNumber = m_rng.Integer(tree->GetEntries()-1);
-      }
-      
-      MSG_DEBUG("Reading event " << eventNumber);
-   
-
-      if (tree->GetEntry( eventNumber ) <= 0){
-        MSG_FATAL("Not possible to read this event. repeat...");
+      if (chain->GetEntry(m_currentEntry) <= 0) {
+        throw std::runtime_error("I/O error reading MinBias entry " + std::to_string(m_currentEntry));
       }
 
-      if (collection_events->empty()){
-        MSG_FATAL("Collection hits is empty!");
-      }
-      if (collection_hits->empty()){
-        MSG_FATAL("Collection hits is empty!");
-      }
-      eventNumber++;
-      kPileup -= collection_events->at(0).avgmu;
+      if (!collection_hits) continue;
 
-      for (auto hit_main : vec_hits)
-      {
-        if(hit_map.count(hit_main->hash()))
-        {
-          int idx = hit_map[hit_main->hash()];
-          auto hit_t = (*collection_hits).at(idx);
-          xAOD::CaloHit *hit = nullptr;
-          xAOD::CaloHitConverter cnv;
-          cnv.convert(hit_t, hit);
-          hit_main->edep( bcid, hit->edep(bcid) ); 
-          delete hit;
+      for (const auto &hit_t : *collection_hits) {
+        // Fast filter: only overlay pileup onto cells present in the signal event / RoI
+        auto it = hit_map.find(hit_t.hash);
+        if (it == hit_map.end()) continue;
+
+        xAOD::CaloHit *hit_mb = nullptr;
+        cnv.convert(hit_t, hit_mb);
+        if (!hit_mb) continue;
+
+        // Directly query the dictionary: returns energy at BC=0 (default parameter)
+        float e_mb = hit_mb->edep();
+        if (e_mb > 0.0f) {
+          it->second->edep(bc, e_mb);
         }
+
+        delete hit_mb;
       }
-      MSG_DEBUG( "Merging a total of " << nPileup << " pileup into bunch-crossing " << bcid << ". Current pileup is " <<(nPileup - kPileup));  
-    }// while
+    }
+    MSG_DEBUG("Bunch crossing " << bc << ": merged " << n_pileup << " MinBias interaction(s).");
   }
 
   delete collection_hits;
-  delete collection_events;
-  return nPileUpMean/nWin;
+  return static_cast<float>(total_interactions) / static_cast<float>(num_bunch_crossings);
 }
 
 //!=====================================================================
 
-void CaloHitPileupMerge::allocate( SG::ReadHandle<xAOD::CaloHitContainer> &container , std::vector<xAOD::CaloHit*> &vec_hits ) const{
+void CaloHitPileupMerge::allocate( SG::ReadHandle<xAOD::CaloHitContainer> &container,
+                                   std::vector<xAOD::CaloHit*> &vec_hits ) const
+{
+  MSG_INFO( "Cloning signal hits with size " << container.ptr()->size() << "...");
+  vec_hits.reserve(container.ptr()->size());
 
-  MSG_INFO( "Convert hits to hash map with size " << container.ptr()->size() <<"...");
-  for( const auto& const_hit : **container.ptr())
-  {
-    // Create the truth cell 
-    auto hit = new xAOD::CaloHit( const_hit->eta(),
-                                  const_hit->phi(),
-                                  const_hit->deltaEta(),
-                                  const_hit->deltaPhi(),
-                                  const_hit->hash(),
-                                  const_hit->sampling(),
-                                  const_hit->detector(),
-                                  const_hit->bc_duration(),
-                                  const_hit->bcid_start(),
-                                  const_hit->bcid_end()
-                                  );
-
-
-
-    for ( int bcid = hit->bcid_start();  bcid <= hit->bcid_end(); ++bcid )
-    {
-      hit->edep( bcid, const_hit->edep(bcid) ); // truth energy for each bunch crossing
-    }
+  for (const auto* const_hit : **container.ptr()) {
+    auto hit = const_hit->copy();
+    hit->set_bcid_start(m_bcid_start);
+    hit->set_bcid_end(m_bcid_end);
     vec_hits.push_back(hit);
   }
-  
 }
 
-void CaloHitPileupMerge::deallocate( std::vector<xAOD::CaloHit*> &vec_hits ) const{
-  for (auto hit : vec_hits)
-  {
+//!=====================================================================
+
+void CaloHitPileupMerge::deallocate( std::vector<xAOD::CaloHit*> &vec_hits ) const
+{
+  for (auto* hit : vec_hits) {
     delete hit;
-  }  
+  }
   vec_hits.clear();
 }
 
-
-
 //!=====================================================================
 
- StatusCode CaloHitPileupMerge::fillHistograms( SG::EventContext &/*ctx*/ ) const
- {
-    return StatusCode::SUCCESS;
- }
+StatusCode CaloHitPileupMerge::fillHistograms( SG::EventContext &/*ctx*/ ) const
+{
+  return StatusCode::SUCCESS;
+}
 
 //!=====================================================================
 
@@ -401,7 +315,6 @@ TBranch* CaloHitPileupMerge::InitBranch(TTree* fChain, std::string branch_name, 
   }
   fChain->SetBranchStatus(bname.c_str(), 1.);
   fChain->SetBranchAddress(bname.c_str(), param);
-  MSG_INFO("branch aki = "<<fChain->GetBranch(bname.c_str()));
 
   return fChain->GetBranch(bname.c_str());  
 }
@@ -410,33 +323,33 @@ TBranch* CaloHitPileupMerge::InitBranch(TTree* fChain, std::string branch_name, 
 
 int CaloHitPileupMerge::poisson(double nAvg) const
 {
-  // Random number.
-  double rPoisson = m_rng.Uniform(0,1) * exp(nAvg);
-  // Initialize.
-  double rSum  = 0.;
-  double rTerm = 1.;
-  // Add to sum and check whether done.
-  for (int i = 0; i < m_trunc_mu ; ) {
+  if (nAvg <= 0.0) return 0;
+
+  // Inverted transform sampling using exp(-nAvg)
+  double rPoisson = m_rng.Uniform(0.0, 1.0) * exp(nAvg);
+  double rSum  = 0.0;
+  double rTerm = 1.0;
+
+  for (int i = 0; i < (int)m_trunc_mu; ++i) {
     rSum += rTerm;
     if (rSum > rPoisson) return i;
-    // Evaluate next term.
-    ++i;
-    rTerm *= nAvg / i;
+    rTerm *= nAvg / (i + 1);
   }
-  // Emergency return.
-  return m_trunc_mu;
+
+  return (int)m_trunc_mu;
 }
 
 //!=====================================================================
 
-
 void CaloHitPileupMerge::Read( EventContext &ctx, const std::vector<std::string> &paths, std::string name ) const
 {
   auto store = ctx.getStoreGateSvc();
-  TChain *file = new TChain();
-  for (auto path : paths){
-    //MSG_INFO("Loading " << path << "...");
-    file->Add((path+"/"+m_ntupleName).c_str());
+  TChain *chain = new TChain(m_ntupleName.c_str());
+
+  for (const auto &path : paths) {
+    if (path.empty()) continue;
+    chain->Add(path.c_str());
   }
-  store->decorate( name , file );
+
+  store->decorate( name , chain );
 }

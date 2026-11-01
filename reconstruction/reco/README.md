@@ -128,8 +128,7 @@ Superimposes minimum-bias pileup hits on top of hard-scatter signal events accor
 merge_trf.py \
     -i signal.HIT.root \
     -o signal.HIT_Merged.root \
-    --low-pileup-files /data/minbias_low/ \
-    --high-pileup-files /data/minbias_high/ \
+    --pileup-files "/data/minbias/*.root" \
     --pileup-avg 30 \
     --pileup-sigma 5
 ```

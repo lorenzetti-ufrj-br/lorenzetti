@@ -42,6 +42,30 @@ CaloHit::CaloHit(     float eta,
   }
 }
 
+CaloHit::CaloHit( const CaloHit &other ) :
+  EDM(),
+  m_sampling(other.m_sampling),
+  m_detector(other.m_detector),
+  m_eta(other.m_eta),
+  m_phi(other.m_phi),
+  m_deta(other.m_deta),
+  m_dphi(other.m_dphi),
+  m_bcid_start(other.m_bcid_start),
+  m_bcid_end(other.m_bcid_end),
+  m_bc_duration(other.m_bc_duration),
+  m_time(other.m_time),
+  m_edep(other.m_edep),
+  m_tof(other.m_tof),
+  m_firstHit(other.m_firstHit),
+  m_hash(other.m_hash)
+{
+}
+
+CaloHit* CaloHit::copy() const
+{
+  return new CaloHit(*this);
+}
+
 void CaloHit::clear()
 {
   m_edep.clear(); // zeroize deposit energy for all bunchs

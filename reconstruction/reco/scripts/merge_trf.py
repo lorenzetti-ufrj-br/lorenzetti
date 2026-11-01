@@ -16,10 +16,9 @@ from CaloHitBuilder import CaloHitPileupMergeCfg
 def main(
     input_file: Annotated[str | Path, typer.Option("-i", "--input-file", help="Input signal HIT file or directory")],
     output_file: Annotated[str | Path, typer.Option("-o", "--output-file", help="Output merged HIT file or directory")],
-    low_pileup_files: Annotated[str, typer.Option("--low-pileup-files", help="Path or directory of low pileup HIT files")],
-    high_pileup_files: Annotated[str, typer.Option("--high-pileup-files", help="Path or directory of high pileup HIT files")],
-    pileup_avg: Annotated[int, typer.Option("--pileup-avg", help="Average pileup value")],
-    pileup_sigma: Annotated[int, typer.Option("--pileup-sigma", help="Pileup sigma value")],
+    pileup_files: Annotated[str, typer.Option("--pileup-files", help="Path, glob pattern or directory of MinBias HIT files")] = "",
+    pileup_avg: Annotated[float, typer.Option("--pileup-avg", help="Average pileup value (mu)")] = 0.0,
+    pileup_sigma: Annotated[float, typer.Option("--pileup-sigma", help="Pileup sigma fluctuation")] = 0.0,
     number_of_threads: Annotated[int, typer.Option("-nt", "--number-of-threads", help="Threads allocated per worker")] = 1,
     nov: Annotated[int, typer.Option("--nov", "--number-of-events", help="The total number of events to run.")] = -1,
     output_level: Annotated[str, typer.Option("-l", "--output-level", help="Logging verbosity level.")] = "INFO",
@@ -44,8 +43,10 @@ def main(
             return sorted(glob.glob(p_str))
         return [str(p)]
 
-    low_list = resolve_files(low_pileup_files)
-    high_list = resolve_files(high_pileup_files)
+    if not pileup_files:
+        raise ValueError("MinBias pileup files must be specified via --pileup-files")
+
+    pu_list = resolve_files(pileup_files)
 
     acc = ComponentAccumulator("ComponentAccumulator", output_file)
 
@@ -62,8 +63,7 @@ def main(
 
     pileup = CaloHitPileupMergeCfg(
         "CaloHitPileupMerge",
-        LowPileupInputFiles=low_list,
-        HighPileupInputFiles=high_list,
+        PileupFiles=pu_list,
         PileupAvg=pileup_avg,
         PileupSigma=pileup_sigma,
         InputHitsKey=recordable("Hits"),

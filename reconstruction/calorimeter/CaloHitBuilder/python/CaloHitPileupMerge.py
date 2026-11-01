@@ -9,13 +9,12 @@ from typing import List, Optional
 import ROOT
 from GaugiKernel import Configurable, LoggingLevel
 
-__all__ = ["CaloHitPileupMergeCfg", "PileupMergeCfg"]
+__all__ = ["CaloHitPileupMergeCfg"]
 
 
 def CaloHitPileupMergeCfg(
     name: str = "CaloHitPileupMerge",
-    LowPileupInputFiles: Optional[List[str]] = None,
-    HighPileupInputFiles: Optional[List[str]] = None,
+    PileupFiles: Optional[List[str]] = None,
     PileupAvg: float = 0.0,
     PileupSigma: float = 0.0,
     InputHitsKey: str = "Hits",
@@ -27,6 +26,7 @@ def CaloHitPileupMergeCfg(
     TruncMu: float = 1000.0,
     MergeMaxRetry: int = 10,
     Seed: float = 0.0,
+    StartEntry: int = -1,
     NtupleName: str = "CollectionTree",
     OutputLevel: int = LoggingLevel.toC("INFO"),
 ) -> Configurable:
@@ -35,8 +35,7 @@ def CaloHitPileupMergeCfg(
 
     Args:
         name: Algorithm instance name.
-        LowPileupInputFiles: List of file paths containing low pileup minbias events.
-        HighPileupInputFiles: List of file paths containing high pileup minbias events.
+        PileupFiles: List of file paths containing MinBias events (BC=0).
         PileupAvg: Average pileup interaction value (mu).
         PileupSigma: Fluctuation in mu.
         InputHitsKey: StoreGate key for input signal hits.
@@ -48,6 +47,7 @@ def CaloHitPileupMergeCfg(
         TruncMu: Maximum truncation cut on mu.
         MergeMaxRetry: Number of retries on I/O read errors.
         Seed: Random number generator seed.
+        StartEntry: Optional starting MinBias entry (-1 for random circular offset).
         NtupleName: TTree name inside input ROOT files.
         OutputLevel: Logging verbosity level.
 
@@ -57,8 +57,7 @@ def CaloHitPileupMergeCfg(
     return Configurable(
         ROOT.CaloHitPileupMerge,
         name,
-        LowPileupInputFiles=LowPileupInputFiles if LowPileupInputFiles is not None else [],
-        HighPileupInputFiles=HighPileupInputFiles if HighPileupInputFiles is not None else [],
+        PileupFiles=PileupFiles or [],
         PileupAvg=PileupAvg,
         PileupSigma=PileupSigma,
         InputHitsKey=InputHitsKey,
@@ -70,10 +69,7 @@ def CaloHitPileupMergeCfg(
         TruncMu=TruncMu,
         MergeMaxRetry=MergeMaxRetry,
         Seed=Seed,
+        StartEntry=StartEntry,
         NtupleName=NtupleName,
         OutputLevel=OutputLevel,
     )
-
-
-# Backward compatibility alias
-PileupMergeCfg = CaloHitPileupMergeCfg

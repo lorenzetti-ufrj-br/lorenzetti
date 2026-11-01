@@ -70,12 +70,11 @@ class CaloHitPileupMerge : public Gaugi::Algorithm
     /*! The end bunch crossing id for energy estimation */
     int m_bcid_end;
 
-    std::vector<std::string> m_lowPileupInputFiles;
-    std::vector<std::string> m_highPileupInputFiles;
+    std::vector<std::string> m_pileupFiles;
     std::string m_ntupleName;
+    int m_startEntry;
+    mutable long long m_currentEntry;
 
 };
-
-using PileupMerge = CaloHitPileupMerge;
 
 #endif

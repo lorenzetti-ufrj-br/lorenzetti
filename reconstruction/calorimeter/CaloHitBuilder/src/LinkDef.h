@@ -12,6 +12,5 @@
 #pragma link C++ class CaloHitMaker+;
 #pragma link C++ class CaloHitMerge+;
 #pragma link C++ class CaloHitPileupMerge+;
-#pragma link C++ class PileupMerge+;
 
 #endif

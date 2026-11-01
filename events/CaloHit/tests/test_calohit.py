@@ -32,6 +32,27 @@ class TestCaloHitEDM(unittest.TestCase):
         hit.clear()
         self.assertEqual(hit.edep(0), 0.0)
 
+    def test_calohit_copy_and_clone(self):
+        hit = ROOT.xAOD.CaloHit(0.2, -0.4, 0.025, 0.025, 12345, ROOT.EMB1, ROOT.LAR, 25.0, -7, 7)
+        hit.edep(0, 150.0)
+        hit.edep(-2, 45.0)
+
+        # Clone using copy()
+        cloned = hit.copy()
+        self.assertAlmostEqual(cloned.eta(), 0.2, places=4)
+        self.assertAlmostEqual(cloned.phi(), -0.4, places=4)
+        self.assertEqual(cloned.hash(), 12345)
+        self.assertEqual(cloned.bcid_start(), -7)
+        self.assertEqual(cloned.bcid_end(), 7)
+        self.assertAlmostEqual(cloned.edep(0), 150.0, places=1)
+        self.assertAlmostEqual(cloned.edep(-2), 45.0, places=1)
+        self.assertEqual(cloned.edep(1), 0.0)
+
+        # Ensure deep copy: modifying cloned does not affect original
+        cloned.edep(0, 50.0)
+        self.assertAlmostEqual(cloned.edep(0), 200.0, places=1)
+        self.assertAlmostEqual(hit.edep(0), 150.0, places=1)
+
     def test_calohit_t_struct(self):
         t_obj = ROOT.xAOD.CaloHit_t()
         t_obj.eta = 0.15
