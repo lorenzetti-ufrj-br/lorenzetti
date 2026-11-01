@@ -181,11 +181,17 @@ StatusCode CaloHitMaker::execute( EventContext &ctx , const G4Step *step ) const
   float phi = vpos.Phi();
   float radius = vpos.Perp();
 
+  // The region of this maker is tested at the midpoint of the step, which is always inside the volume of the step. At the pre-step point,
+  // the first step of a particle entering through the low face (lower z or lower r) sits on that face and was refused by the strict lower
+  // bound, while on the opposite side the entry face is accepted by <=.
+  const G4ThreeVector mid = 0.5*( pos + step->GetPostStepPoint()->GetPosition() );
+  const float midRadius = mid.perp();
+
   // In plan xy
-  if( !(radius > m_rMin && radius <= m_rMax) )
+  if( !(midRadius > m_rMin && midRadius <= m_rMax) )
     return StatusCode::SUCCESS;
 
-  if( !(pos.z() > m_zMin && pos.z() <= m_zMax))
+  if( !(mid.z() > m_zMin && mid.z() <= m_zMax))
     return StatusCode::SUCCESS;
 
   int etaBin = find(m_etaBins, eta);

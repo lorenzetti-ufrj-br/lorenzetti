@@ -48,7 +48,7 @@ StatusCode Pileup::execute(  generator::Event &ctx )
   float nPileUpMean(0);
 
   // Generate the new average for pileup from a gaussian distribution
-  int evtPileupAvg(0);
+  float evtPileupAvg(0);   // a mean, not a count: an int truncated 52.5 to 52 and 0.5 to 0
   
   if(m_nPileupPerBunch<0){
     evtPileupAvg = m_nPileupAvg + generator()->random_gauss()*m_nPileupSigma;
