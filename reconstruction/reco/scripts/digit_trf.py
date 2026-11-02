@@ -12,7 +12,7 @@ from RootStreamBuilder  import RootStreamHITReader, recordable
 from RootStreamBuilder  import RootStreamESDMaker
 
 from reco.reco_job import merge_args, update_args, create_parallel_job
-from geometry import DetectorConstruction_v1
+from geometry import DetectorConstruction_v1, DetectorConstruction_v2
 
 
 """
@@ -54,6 +54,10 @@ def parse_args():
                         dest='post_exec', required=False, default="''",
                         help="The postexec command")
 
+    parser.add_argument('--detector', action='store',
+                        dest='detector', required=False,
+                        type=str, default='v1', choices=['v1', 'v2'],
+                        help="The detector construction: v1, the original geometry, or v2, the ATLAS geometry.")
    
     parser = merge_args(parser)
 
@@ -67,6 +71,7 @@ def main(events : List[int],
          pre_init: str,
          pre_exec: str,
          post_exec: str,
+         detector: str = 'v1',
         ):
     """
     Main function for the digitization process.
@@ -83,6 +88,7 @@ def main(events : List[int],
         pre_init (str): Hook for pre-initialization code.
         pre_exec (str): Hook for pre-execution code.
         post_exec (str): Hook for post-execution code.
+        detector (str): 'v1' or 'v2', the detector construction of the cells.
     """
 
     if isinstance(input_file, Path):
@@ -110,7 +116,7 @@ def main(events : List[int],
 
     # digitalization!    
     calorimeter = CaloCellBuilder("CaloCellBuilder", 
-                                  DetectorConstruction_v1("ATLAS"),
+                                  {"v1": DetectorConstruction_v1, "v2": DetectorConstruction_v2}[detector]("ATLAS"),
                                   HistogramPath="Expert/Cells",
                                   OutputLevel=outputLevel,
                                   InputHitsKey=recordable("Hits"),
@@ -150,4 +156,5 @@ if __name__ == "__main__":
          pre_init         = args.pre_init,
          pre_exec         = args.pre_exec,
          post_exec        = args.post_exec,
+         detector         = args.detector,
          )

@@ -12,7 +12,7 @@ from RootStreamBuilder      import recordable
 from CaloHitBuilder         import CaloHitBuilder
 from RootStreamBuilder      import RootStreamHITMaker
 
-from geometry import DetectorConstruction_v1
+from geometry import DetectorConstruction_v1, DetectorConstruction_v2
 from reco import update_args_from_file,merge_args_from_file
 
 
@@ -71,6 +71,10 @@ def parse_args():
     parser.add_argument('--post-exec', action='store',
                         dest='post_exec', required=False, default="''",
                         help="The postexec command")
+    parser.add_argument('--detector', action='store',
+                        dest='detector', required=False,
+                        type=str, default='v1', choices=['v1', 'v2'],
+                        help="The detector construction: v1, the original geometry, or v2, the ATLAS geometry.")
     parser.add_argument('--save-all-hits', action='store_true',
                         dest='save_all_hits', required=False,
                         help="Save all hits into the output file.")
@@ -92,12 +96,13 @@ def main(logging_level: str,
          number_of_events: int,
          number_of_threads: int,
          dry_run: bool,
+         detector: str = 'v1',
          ):
     """
     Main function to drive the Geant4 simulation.
 
     Constructs the simulation environment using `ComponentAccumulator`:
-    1. Initializes Detector Construction (DetectorConstruction_v1).
+    1. Initializes Detector Construction (DetectorConstruction_v1, or DetectorConstruction_v2 with detector='v2').
     2. Sets up the Event Reader to stream events from input.
     3. Configures the CaloHitBuilder to collect energy deposits.
     4. Merges components and executes the run loop.
@@ -115,6 +120,7 @@ def main(logging_level: str,
         number_of_events (int): Number of events to process.
         number_of_threads (int): Number of Geant4 threads.
         dry_run (bool): If True, sets up but does not execute the run.
+        detector (str): 'v1' or 'v2', the detector construction.
     """
 
     if isinstance(input_file, Path):
@@ -127,7 +133,7 @@ def main(logging_level: str,
     exec(pre_init)
 
     acc = ComponentAccumulator("ComponentAccumulator", 
-                               DetectorConstruction_v1( "ATLAS", UseMagneticField=enable_magnetic_field),
+                               {"v1": DetectorConstruction_v1, "v2": DetectorConstruction_v2}[detector]( "ATLAS", UseMagneticField=enable_magnetic_field),
                                NumberOfThreads=number_of_threads,
                                OutputFile=output_file,
                                Timeout=timeout * MINUTES)
@@ -193,6 +199,7 @@ if __name__ == "__main__":
              number_of_events      = args.number_of_events,
              number_of_threads     = args.number_of_threads,
              dry_run               = args.dry_run,
+             detector              = args.detector,
         )
 
 
