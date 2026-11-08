@@ -23,6 +23,10 @@ namespace xAOD{
         std::vector<float> edep;
         std::vector<float> tof;
         unsigned long int hash;
+        // Dual readout of the tile cells (two PMTs per cell): energy seen by each PMT per bunch crossing.
+        // Empty unless the simulation used --tile-dual-readout.
+        std::vector<float> edep_pmt0;
+        std::vector<float> edep_pmt1;
     };
 
     class CaloHitConverter{

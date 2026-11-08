@@ -41,6 +41,17 @@ namespace xAOD{
       /*! Fill the deposit energy into the Hit */
       void fill( const G4Step * );
       void fill( const G4Step *, float sampNoiseStd ); // 
+      // Same as above, with the energy given by the caller (e.g. after Birks' law)
+      void fill( const G4Step *, float sampNoiseStd, float edep );
+      /*! Dual readout of the tile cells (two photomultipliers per cell, as in ATLAS): add the energy seen by
+          each PMT, already weighted by the caller, in the bunch crossing of the step. Used only when the
+          cell was created with setDualReadout(true). */
+      void fillPmt( const G4Step *, float edep_pmt0, float edep_pmt1 );
+      /*! Same as fill( step, sampNoiseStd, edep ) and fillPmt, with the time (ns) that chooses the bunch crossing given by the
+          caller instead of the global time of the pre-step point (the ATLAS time, CaloHitMaker AtlasHitTime). fillPmtAt takes
+          the time of each PMT. */
+      void fillAt( float t, float sampNoiseStd, float edep );
+      void fillPmtAt( float t0, float edep_pmt0, float t1, float edep_pmt1 );
       /** Zeroize the pulse/sample vectors **/
       void clear();
 
@@ -79,6 +90,19 @@ namespace xAOD{
       void edep( int bc_id, float e ){
         m_edep[bc_id] += e;
       }
+
+      /*! Dual readout of the tile cells: energy seen by the PMT 0 or 1 per bunch crossing **/
+      float edepPmt( int pmt, int bc_id=0 ) const{
+        const auto &m = m_edepPmt[pmt ? 1 : 0];
+        return m.count(bc_id) ? m.at(bc_id) : 0;
+      }
+
+      void edepPmt( int pmt, int bc_id, float e ){
+        m_edepPmt[pmt ? 1 : 0][bc_id] += e;
+      }
+
+      /*! True when the cell is read by two PMTs (tile cells with the dual readout option) */
+      PRIMITIVE_SETTER_AND_GETTER( bool, m_dualReadout, setDualReadout, dualReadout );
 
       /*! Time of flight from simulated hits **/ //
       float tof( int bc_id=0 ) const{
@@ -148,6 +172,9 @@ namespace xAOD{
       std::map< int, float> m_edep;
       /*!time of flight of a particle between bcid_start and bcid_end */
       std::map< int, float> m_tof;
+      /*! energy seen by each of the two PMTs between bcid_start and bcid_end (dual readout only) */
+      std::map< int, float> m_edepPmt[2];
+      bool m_dualReadout = false;
       bool m_firstHit = false;
       /*! Access information unique ID number */
       unsigned long int m_hash;
