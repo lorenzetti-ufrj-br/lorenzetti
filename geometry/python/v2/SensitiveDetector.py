@@ -1,6 +1,6 @@
 
 
-__all__ = [ "SensitiveDetector",]
+__all__ = [ "SensitiveDetector", "atlasLArPhiShift"]
 
 from GaugiKernel import Logger
 from GaugiKernel.macros import MSG_FATAL
@@ -73,5 +73,18 @@ class SensitiveDetector(Logger):
 
     def volume(self):
       return self.pv
+
+
+def atlasLArPhiShift( sv, shift ):
+    """
+    Half-absorber shift of the phi edges of an ATLAS-like LAr sensitive detector (F41 conserto 19): the edges become
+    -pi + k dphi + shift (k = 0 to N), as the cells of the ATLAS readout geometry (EMB and barrel presampler -pi/1024 on
+    side A and +pi/1024 on side C, EMEC outer wheel -+pi/768 and inner wheel -+pi/256, HEC and the barrel and end-cap presamplers 0); sv.PhiShift is read by CaloHitMaker. The
+    phi index of the ATLAS identifier is the slice from phi = 0, the same on both sides (as in the ATLAS HITS ntuple).
+    """
+    n = len(sv.PhiBins) - 1
+    dphi = 2 * np.pi / n
+    sv.PhiBins = [ round(-np.pi + k * dphi + shift, 7) for k in range(n + 1) ]
+    sv.PhiShift = shift
 
 
