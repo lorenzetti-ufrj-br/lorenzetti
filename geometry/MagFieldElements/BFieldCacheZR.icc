@@ -1,0 +1,34 @@
+/*
+  Copyright (C) 2002-2022 CERN for the benefit of the ATLAS collaboration
+*/
+// Ported to Lorenzetti from Athena release 23.0.14 (MagneticField/MagFieldElements) for --atlas-run4 (F41 conserto 27); changes: none (verbatim copy).
+
+inline void
+BFieldCacheZR::invalidate()
+{
+  m_rmin = 0.0;
+  m_rmax = -1.0;
+}
+inline void
+BFieldCacheZR::setRange(double zmin, double zmax, double rmin, double rmax)
+{
+  m_zmin = zmin;
+  m_zmax = zmax;
+  m_rmin = rmin;
+  m_rmax = rmax;
+  m_invz = 1.0 / (zmax - zmin);
+  m_invr = 1.0 / (rmax - rmin);
+}
+// set the field values at each corner (rescale for current scale factor)
+inline void
+BFieldCacheZR::setField(int i, const BFieldVectorZR& field, double scaleFactor)
+{
+  m_field[0][i] = scaleFactor * field[0];
+  m_field[1][i] = scaleFactor * field[1];
+}
+inline bool
+BFieldCacheZR::inside(double z, double r) const
+{
+  return (z >= m_zmin && z <= m_zmax && r >= m_rmin && r <= m_rmax);
+}
+
