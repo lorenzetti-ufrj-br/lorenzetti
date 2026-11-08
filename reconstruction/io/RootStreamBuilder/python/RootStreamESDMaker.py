@@ -22,6 +22,7 @@ class RootStreamESDMaker( Cpp ):
                 NtupleName          : str="CollectionTree",
                 EtaWindow           : float=flags.EtaWindow,
                 PhiWindow           : float=flags.PhiWindow,
+                OnlyRoI             : bool=flags.OnlyRoI,
               ): 
     """
     @brief Algorithm to stream ESD Data to a ROOT file.
@@ -45,6 +46,7 @@ class RootStreamESDMaker( Cpp ):
     - NtupleName: Name of the TTree.
     - EtaWindow: Eta window for the RoI.
     - PhiWindow: Phi window for the RoI.
+    - OnlyRoI: If True, only saves the cells inside the RoI around the truth particles; if False, saves all cells.
 
     """
     Cpp.__init__(self, ROOT.RootStreamESDMaker(name))
@@ -62,4 +64,5 @@ class RootStreamESDMaker( Cpp ):
     self.setProperty( "NtupleName"          , NtupleName                                                          )
     self.setProperty( "EtaWindow"           , EtaWindow                                                           )
     self.setProperty( "PhiWindow"           , PhiWindow                                                           )
+    self.setProperty( "OnlyRoI"             , OnlyRoI                                                             )
 

@@ -11,6 +11,7 @@ class CaloCellMerge( Cpp ):
                 InputCollectionKeys : str="Collection" ,
                 OutputCellsKey      : str="Cells",
                 OutputTruthCellsKey : str="TruthCells",
+                InputHitsKey        : str="",
                 OutputLevel         : int=LoggingLevel.toC('INFO'), 
                 ): 
     
@@ -19,6 +20,7 @@ class CaloCellMerge( Cpp ):
     self.setProperty( "InputCollectionKeys" , InputCollectionKeys ) 
     self.setProperty( "OutputCellsKey"      , OutputCellsKey      ) 
     self.setProperty( "OutputTruthCellsKey" , OutputTruthCellsKey ) 
+    self.setProperty( "InputHitsKey"        , InputHitsKey        )
     self.setProperty( "OutputLevel"         , OutputLevel         ) 
 
   
