@@ -24,6 +24,9 @@ class ComponentAccumulator(Cpp):
                  NumberOfThreads: int = 1,
                  Timeout: int = 120*MINUTES,
                  UseGUI: bool = False,
+                 NeutronTimeCut: float = 0,
+                 FastSimulation: bool = False,
+                 AtlasG4: bool = False,
                  #OutputLevel: int = LoggingLevel.toC('INFO'),
                  ):
 
@@ -39,6 +42,12 @@ class ComponentAccumulator(Cpp):
         self.setProperty("Timeout", Timeout)
         self.setProperty("Seed", Seed)
         self.setProperty("UseGUI", UseGUI)
+        # time limit (ns) after which neutrons are killed; 0 keeps the Geant4 default (10 us in FTFP_BERT)
+        self.setProperty("NeutronTimeCut", float(NeutronTimeCut))
+        # G4FastSimulationPhysics for e-, e+, gamma and neutron (frozen showers of the ATLAS FCal, F41 conserto 23)
+        self.setProperty("FastSimulation", bool(FastSimulation) or bool(AtlasG4))
+        # Geant4 settings of the ATLAS production (F41 conserto 24): FTFP_BERT_ATL, cuts, stacking action, looper killer
+        self.setProperty("AtlasG4", bool(AtlasG4))
 
         if UseGUI:
             [self._core.addUICommand(cmd) for cmd in detector.get_ui_commands()] 
