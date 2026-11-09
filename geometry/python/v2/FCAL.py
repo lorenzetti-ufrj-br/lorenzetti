@@ -59,7 +59,8 @@ def readAtlasFcalElectrodes( path ):
 class AtlasFcalModule:
     """
     One module of the ATLAS FCal on one side: the volume built by DetectorConstruction_v2::AddFCalModule and the fields read by
-    its CaloHitMaker (FCalModule > 0), which records one hit per tile in the hit collection (sampling FCAL1-FCAL3).
+    its CaloHitMaker (FCalModule > 0), which records one hit per tile in the hit collection (sampling FCAL1-FCAL3) and, with the
+    free-running hits, feeds LArHitFCAL.
     """
     def __init__( self, m, side, electrodes ):
         self.Module   = m['module']

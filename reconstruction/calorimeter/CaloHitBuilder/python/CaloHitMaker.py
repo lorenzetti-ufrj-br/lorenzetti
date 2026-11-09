@@ -21,6 +21,13 @@ class CaloHitMaker( Cpp ):
                 BirksLaw             : bool   = False,
                 AtlasHitTime         : bool   = False,
                 TileDualReadout      : int    = 0,
+                FreeRunningHits      : bool   = False,
+                FreeRunningListKey   : str    = "FreeRunningHits",
+                FreeRunningBinning   : bool   = True,
+                EmecChargeCollection : bool   = False,
+                EmecChargeTables     : str    = "",
+                EmecChargeFieldMap   : str    = "",
+                EmecChargeHVMap      : str    = "",
               ):
                     
     Cpp.__init__(self, ROOT.CaloHitMaker(name) )
@@ -47,6 +54,12 @@ class CaloHitMaker( Cpp ):
     self.setProperty( "AtlasHitTime"            , AtlasHitTime                )
     # Dual readout of the tile cells (two PMTs per cell): 0 = off, 1 = ATLAS U-shape, 2 = linear sharing
     self.setProperty( "TileDualReadout"         , TileDualReadout             )
+    # Free-running hits (simu_trf.py --free-running-hits): every deposit of the ATLAS cells also goes to a list written in the
+    # layout of the ATLAS HITS ntuple (CaloFreeRunningHitWriter), per PMT in the tile and per cell in the LAr and the FCal; with
+    # FreeRunningBinning the deposits are summed in the time bins of the ATLAS simulation (TileSimHit, LArG4SimpleSD).
+    self.setProperty( "FreeRunningHits"         , FreeRunningHits             )
+    self.setProperty( "FreeRunningListKey"      , FreeRunningListKey          )
+    self.setProperty( "FreeRunningBinning"      , FreeRunningBinning          )
     # Cells given as (r, z) boxes instead of the eta x phi grid (ATLAS tile cells, geometry/python/v1/TILE.py).
     # Without them (the default) the properties stay empty and the eta x phi grid is used. Only set when present:
     # setProperty cannot convert an empty list.
@@ -72,6 +85,12 @@ class CaloHitMaker( Cpp ):
           self.setProperty( key                 , [int(x) for x in cells[key]]             )
         for key in ("EmecWheelRMin", "EmecWheelRMax", "EmecWheelZMin", "EmecWheelZMax"):
           self.setProperty( key                 , [float(x) for x in cells[key]]           )
+        # charge collection of the ATLAS EM end-cap (simu_trf.py --atlas-emec-charge-collection; F41 conserto 29)
+        if EmecChargeCollection:
+          self.setProperty( "EmecChargeCollection", True                                  )
+          self.setProperty( "EmecChargeTables"    , EmecChargeTables                      )
+          self.setProperty( "EmecChargeFieldMap"  , EmecChargeFieldMap                    )
+          self.setProperty( "EmecChargeHVMap"     , EmecChargeHVMap                       )
       # ATLAS-like barrel EM (geometry/python/v1/ECAL.py): sampling and region of the dictionary read by this maker
       # (see CaloHitMaker::embFindCell)
       if "EmbSampling" in cells:
@@ -90,11 +109,15 @@ class CaloHitMaker( Cpp ):
       # radius on the axis of the module (ATLAS-like HEC, geometry/python/v1/HEC.py); absent: r
       if "RadiusModules" in cells:
         self.setProperty( "CellRadiusModules"   , int(cells["RadiusModules"])           )
-      # ATLAS-like LAr cells (F41 conserto 19): part and barrel_ec of the ATLAS identifier of this maker, for the ATLAS time
-      # (CaloHitMaker::larHitTime)
+      # ATLAS-like LAr cells (F41 conserto 19): fields of the ATLAS identifier of this maker and the dictionary eta index
+      # of each cell; part and barrel_ec choose the point of the step for the ATLAS time (CaloHitMaker::larHitTime), and all of
+      # them give the identifier of the free-running hits (CaloHitMaker::freeRunningLAr)
       if "AtlasLArPart" in cells:
         self.setProperty( "AtlasLArPart"        , int(cells["AtlasLArPart"])              )
         self.setProperty( "AtlasBarrelEc"       , int(cells["AtlasBarrelEc"])             )
+        self.setProperty( "AtlasLArSampling"    , int(cells["AtlasLArSampling"])          )
+        self.setProperty( "AtlasLArRegion"      , int(cells["AtlasLArRegion"])            )
+        self.setProperty( "CellAtlasEtaIndex"   , [int(x) for x in cells["AtlasEtaIndex"]] )
       # ATLAS gap and ITC cells (F41 conserto 21; geometry/python/v1/TILE.py, getAtlasTileGapCfg)
       if "NPmt" in cells:
         self.setProperty( "CellNPmt"            , [int(x) for x in cells["NPmt"]]          )
@@ -105,13 +128,19 @@ class CaloHitMaker( Cpp ):
         self.setProperty( "SpecialModule"       , [int(x) for x in cells["SpecialModule"]] )
         self.setProperty( "SpecialNPmt"         , [int(x) for x in cells["SpecialNPmt"]]   )
       if "ReplaceSection" in cells:
+        self.setProperty( "ReplaceSection"      , int(cells["ReplaceSection"])            )
+        self.setProperty( "ReplaceTower"        , int(cells["ReplaceTower"])              )
+        self.setProperty( "ReplaceSampling"     , int(cells["ReplaceSampling"])           )
         self.setProperty( "ReplaceRCentre"      , float(cells["ReplaceRCentre"])          )
         self.setProperty( "ReplaceZCentre"      , float(cells["ReplaceZCentre"])          )
       if "ReplaceCollectionKey" in cells:
         self.setProperty( "ReplaceCollectionKey", str(cells["ReplaceCollectionKey"])      )
         self.setProperty( "ReplaceHashBase"     , int(cells["ReplaceHashBase"])           )
-      # (r, z) centre of each ATLAS tile cell, for the ATLAS time (CaloHitMaker::tileTime)
+      # ATLAS identifier fields (free-running hits) and (r, z) centre (ATLAS time, CaloHitMaker::tileTime) of each ATLAS tile cell
       if "AtlasSection" in cells:
+        self.setProperty( "CellAtlasSection"    , [int(x) for x in cells["AtlasSection"]]  )
+        self.setProperty( "CellAtlasTower"      , [int(x) for x in cells["AtlasTower"]]    )
+        self.setProperty( "CellAtlasSampling"   , [int(x) for x in cells["AtlasSampling"]] )
         self.setProperty( "CellRCentre"         , [float(x) for x in cells["RCentre"]]     )
         self.setProperty( "CellZCentre"         , [float(x) for x in cells["ZCentre"]]     )
     # Half-absorber shift of the phi edges of the ATLAS-like LAr cells (already in PhiBins) and the Birks constant of the

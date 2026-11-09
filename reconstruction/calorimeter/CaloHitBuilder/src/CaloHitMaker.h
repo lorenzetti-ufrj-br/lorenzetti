@@ -7,6 +7,9 @@
 #include "CaloHit/CaloHit.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+// the ported ATLAS charge collection of the EM end-cap (geometry/LArG4EC/EnergyCalculator.h; kept out of the dictionary)
+namespace LArG4 { namespace EC { class EnergyCalculator; } }
+
 
 
 /**
@@ -140,6 +143,9 @@ class CaloHitMaker : public Gaugi::Algorithm
     int m_uShapeLayer;
     std::vector<int> m_specialModule;
     std::vector<int> m_specialNPmt;
+    int m_replaceSection;
+    int m_replaceTower;
+    int m_replaceSampling;
     float m_replaceRCentre;
     float m_replaceZCentre;
     // the hit of the replacement cell in the normal chain (the collection of its sampling and its hash without the phi bin):
@@ -174,6 +180,22 @@ class CaloHitMaker : public Gaugi::Algorithm
     std::vector<float> m_emecWheelZMin;
     std::vector<float> m_emecWheelZMax;
 
+    // Charge collection of the ATLAS EM end-cap (F41 conserto 29, --atlas-emec-charge-collection): with EmecChargeCollection the
+    // energy of the free-running hits of this EMEC maker is the one of the ATLAS simulation (Athena 23.0.14, LArG4::EC::
+    // EnergyCalculator::Process_Default with EnergyCorrection = 8): Birks' law with the local field 0.01 HV / gap at the middle of
+    // the step and the current of the charge collection (CalculateChargeCollection1), computed by the ported ATLAS code
+    // (geometry/LArG4EC, geometry/GeoSpecialShapes) on the step brought to the frame of the ATLAS wheel and moved in phi into the
+    // liquid argon of the accordion (see emecChargeEnergy). The tables of the wheels (EmecChargeTables), the field map
+    // (EmecChargeFieldMap, ec.fieldzv03) and the HV map (EmecChargeHVMap, HVEMECMap_v02.dat) are files of geometry/data.
+    bool m_emecChargeCollection;
+    std::string m_emecChargeTables;
+    std::string m_emecChargeFieldMap;
+    std::string m_emecChargeHVMap;
+    const LArG4::EC::EnergyCalculator *m_emecCalculator = nullptr;   // shared by the makers of the same wheel and side
+    bool emecChargeEnergy( const G4Step *step, double &energy ) const;
+    void emecDiscardCount( bool inner, double energyBefore, bool discarded ) const;
+    double emecLArPhiShift( const CLHEP::Hep3Vector &p ) const;
+
     // ATLAS-like barrel EM and presampler cells (see embFindCell): mode (0 = off, the default; 1 = barrel; 2 = end-cap
     // presampler), sampling (0-3) and region (0 or 1) of the ATLAS identifier dictionary read by this maker.
     int m_embMode;
@@ -193,19 +215,38 @@ class CaloHitMaker : public Gaugi::Algorithm
     int embSampSeg( double x, double y, double z, int &region, int &sampling, int &ieta ) const;
   private:
 
-    // (r, z) centre of each ATLAS tile cell (same order as m_cellEta; geometry/python/v2/TILE.py), for tileTime
+    // Free-running hits (simu_trf.py --free-running-hits): every deposit of the ATLAS tile cells also goes, per PMT, with
+    // the identifier and the time of the ATLAS simulation, to a per-event list written in the layout of the ATLAS HITS
+    // ntuple (CaloFreeRunningHitWriter). See freeRunningTile.
+    bool m_freeRunningHits;
+    std::string m_freeRunningListKey;
+    bool m_freeRunningBinning;
+    // ATLAS identifier fields (free-running hits) and (r, z) centre (tileTime) of each cell (same order as m_cellEta;
+    // geometry/python/v2/TILE.py)
+    std::vector<int>   m_cellAtlasSection;
+    std::vector<int>   m_cellAtlasTower;
+    std::vector<int>   m_cellAtlasSampling;
     std::vector<float> m_cellRCentre;
     std::vector<float> m_cellZCentre;
+    void freeRunningTile( SG::EventContext &ctx, const G4Step *step, int cell, int phiBin, float edep, float w0,
+                          float w1, int npmt=2 ) const;
     // ATLAS time of a deposit in a tile cell (TileGeoG4SDCalc::MakePmtEdepTime with DoTOFCorrection): the global time tglobal of
-    // the post-step point, the time t of the cell and the delays dtUp (PMT 1) and dtDown (PMT 0)
+    // the post-step point, the time t of the cell and the delays dtUp (PMT 1) and dtDown (PMT 0); see freeRunningTile
     void tileTime( const G4Step *step, int cell, int phiBin, int npmt, double &tglobal, double &t, double &dtUp,
                    double &dtDown ) const;
 
-    // ATLAS-like LAr cells (F41 conserto 19; --atlas-emb-cells, --atlas-emec, --atlas-hec): part of the ATLAS identifier of the
-    // cells of this maker (1 = LArEM, 2 = LArHEC, 0 = not set, the default) and barrel_ec or pos_neg; they choose the point of
-    // the step for the ATLAS time (larHitTime: pre-step in the barrel, mean of pre- and post-step elsewhere).
+    // ATLAS-like LAr cells (F41 conserto 19; --atlas-emb-cells, --atlas-emec, --atlas-hec): the fields of the ATLAS identifier of
+    // the cells of this maker (AtlasLArPart: 1 = LArEM, 2 = LArHEC, 0 = not set, the default; barrel_ec or pos_neg, sampling and
+    // region of the dictionary, and the dictionary eta index of each cell, same order as m_cellEta). Part and barrel_ec choose the
+    // point of the step for the ATLAS time (larHitTime: pre-step in the barrel, mean of pre- and post-step elsewhere); all of them
+    // give the identifier of the free-running hits (freeRunningLAr).
     int m_atlasLArPart;
     int m_atlasBarrelEc;
+    int m_atlasLArSampling;
+    int m_atlasLArRegion;
+    std::vector<int> m_cellAtlasEtaIndex;
+    bool isAtlasLAr() const { return m_atlasLArPart > 0; }
+    void freeRunningLAr( SG::EventContext &ctx, const G4Step *step, int cell, int phiBin, float edep ) const;
     // Shift (rad) of the phi edges of the cells, the half absorber of the ATLAS readout geometry (EMB and barrel presampler
     // -pi/1024 on side A, +pi/1024 on side C; EMEC and end-cap presampler -+pi/768; 0, the default, elsewhere). The phi
     // edges (PhiBins) come already shifted from Python; the maker uses it for the cells found from atan2 (emecFindCell).
@@ -218,8 +259,8 @@ class CaloHitMaker : public Gaugi::Algorithm
     // (1-3) the maker takes only the steps in the liquid argon gaps of its module (the logical volume FCalGapVolume), the cell
     // of a step is the tile of the copy number of its gap (FCalCopyEtaIndex, FCalCopyPhiIndex; the centre of the tile in
     // FCalCopyEta, FCalCopyPhi), as in the ATLAS simulation (LArFCALCalculatorBase), and the deposits go only to the
-    // hit collection (one hit per tile, bin = 16 eta + phi, centre FCalCopyEta/Phi and width FCalCopyDeltaEta/Phi). 0 (the default):
-    // off.
+    // hit collection (one hit per tile, bin = 16 eta + phi, centre FCalCopyEta/Phi and width FCalCopyDeltaEta/Phi) and, with the
+    // free-running hits, to LArHitFCAL. 0 (the default): off.
     int m_fcalModule;
     int m_fcalSide;
     std::string m_fcalGapVolume;

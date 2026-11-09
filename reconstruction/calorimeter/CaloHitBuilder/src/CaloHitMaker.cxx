@@ -4,6 +4,7 @@
 #include "CaloHit/CaloHitCollection.h"
 #include "EventInfo/EventInfoContainer.h"
 #include "CaloHitMaker.h"
+#include "CaloFreeRunningHitList.h"
 #include "TileUShape.h"
 #include "EmbAtlasSampling.h"
 #include <algorithm>
@@ -24,8 +25,25 @@
 #include "TGraph.h"
 #include <cstdlib>
 #include <map>
+#include <mutex>
+#include <tuple>
 #include <memory>
+#include <atomic>
 #include <stdexcept>
+
+// the ported ATLAS charge collection of the EM end-cap (F41 conserto 29)
+#include "LArG4EC/EnergyCalculator.h"
+#include "LArG4EC/EMECDataCSV.h"
+#include "G4AffineTransform.hh"
+#include "G4RotationMatrix.hh"
+
+// Deposits of the EMEC free-running hits with the charge collection, and those discarded because the HV helper of ATLAS throws
+// (decision of Luciano of 15/10/2026: no ATLAS hit there), per wheel (0 outer, 1 inner): steps and energy before the correction (the
+// energy of the hit without the option); printed at the end of the run by the first EMEC maker that finalizes.
+static std::mutex s_emecDiscardMutex;
+static long   s_emecSteps[2] = {0, 0}, s_emecDiscardedSteps[2] = {0, 0};
+static double s_emecEnergy[2] = {0., 0.}, s_emecDiscardedEnergy[2] = {0., 0.};
+static bool   s_emecDiscardPrinted = false;
 
 using namespace Gaugi;
 using namespace SG;
@@ -109,6 +127,11 @@ CaloHitMaker::CaloHitMaker( std::string name ) :
   declareProperty( "EmecWheelRMax"            , m_emecWheelRMax                       );
   declareProperty( "EmecWheelZMin"            , m_emecWheelZMin                       );
   declareProperty( "EmecWheelZMax"            , m_emecWheelZMax                       );
+  // Charge collection of the ATLAS EM end-cap (F41 conserto 29; see emecChargeEnergy): off by default
+  declareProperty( "EmecChargeCollection"     , m_emecChargeCollection=false          );
+  declareProperty( "EmecChargeTables"         , m_emecChargeTables=""                 );
+  declareProperty( "EmecChargeFieldMap"       , m_emecChargeFieldMap=""               );
+  declareProperty( "EmecChargeHVMap"          , m_emecChargeHVMap=""                  );
   // ATLAS-like barrel EM and presamplers (geometry/python/v1/ECAL.py, --atlas-emb-cells): with EmbMode > 0 (1 = barrel,
   // 2 = end-cap presampler) the cell of a step inside the limits of the maker comes from its pseudorapidity, for the sampling
   // (0-3) and region (0, 1) of the ATLAS identifier dictionary read by this maker (see embFindCell); the cells are those of
@@ -127,13 +150,25 @@ CaloHitMaker::CaloHitMaker( std::string name ) :
   // Dual readout of the tile cells (two PMTs per cell, as in ATLAS): 0 = off, 1 = ATLAS U-shape, 2 = linear.
   // Only for the tile samplings and only with the ATLAS tile cells (CellEta not empty); see tilePmtWeights.
   declareProperty( "TileDualReadout"          , m_tileDualReadout=0                   );
+  // Free-running hits (simu_trf.py --free-running-hits): the deposits of the ATLAS tile cells also go, per PMT and with
+  // the identifier and the time of the ATLAS simulation, to the list FreeRunningListKey (see freeRunningTile).
+  declareProperty( "FreeRunningHits"          , m_freeRunningHits=false               );
+  declareProperty( "FreeRunningListKey"       , m_freeRunningListKey="FreeRunningHits");
+  declareProperty( "FreeRunningBinning"       , m_freeRunningBinning=true             );
+  declareProperty( "CellAtlasSection"         , m_cellAtlasSection                    );
+  declareProperty( "CellAtlasTower"           , m_cellAtlasTower                      );
+  declareProperty( "CellAtlasSampling"        , m_cellAtlasSampling                   );
   // (r, z) centre of each ATLAS tile cell, for the ATLAS time of its deposits (see tileTime)
   declareProperty( "CellRCentre"              , m_cellRCentre                         );
   declareProperty( "CellZCentre"              , m_cellZCentre                         );
-  // ATLAS-like LAr cells (F41 conserto 19): part (1 = LArEM, 2 = LArHEC; 0 = not set, the default) and barrel_ec (or pos_neg) of
-  // the ATLAS identifier of the cells of this maker, which choose the point of the step for the ATLAS time (see larHitTime)
+  // ATLAS-like LAr cells (F41 conserto 19): fields of the ATLAS identifier of the cells of this maker. Part (1 = LArEM, 2 = LArHEC;
+  // 0 = not set, the default) and barrel_ec (or pos_neg) choose the point of the step for the ATLAS time (see larHitTime); all of
+  // them give the identifier of the free-running hits (see freeRunningLAr).
   declareProperty( "AtlasLArPart"             , m_atlasLArPart=0                      );
   declareProperty( "AtlasBarrelEc"            , m_atlasBarrelEc=0                     );
+  declareProperty( "AtlasLArSampling"         , m_atlasLArSampling=0                  );
+  declareProperty( "AtlasLArRegion"           , m_atlasLArRegion=0                    );
+  declareProperty( "CellAtlasEtaIndex"        , m_cellAtlasEtaIndex                   );
   // Shift of the phi edges of the cells (rad), the half absorber of the ATLAS readout geometry; 0 by default
   declareProperty( "PhiShift"                 , m_phiShift=0.                         );
   // Birks constant of the liquid argon: 0.05832 (default) or 0.0486 (HEC, as ATLAS)
@@ -144,6 +179,9 @@ CaloHitMaker::CaloHitMaker( std::string name ) :
   declareProperty( "UShapeLayer"              , m_uShapeLayer=-1                      );
   declareProperty( "SpecialModule"            , m_specialModule                       );
   declareProperty( "SpecialNPmt"              , m_specialNPmt                         );
+  declareProperty( "ReplaceSection"           , m_replaceSection=0                    );
+  declareProperty( "ReplaceTower"             , m_replaceTower=0                      );
+  declareProperty( "ReplaceSampling"          , m_replaceSampling=0                   );
   declareProperty( "ReplaceRCentre"           , m_replaceRCentre=0                    );
   declareProperty( "ReplaceZCentre"           , m_replaceZCentre=0                    );
   declareProperty( "ReplaceCollectionKey"     , m_replaceCollectionKey=""             );
@@ -182,6 +220,13 @@ StatusCode CaloHitMaker::initialize()
   if( m_tileDualReadout > 0 && isTile() && !useCells() ){
     MSG_FATAL( "TileDualReadout needs the ATLAS tile cells (CellEta)." );
   }
+  if( m_freeRunningHits && isTile() && ( !useCells() || m_tileDualReadout <= 0 ||
+                                        m_cellAtlasSection.size() != m_cellEta.size() ) ){
+    MSG_FATAL( "FreeRunningHits needs the ATLAS tile cells with their ATLAS identifier fields and the dual readout." );
+  }
+  if( m_freeRunningHits && isAtlasLAr() && ( !useCells() || m_cellAtlasEtaIndex.size() != m_cellEta.size() ) ){
+    MSG_FATAL( "FreeRunningHits needs the dictionary eta index of every ATLAS-like LAr cell (CellAtlasEtaIndex)." );
+  }
 
   if( m_emecCompartment > 0 && ( m_emecZSep12.size() != 44 || m_emecZSep23.size() != 22 || m_emecZInner.size() != 7 ||
                                  m_emecWheelRMin.empty() || m_emecWheelRMin.size() != m_emecWheelRMax.size() ||
@@ -189,6 +234,36 @@ StatusCode CaloHitMaker::initialize()
                                  m_emecWheelRMin.size() != m_emecWheelZMax.size() ||
                                  m_cellEta.size() != (unsigned)(m_emecMaxEta + 1) || m_nPhiBins % 2 ) ){
     MSG_FATAL( "EmecCompartment needs the tables of the ATLAS-like EM end-cap (geometry/python/v1/EMEC.py)." );
+  }
+
+  // Charge collection of the ATLAS EM end-cap (F41 conserto 29): the ported LArG4::EC::EnergyCalculator of the wheel and side of
+  // this maker, built once per wheel, side and files (as the four calculators EMEC{Pos,Neg}{Inner,Outer}WheelCalculator of the
+  // ATLAS simulation) and shared by the makers of the compartments of that wheel
+  if( m_emecChargeCollection ){
+    if( m_emecCompartment <= 0 || !m_freeRunningHits || !isAtlasLAr() ){
+      MSG_FATAL( "EmecChargeCollection needs an ATLAS-like EM end-cap maker (EmecCompartment) with the free-running hits." );
+    }
+    const bool inner = ( m_emecCompartment <= 2 );   // compartments 1 and 2: inner wheel (s_geometry of EnergyCalculator.cc)
+    const int zside = ( m_zMin + m_zMax > 0 ) ? 1 : -1;
+    static std::mutex mutex;
+    static std::map<std::tuple<bool, int, std::string, std::string, std::string>,
+                    std::unique_ptr<const LArG4::EC::EnergyCalculator>> calculators;
+    std::lock_guard<std::mutex> lock( mutex );
+    auto key = std::make_tuple( inner, zside, m_emecChargeTables, m_emecChargeFieldMap, m_emecChargeHVMap );
+    auto it = calculators.find( key );
+    if( it == calculators.end() ){
+      const EMECData data = readEMECDataCSV( m_emecChargeTables );
+      it = calculators.emplace( key, std::make_unique<const LArG4::EC::EnergyCalculator>( data,
+               inner ? LArG4::InnerAbsorberWheel : LArG4::OuterAbsorberWheel, zside, m_emecChargeFieldMap, m_emecChargeHVMap ) ).first;
+    }
+    m_emecCalculator = it->second.get();
+    // the transform to the wheel frame (emecTopTransform) is that of the geometry of the simulation of ATLAS-P2-RUN4-01-01-00
+    const double zFront = m_emecFocalShift + m_emecCalculator->calculator()->GetElecFocaltoWRP() +
+                          m_emecCalculator->calculator()->GetdWRPtoFrontFace();
+    if( zFront != 3745. ){
+      MSG_FATAL( "EmecChargeCollection needs the EMEC wheels of the ATLAS simulation geometry (front face at |z| = 3745 mm, --atlas-run4); "
+                 "here " << zFront << " mm." );
+    }
   }
 
   if( m_embMode > 0 ){
@@ -244,6 +319,17 @@ StatusCode CaloHitMaker::initialize()
 
 StatusCode CaloHitMaker::finalize()
 {
+  // charge collection of the ATLAS EM end-cap (F41 conserto 29): the deposits discarded because the HV helper of ATLAS throws
+  if( m_emecCalculator ){
+    std::lock_guard<std::mutex> lock( s_emecDiscardMutex );
+    if( !s_emecDiscardPrinted ){
+      s_emecDiscardPrinted = true;
+      for( int w = 0; w < 2; ++w )
+        MSG_INFO( "EMEC charge collection, " << ( w ? "inner" : "outer" ) << " wheel: " << s_emecSteps[w] << " steps, "
+                  << s_emecEnergy[w] << " MeV before the correction; discarded (HV eta range): " << s_emecDiscardedSteps[w]
+                  << " steps, " << s_emecDiscardedEnergy[w] << " MeV" );
+    }
+  }
   return StatusCode::SUCCESS;
 }
 
@@ -273,6 +359,12 @@ StatusCode CaloHitMaker::bookHistograms( SG::EventContext &ctx ) const
  */
 StatusCode CaloHitMaker::pre_execute( EventContext &ctx ) const
 {
+  // One free-running hit list per event, shared by every sampling: the first maker of the sequence creates it.
+  if( m_freeRunningHits && !ctx.exist(m_freeRunningListKey) ){
+    SG::WriteHandle<CaloFreeRunningHitList> list( m_freeRunningListKey, ctx );
+    list.record( std::unique_ptr<CaloFreeRunningHitList>(new CaloFreeRunningHitList()) );
+  }
+
   // Build the CaloHitCollection and attach into the EventContext
   // Create the hit collection into the event context
   SG::WriteHandle<xAOD::CaloHitCollection> collection( m_collectionKey, ctx );
@@ -373,7 +465,7 @@ StatusCode CaloHitMaker::execute( EventContext &ctx , const G4Step *step ) const
     return StatusCode::SUCCESS;
   }
 
-  // ATLAS FCal with its electrodes: the cell from the copy number of the gap, to the hit of its tile
+  // ATLAS FCal with its electrodes: the cell from the copy number of the gap, to the hit of its tile and the free-running hits
   if( isFCal() ){
     fcalStep( ctx, step );
     return StatusCode::SUCCESS;
@@ -465,7 +557,7 @@ StatusCode CaloHitMaker::execute( EventContext &ctx , const G4Step *step ) const
   xAOD::CaloHit *hit=nullptr;
 
   // The cell is absent in this module in ATLAS (D4 in EBA15 and EBC18) and has no hit: the deposit goes to the hit of the
-  // replacement cell (D5 of the same module), as in the ATLAS simulation
+  // replacement cell (D5 of the same module), as in the ATLAS simulation (the free-running hits too, freeRunningTile)
   const bool replacedCell = !m_replaceCollectionKey.empty() && tileNPmt( etaBin, phiBin ) == 0;
 
   if( replacedCell || collection->retrieve(hash(bin), hit) ){
@@ -499,6 +591,23 @@ StatusCode CaloHitMaker::execute( EventContext &ctx , const G4Step *step ) const
       else                { w0 = 0; w1 = 1; }
       if( m_atlasHitTime ) hit->fillPmtAt( tPmt0, edep * w0, tPmt1, edep * w1 );
       else                 hit->fillPmt( step, edep * w0, edep * w1 );
+      // Free-running hits: the same deposit and PMT weights, with the ATLAS identifier and time
+      if( m_freeRunningHits && edep > 0 )
+        freeRunningTile( ctx, step, etaBin, phiBin, edep, w0, w1, npmt );
+    }
+    // Free-running hits of the ATLAS-like LAr cells: the same deposit, with the ATLAS identifier and time
+    // (with the charge collection of the ATLAS EM end-cap, F41 conserto 29, the energy of the free-running hit is the one of the
+    // ATLAS simulation, emecChargeEnergy; the hit collection keeps edep)
+    if( m_freeRunningHits && isAtlasLAr() && edep > 0 )
+    {
+      if( !m_emecCalculator ){
+        freeRunningLAr( ctx, step, etaBin, phiBin, edep );
+      }else{
+        double energy = 0;
+        const bool kept = emecChargeEnergy( step, energy );
+        emecDiscardCount( m_emecCompartment <= 2, edep, !kept );
+        if( kept ) freeRunningLAr( ctx, step, etaBin, phiBin, (float)energy );
+      }
     }
   }else{
     MSG_FATAL( "Its not possible to retrieve the hit. Bin ("<< bin << ") not exist");
@@ -563,15 +672,72 @@ void CaloHitMaker::tilePmtWeights( float phiLocal, float z, float &w0, float &w1
 
 //!=====================================================================
 
-// ATLAS time of a deposit in a tile cell (TileGeoG4SDCalc::MakePmtEdepTime with DoTOFCorrection = true, refraction index 1.59 of tile
-// and fibre; Athena, public, Apache 2.0): tglobal the global time of the post-step point, the time of the cell
-// t = tglobal + [r_cell (n - 2 / sin(theta_cell)) + |x| (1 - n sin(theta_hit))] / c, where r_cell and theta_cell are those of the centre
-// of the cell and x the post-step position, and the delays of the PMTs across the tile, n (dy - r_cell tan(pi/64)) / c, dy the distance
-// of the step to the edge of the tile on the side of the other PMT (here: the edges of the module at +-pi/64 around its centre, from the
-// pre-step position, as for the PMT weights): dtUp for PMT 1 (side of larger phi), dtDown for PMT 0. Module m covers phi in
-// [m, m+1] * 2 pi / 64 (TileDetDescr). A cell with one PMT (npmt = 1 or -1, as E1-E4 and the special C10) has no delay (Athena adds it
-// only with two PMTs); npmt = 0 (D4 in EBA15 and EBC18) takes the centre of the replacement cell (ReplaceRCentre, ReplaceZCentre).
-// The time cut of Athena (TimeCut) is not applied here: the deposit goes to the bunch crossing of its time, if inside the window.
+// Free-running hits of the ATLAS tile cells, per PMT, with the identifier and the time of the ATLAS simulation.
+// Sources (Athena, public, Apache 2.0; copies and report in the F41/F39 notes of the group):
+// - identifier: the pmt_id of the ATLAS identifier dictionary (DetectorDescription/IdDictParser/data/
+//   IdDictTileCalorimeter.xml), packed in 64 bits as the IdDict code does (IdDictDictionary, IdentifierField):
+//   subdet (Tile = index 2) in bits 63-61, section 60-58, side 57-54 (index: -1 -> 0, +1 -> 2), module 53-46,
+//   tower 45-40, sampling 39-36, pmt 35-34 (adc 33-32 = 0); checked against Calorimeter/CaloIdentifier/share/TileID_test.ref.
+//   The PMT on the side of larger phi ("up") is pmt 1, the other pmt 0 (the convention of tilePmtWeights); D0 is side +1.
+// - module m covers phi in [m, m+1] * 2 pi / 64 (TileDetDescr); side +1 for z > 0.
+// - time (TileGeoG4SDCalc::MakePmtEdepTime, DoTOFCorrection = true, refraction index 1.59 of tile and fibre): the global
+//   time at the post-step point, plus [r_cell (n - 2 / sin(theta_cell)) + |x| (1 - n sin(theta_hit))] / c, where r_cell and
+//   theta_cell are those of the centre of the cell and x the post-step position; each PMT adds
+//   n (dy - r_cell tan(pi/64)) / c, dy the distance of the step to the edge of the tile on the side of the other PMT
+//   (here: the edges of the module at +-pi/64 around its centre, from the pre-step position, as for the PMT weights).
+//   If the time of a PMT passes TimeCut = 350.5 ns, both go to the late hit time 99995 ns without the PMT delays; the
+//   energy is kept.
+// - time binning (option FreeRunningBinning; TileGeoG4SDCalc::deltaT, DeltaTHit = {0.5, -75.25, 75.25, 5.}): bins of
+//   0.5 ns for -75.25 < t < 75.25 ns, 5 ns elsewhere (see CaloFreeRunningHitList::add).
+// Cells of the ATLAS gap and ITC (F41 conserto 21): npmt = 1 or -1 (one PMT: pmt 0 or pmt 1, as E1-E4 and the special C10)
+// has no PMT delay (Athena adds deltaT only with two PMTs); npmt = 0 (D4 in EBA15 and EBC18) is read as the replacement
+// cell (D5: ReplaceSection, ReplaceTower, ReplaceSampling, ReplaceRCentre, ReplaceZCentre), with two PMTs.
+void CaloHitMaker::freeRunningTile( SG::EventContext &ctx, const G4Step *step, int cell, int phiBin, float edep,
+                                    float w0, float w1, int npmt ) const
+{
+  SG::ReadHandle<CaloFreeRunningHitList> list( m_freeRunningListKey, ctx );
+  if( !list.isValid() ){
+    MSG_FATAL("It's not possible to retrieve the CaloFreeRunningHitList using this key: " << m_freeRunningListKey);
+  }
+  const double n = 1.59, timeCut = 350.5, lateHitTime = 99995., tanPi64 = std::tan(M_PI / 64);
+  const double cLight = CLHEP::c_light;   // mm/ns
+
+  // identifier fields
+  const double twoPi = 2 * M_PI, modWidth = twoPi / 64;
+  double phiCentre = 0.5 * ( m_phiBins[phiBin] + m_phiBins[phiBin+1] );
+  double phi0 = phiCentre < 0 ? phiCentre + twoPi : phiCentre;
+  int module = (int)std::floor( phi0 / modWidth ) % 64;
+  double moduleCentre = std::remainder( (module + 0.5) * modWidth, twoPi );
+  const bool replaced = ( npmt == 0 );
+  int section  = replaced ? m_replaceSection  : m_cellAtlasSection[cell];
+  int tower    = replaced ? m_replaceTower    : m_cellAtlasTower[cell];
+  int sampling = replaced ? m_replaceSampling : m_cellAtlasSampling[cell];
+  double rCell = replaced ? m_replaceRCentre : m_cellRCentre[cell];
+  double zCell = replaced ? m_replaceZCentre : m_cellZCentre[cell];
+  int side     = ( zCell >= 0 || (section == 1 && sampling == 2 && tower == 0) ) ? +1 : -1;
+  auto pmtId = [&]( int pmt ) -> long long {
+    unsigned long long id = (2ULL << 61) | ((unsigned long long)section << 58) | ((unsigned long long)(side > 0 ? 2 : 0) << 54)
+                          | ((unsigned long long)module << 46) | ((unsigned long long)tower << 40)
+                          | ((unsigned long long)sampling << 36) | ((unsigned long long)pmt << 34);
+    return (long long)id;
+  };
+
+  // time of the deposit (ns) and the delays of the two PMTs
+  double tglobal, t, dtUp, dtDown;
+  tileTime( step, cell, phiBin, npmt, tglobal, t, dtUp, dtDown );
+  if( t + dtUp > timeCut || t + dtDown > timeCut ){
+    t = lateHitTime; dtUp = dtDown = 0.0;
+  }
+  double delta = m_freeRunningBinning ? ( ( t > -75.25 && t < 75.25 ) ? 0.5 : 5.0 ) : 0.0;
+
+  double eta = m_cellEta[cell];
+  if( w1 * edep > 0 ) list->add( pmtId(1), w1 * edep, t + dtUp,   tglobal, eta, moduleCentre, sampling, side, module, tower, delta );
+  if( w0 * edep > 0 ) list->add( pmtId(0), w0 * edep, t + dtDown, tglobal, eta, moduleCentre, sampling, side, module, tower, delta );
+}
+
+// ATLAS time of a deposit in a tile cell (sources and formula in the comment of freeRunningTile): tglobal the global time of the
+// post-step point, t = tglobal + [r_cell (n - 2 / sin(theta_cell)) + |x| (1 - n sin(theta_hit))] / c, and the delays of the
+// PMTs across the tile, dtUp (PMT 1) and dtDown (PMT 0), zero for a cell with one PMT. The time cut (TimeCut) is not applied here.
 void CaloHitMaker::tileTime( const G4Step *step, int cell, int phiBin, int npmt, double &tglobal, double &t, double &dtUp,
                              double &dtDown ) const
 {
@@ -634,18 +800,98 @@ void CaloHitMaker::hitTime( const G4Step *step, int cell, int phiBin, float &t, 
 
 //!=====================================================================
 
-// A step in the ATLAS FCal with its electrodes (F41 conserto 22), as the ATLAS simulation takes it (Athena, public, Apache 2.0,
-// LArCalorimeter/LArG4/LArG4FCAL/src/LArFCALCalculatorBase.cc):
+// Free-running hits of the ATLAS-like LAr cells (F41 conserto 19), with the identifier and the time of the ATLAS simulation.
+// Sources (Athena, public, Apache 2.0; copies and report in the F41 notes of the group, c19_lar_cellid_flag/):
+// - identifier: channel_id(barrel_ec, sampling, region, eta, phi) of LArEM_ID / LArHEC_ID (LArG4SimpleSD::ConvertID), the
+//   32-bit compact identifier in the upper half of the 64-bit integer, as in the ATLAS HITS ntuple. Bit layout of the 32
+//   bits (bit 31 first), read from the ATLAS HITS ntuple (c19_bits_5k.py; 100% of its LAr entries decode to the branches):
+//   LArEM: LArCalorimeter 1 (3 bits) | part 3 (3) | barrel_ec index in {-3,-2,-1,1,2,3} (3) | sampling (2) | region (3) |
+//   eta (9) | phi (8) | 0 (1); LArHEC: 1 (3) | part 4 (3) | pos_neg -2 -> 0, +2 -> 1 (1) | sampling (2) | region (1) | eta (4) |
+//   phi (6) | 0 (12).
+// - eta index: the dictionary index of the cell (CellAtlasEtaIndex); phi index: the phi slice from phi = 0, growing with phi
+//   on both sides, as in the ATLAS HITS ntuple; the edges carry the half-absorber shift (PhiShift, already in PhiBins).
+// - time (LArBarrelCalculator, LArBarrelPresamplerCalculator: pre-step; EnergyCalculator, LArEndcapPresamplerCalculator,
+//   LArHECWheelCalculator: mean of pre- and post-step): global time minus |r|/c of the same point, in ns.
+// - energy: the deposit of the step in the liquid argon, with Birks' law (BirksLaw, BirksLArK).
+// - time binning (option FreeRunningBinning; LArG4SimpleSD::getTimeBin, TimeBinType = Default): bin 0 for t < 0, bins of
+//   2.5 ns up to 10 ns, of 5 ns up to 50 ns, of 25 ns up to 100 ns and one bin above; the deposits of a cell in the same
+//   bin are summed, with the energy weighted mean time (LArHit::Add, finalize). No time window (the SD does not call
+//   isInTime).
+void CaloHitMaker::freeRunningLAr( SG::EventContext &ctx, const G4Step *step, int cell, int phiBin, float edep ) const
+{
+  SG::ReadHandle<CaloFreeRunningHitList> list( m_freeRunningListKey, ctx );
+  if( !list.isValid() ){
+    MSG_FATAL("It's not possible to retrieve the CaloFreeRunningHitList using this key: " << m_freeRunningListKey);
+  }
+  const double cLight = CLHEP::c_light;   // mm/ns
+  const int nPhi = (int)m_nPhiBins;
+  // phi slice from phi = 0: the bin of the -pi..pi grid (shifted by PhiShift) moved by half a turn
+  const int phiIndex = ( phiBin + nPhi / 2 ) % nPhi;
+  const int etaIndex = m_cellAtlasEtaIndex[cell];
+  unsigned long long id32 = 0;
+  int det = 0;
+  if( m_atlasLArPart == 1 ){
+    static const int beValues[6] = {-3, -2, -1, 1, 2, 3};
+    int beIndex = -1;
+    for( int k = 0; k < 6; ++k ) if( beValues[k] == m_atlasBarrelEc ) beIndex = k;
+    if( beIndex < 0 ){ MSG_FATAL( "AtlasBarrelEc " << m_atlasBarrelEc << " is not a LArEM barrel_ec" ); }
+    id32 = (1ULL << 29) | (3ULL << 26) | ((unsigned long long)beIndex << 23) | ((unsigned long long)m_atlasLArSampling << 21)
+         | ((unsigned long long)m_atlasLArRegion << 18) | ((unsigned long long)etaIndex << 9) | ((unsigned long long)phiIndex << 1);
+    det = ( std::abs(m_atlasBarrelEc) == 1 ) ? 1 : 2;
+  }else{
+    id32 = (1ULL << 29) | (4ULL << 26) | ((unsigned long long)(m_atlasBarrelEc > 0 ? 1 : 0) << 25)
+         | ((unsigned long long)m_atlasLArSampling << 23) | ((unsigned long long)m_atlasLArRegion << 22)
+         | ((unsigned long long)etaIndex << 18) | ((unsigned long long)phiIndex << 12);
+    det = 3;
+  }
+  const long long cellID = (long long)( id32 << 32 );
+
+  // time of the deposit (ns): pre-step in the barrel (EMB and barrel presampler), mean of pre and post elsewhere
+  const G4StepPoint *preP = step->GetPreStepPoint(), *postP = step->GetPostStepPoint();
+  double tglobal, mag;
+  if( std::abs(m_atlasBarrelEc) == 1 && m_atlasLArPart == 1 ){
+    tglobal = preP->GetGlobalTime() / ns;
+    mag = preP->GetPosition().mag();
+  }else{
+    tglobal = 0.5 * ( preP->GetGlobalTime() + postP->GetGlobalTime() ) / ns;
+    mag = ( 0.5 * ( preP->GetPosition() + postP->GetPosition() ) ).mag();
+  }
+  const double t = tglobal - mag / cLight;
+  int timeBin = -1;   // -1: no binning (one entry per step)
+  if( m_freeRunningBinning ){
+    if     ( t < 0.   ) timeBin = 0;
+    else if( t < 10.  ) timeBin = (int)( t / 2.5 );
+    else if( t < 50.  ) timeBin = 4 + (int)( ( t - 10. ) / 5. );
+    else if( t < 100. ) timeBin = 12 + (int)( ( t - 50. ) / 25. );
+    else                timeBin = 14;
+  }
+  // nominal centre of the cell (with the half-absorber shift of its edges)
+  const double phiCentre = std::remainder( 0.5 * ( m_phiBins[phiBin] + m_phiBins[phiBin+1] ), 2 * M_PI );
+  list->addLAr( cellID, edep / MeV, t, tglobal, m_cellEta[cell], phiCentre, m_atlasLArSampling, m_atlasBarrelEc,
+                m_atlasLArRegion, det, timeBin );
+}
+
+//!=====================================================================
+
+// A step in the ATLAS FCal with its electrodes (F41 conserto 22), as the ATLAS simulation takes it: the hit of its tile and, with the
+// free-running hits, LArHitFCAL (Athena, LArCalorimeter/LArG4/LArG4FCAL/src/LArFCALCalculatorBase.cc; copies and report in the F41
+// notes of the group, c22_fcal_celulas/):
 // - sensitive: only the liquid argon gaps of the module (LArG4SDToolConfig.py: LAr::FCAL::Module<m>::Gap); not the rods;
 // - cell: the tile of the copy number of the gap (FCAL_ChannelMap::getTubeByCopyNumber), from the table LArFCalElectrodes of
 //   the ATLAS geometry database (geometry/python/v2/FCAL.py);
+// - identifier: channel_id(pos_neg, module, eta, phi) of LArFCAL_ID, pos_neg = +2 for the mid point of the step at z > 0 and -2
+//   otherwise; the 32-bit compact identifier in the upper half of the 64-bit integer, with the bit layout read from the ATLAS
+//   HITS ntuple (c22_bits_fcal_5k.py): LArCalorimeter 1 (3 bits) | part 5 (3) | pos_neg -2 -> 0, +2 -> 1 (1) | module - 1 (2) |
+//   eta (6) | phi (4) | 0 (13);
 // - energy: the deposit of the step with Birks' law (BirksLaw, BirksLArK = 0.0486 as LArG4FCALConfig.py, field 10 kV/cm); no
 //   high voltage scale (FCALHVEnable is false by default);
-// - time: the ATLAS time of the liquid argon (larHitTime) with AtlasHitTime, the global time of the pre-step point without it.
-// The deposit goes to the hit of its tile (fcalFillHit).
+// - time: in the hit of its tile (fcalFillHit), the ATLAS time of the liquid argon (larHitTime) with AtlasHitTime, the global time of
+//   the pre-step point without it; in the free-running hits, the mean of the pre- and post-step global times minus |r|/c of the mid
+//   point, in ns, with the time bins and sums of the other LAr (LArG4SimpleSD, TimeBinType Default; see freeRunningLAr) and no time
+//   window.
 void CaloHitMaker::fcalStep( SG::EventContext &ctx, const G4Step *step ) const
 {
-  const G4StepPoint *preP = step->GetPreStepPoint();
+  const G4StepPoint *preP = step->GetPreStepPoint(), *postP = step->GetPostStepPoint();
   const G4VPhysicalVolume *pv = preP->GetPhysicalVolume();
   if( !pv || pv->GetLogicalVolume()->GetName() != m_fcalGapVolume ) return;
   if( m_activeEnergyOnly ){
@@ -661,6 +907,31 @@ void CaloHitMaker::fcalStep( SG::EventContext &ctx, const G4Step *step ) const
   // hit of the normal chain: the ATLAS time of the liquid argon (AtlasHitTime) or the global time of the pre-step point
   fcalFillHit( ctx, m_fcalCopyEtaIndex[copy], m_fcalCopyPhiIndex[copy], edep,
                m_atlasHitTime ? (float)larHitTime( step ) : (float)( preP->GetGlobalTime() / ns ) );
+  if( !m_freeRunningHits ) return;
+
+  SG::ReadHandle<CaloFreeRunningHitList> list( m_freeRunningListKey, ctx );
+  if( !list.isValid() ){
+    MSG_FATAL("It's not possible to retrieve the CaloFreeRunningHitList using this key: " << m_freeRunningListKey);
+  }
+  const G4ThreeVector mid = 0.5 * ( preP->GetPosition() + postP->GetPosition() );
+  const int posNeg = mid.z() > 0 ? 2 : -2;
+  const unsigned long long id32 = (1ULL << 29) | (5ULL << 26) | ((unsigned long long)(posNeg > 0 ? 1 : 0) << 25)
+                                | ((unsigned long long)(m_fcalModule - 1) << 23)
+                                | ((unsigned long long)m_fcalCopyEtaIndex[copy] << 17)
+                                | ((unsigned long long)m_fcalCopyPhiIndex[copy] << 13);
+  const long long cellID = (long long)( id32 << 32 );
+  const double tglobal = 0.5 * ( preP->GetGlobalTime() + postP->GetGlobalTime() ) / ns;
+  const double t = tglobal - mid.mag() / CLHEP::c_light;
+  int timeBin = -1;   // -1: no binning (one entry per step)
+  if( m_freeRunningBinning ){
+    if     ( t < 0.   ) timeBin = 0;
+    else if( t < 10.  ) timeBin = (int)( t / 2.5 );
+    else if( t < 50.  ) timeBin = 4 + (int)( ( t - 10. ) / 5. );
+    else if( t < 100. ) timeBin = 12 + (int)( ( t - 50. ) / 25. );
+    else                timeBin = 14;
+  }
+  // the module goes to the field sampling of the list (LArHitFCAL_module), pos_neg to side
+  list->addLAr( cellID, edep / MeV, t, tglobal, m_fcalCopyEta[copy], m_fcalCopyPhi[copy], m_fcalModule, posNeg, 0, 4, timeBin );
 }
 
 //!=====================================================================
@@ -742,6 +1013,29 @@ void CaloHitMaker::fcalSpot( SG::EventContext &ctx, const G4Step *step ) const
   const float tSpot = (float)( preP->GetGlobalTime() / ns );
   fcalFillHit( ctx, etaIndex, phiIndex, (float)edep,
                m_atlasHitTime ? tSpot : (float)( tSpot + pos.mag() / CLHEP::c_light ) );
+  if( !m_freeRunningHits ) return;
+  SG::ReadHandle<CaloFreeRunningHitList> list( m_freeRunningListKey, ctx );
+  if( !list.isValid() ){
+    MSG_FATAL("It's not possible to retrieve the CaloFreeRunningHitList using this key: " << m_freeRunningListKey);
+  }
+  const int posNeg = pos.z() > 0 ? 2 : -2;
+  const unsigned long long id32 = (1ULL << 29) | (5ULL << 26) | ((unsigned long long)(posNeg > 0 ? 1 : 0) << 25)
+                                | ((unsigned long long)(m_fcalModule - 1) << 23)
+                                | ((unsigned long long)etaIndex << 17) | ((unsigned long long)phiIndex << 13);
+  const long long cellID = (long long)( id32 << 32 );
+  const double t = preP->GetGlobalTime() / ns;
+  const double tglobal = t + pos.mag() / CLHEP::c_light;   // extra branch: the time without the -|r|/c of the ATLAS convention
+  int timeBin = -1;
+  if( m_freeRunningBinning ){
+    if     ( t < 0.   ) timeBin = 0;
+    else if( t < 10.  ) timeBin = (int)( t / 2.5 );
+    else if( t < 50.  ) timeBin = 4 + (int)( ( t - 10. ) / 5. );
+    else if( t < 100. ) timeBin = 12 + (int)( ( t - 50. ) / 25. );
+    else                timeBin = 14;
+  }
+  const auto &c = m_fcalTileCentre.at( std::make_pair( etaIndex, phiIndex ) );
+  // source 1: the hit of the FCALFastSimDedicatedSD, kept apart from the Geant4 steps of the same cell and bin (F41 conserto 28)
+  list->addLAr( cellID, edep / MeV, t, tglobal, c.first, c.second, m_fcalModule, posNeg, 0, 4, timeBin, 1 );
 }
 
 //!=====================================================================
@@ -788,6 +1082,191 @@ float CaloHitMaker::birksEnergy( const G4Step *step ) const
   }
 
   return (float)edep;
+}
+
+//!=====================================================================
+
+// Charge collection of the ATLAS EM end-cap (F41 conserto 29, --atlas-emec-charge-collection): the energy that the ATLAS simulation
+// records for a step in the liquid argon of an EMEC wheel (Athena 23.0.14, LArCalorimeter/LArG4/LArG4EC/src/EnergyCalculator.cc,
+// Process_Default with the default EnergyCorrection = 8), computed by the ported ATLAS code (geometry/LArG4EC, geometry/GeoSpecialShapes;
+// copies of the sources and the validation against Athena in the F41 notes of the group, c29_emec_energia/):
+// - frame: the pre- and post-step points are brought to the local frame of the ATLAS wheel (the frame of the liquid argon volume
+//   LAr::EMEC::{Pos,Neg}::{Inner,Outer}Wheel, where FindIdentifier_Default takes them with GetTopTransform): z from the front face
+//   of the wheel, |z| - (EmecFocalShift + dElecFocaltoWRP + dWRPtoFrontFace), the same front face as the cells (emecFindCell); on
+//   side B the end-cap is rotated by 180 degrees around y (LArDetectorFactory.cxx: RotateY3D(180 deg)), so x changes sign. In the
+//   geometry of the simulation of ATLAS-P2-RUN4-01-01-00 the wheels are at |z| = 3745 mm with no other rotation.
+// - liquid argon of the accordion: the EMEC of Lorenzetti is made of planar layers, so the point may be where ATLAS has an absorber
+//   or an electrode. The step is moved in phi, at the same r and z, into the liquid argon of the same fan period (option (b),
+//   decided by Luciano): emecLArPhiShift gives the shift for the middle of the step and the same shift moves both points (rigid
+//   shift, confirmed by Luciano on 15/10/2026); kEmecShiftEndpointsIndependently = true would move each point by its own shift.
+// - Birks' law with the local field 0.01 HV / gap at the middle of the step (GetGapSize and the HV of HVHelper, HVEMECMap_v02.dat),
+//   on the deposit times the weight of the track, with the step length (LArG4BirksLaw, k = 0.05832, LAr density 1.396 g/cm3);
+// - the energy of the hit: CalculateChargeCollection1 (GetCurrent1) of the energy after Birks between the two points.
+static constexpr bool kEmecShiftEndpointsIndependently = false;
+
+// The transform from the global frame to the frame of the wheel composed as in the ATLAS simulation (decisions of Luciano of
+// 15/10/2026: side B, then side A by the rule of following the ATLAS source), level by level as G4NavigationHistory does it
+// (G4NavigationLevelRep: InverseProduct of the transform of the level above and G4AffineTransform(GetRotation(), GetTranslation()) of the
+// placement; G4PVPlacement(G4Transform3D) keeps the inverse of the rotation, none when it is the identity), with the placements of the
+// geometry of the simulation of ATLAS-P2-RUN4-01-01-00 (GeoModel, Geo2G4):
+// - LAr::Endcap::Cryostat::MotherVolume: side A, LArPosition LARCRYO_EC_POS (translation z = +6734.5 mm, no rotation; LArPosition-10);
+//   side B, LARCRYO_EC_NEG (z = -6734.5 mm) times GeoTrf::RotateY3D(180 deg) (LArDetectorFactory.cxx), the Eigen AngleAxis matrix
+//   [[c, 0, s], [0, 1, 0], [-s, 0, c]] with c = cos(pi) = -1 and s = sin(pi) = 1.2246e-16 of the double pi;
+// - EmecHecLAr and LAr::EMEC::Mother (LArPosition EMEC_POS and EMEC_NEG, zero): identity;
+// - the wheel: refSystemTransform, TranslateZ(ZPLANE of EMEC::Mother - 3639.5 mm) = TranslateZ(-3050.5 - 3639.5 = -6690 mm) (CryoPcons-21-
+//   HGTD), then TranslateZ(zWheelRefPoint + dWRPtoFrontFace = 3689.5 + 11 = 3700.5 mm) (EMECConstruction.cxx), one translation -2989.5 mm;
+// - the world and the CALO envelope of the ATLAS simulation: identity (no offset in G4GeometryToolConfig.py).
+// Valid for the geometry of --atlas-run4 (wheel front at |z| = 3745 mm).
+static G4AffineTransform emecTopTransform( bool sideA )
+{
+  G4AffineTransform world;                                         // the world and the CALO envelope
+  if( sideA ){
+    G4AffineTransform cryostat, emecHecLAr, emecMother, wheel;
+    cryostat.InverseProduct( world, G4AffineTransform( G4ThreeVector( 0., 0., 6734.5 ) ) );
+    emecHecLAr.InverseProduct( cryostat, G4AffineTransform() );
+    emecMother.InverseProduct( emecHecLAr, G4AffineTransform() );
+    wheel.InverseProduct( emecMother, G4AffineTransform( G4ThreeVector( 0., 0., -6690. + 3700.5 ) ) );
+    return wheel;
+  }
+  const double angle = 180.0 * CLHEP::deg;
+  const double c = std::cos( angle ), s = std::sin( angle );
+  // Eigen::AngleAxisd(angle, UnitY).toRotationMatrix(), element by element
+  const double cos1y = 1. - c;   // (1 - c) * axis.y()
+  const CLHEP::HepRep3x3 rep( 0. * 0. + c,         0. * 1. - s * 0.,   0. * 0. + s * 1.,
+                              0. * 1. + s * 0.,    cos1y * 1. + c,     cos1y * 0. - s * 0.,
+                              0. * 0. - s * 1.,    cos1y * 0. + s * 0., 0. * 0. + c );
+  const G4RotationMatrix placement( rep );
+  const G4RotationMatrix frot = placement.inverse();   // G4PVPlacement(G4Transform3D): NewPtrRotMatrix(getRotation().inverse())
+  G4AffineTransform cryostat;
+  cryostat.InverseProduct( world, G4AffineTransform( &frot, G4ThreeVector( 0., 0., -6734.5 ) ) );
+  G4AffineTransform emecHecLAr, emecMother, wheel;
+  emecHecLAr.InverseProduct( cryostat, G4AffineTransform() );
+  emecMother.InverseProduct( emecHecLAr, G4AffineTransform() );
+  wheel.InverseProduct( emecMother, G4AffineTransform( G4ThreeVector( 0., 0., -6690. + 3700.5 ) ) );
+  return wheel;
+}
+
+void CaloHitMaker::emecDiscardCount( bool inner, double energyBefore, bool discarded ) const
+{
+  std::lock_guard<std::mutex> lock( s_emecDiscardMutex );
+  const int w = inner ? 1 : 0;
+  ++s_emecSteps[w]; s_emecEnergy[w] += energyBefore;
+  if( discarded ){ ++s_emecDiscardedSteps[w]; s_emecDiscardedEnergy[w] += energyBefore; }
+}
+
+bool CaloHitMaker::emecChargeEnergy( const G4Step *step, double &energy ) const
+{
+  const LArG4::EC::EnergyCalculator *calc = m_emecCalculator;
+  const LArWheelCalculator *lwc = calc->calculator();
+  const bool sideA = ( m_zMin + m_zMax > 0 );
+  static const G4AffineTransform topA = emecTopTransform( true ), topB = emecTopTransform( false );
+  const G4AffineTransform &top = sideA ? topA : topB;
+  auto toLocal = [&]( const G4ThreeVector &g ){ return top.TransformPoint( g ); };
+  G4ThreeVector p1 = toLocal( step->GetPreStepPoint()->GetPosition() );
+  G4ThreeVector p2 = toLocal( step->GetPostStepPoint()->GetPosition() );
+  if( kEmecShiftEndpointsIndependently ){
+    p1.rotateZ( emecLArPhiShift( p1 ) );
+    p2.rotateZ( emecLArPhiShift( p2 ) );
+  }else{
+    const double dphi = emecLArPhiShift( ( p1 + p2 ) * 0.5 );
+    p1.rotateZ( dphi );
+    p2.rotateZ( dphi );
+  }
+  // Process_Default
+  G4double E = step->GetTotalEnergyDeposit() * ( step->GetTrack() ? step->GetTrack()->GetWeight() : 1. );
+  try{
+    const G4ThreeVector midpoint = ( p1 + p2 ) * 0.5;
+    const G4double wholeStepLengthCm = step->GetStepLength() / cm;
+    const G4double gap = calc->GapSize( midpoint );
+    const G4double efield = 0.01 * calc->Voltage( midpoint ) / gap; // estimate Efield[KV/cm]
+    E = calc->Birks( E, wholeStepLengthCm, efield );
+    energy = calc->ChargeCollection( E, p1, p2 );
+    return true;
+  }catch( const std::exception &e ){
+    // HVHelper::GetEtaSection throws when the point is outside the eta range of the HV sectors of the wheel (steps at the conical edges
+    // of the planar slices of the wheels of Lorenzetti, beyond the cone of the ATLAS wheel). Decision of Luciano of 15/10/2026: the deposit
+    // is discarded (there is no liquid argon of the ATLAS wheel there, so no ATLAS hit).
+    static std::atomic<long> nExceptions{0};
+    const long n = ++nExceptions;
+    if( n <= 10 || ( n & (n - 1) ) == 0 )
+      MSG_WARNING( "EMEC charge collection: " << e.what() << " for the step at local (" << p1.x() << ", " << p1.y() << ", "
+                   << p1.z() << "); deposit discarded (" << n << " so far)" );
+    return false;
+  }
+}
+
+//!=====================================================================
+
+// Shift in phi (rad) that brings the point p (local frame of the ATLAS wheel) into the liquid argon of its fan period, at the same r
+// and z, preserving its fraction of the period (option (b) of the plan approved by Luciano; F41 conserto 29). At the (r, z) of the
+// point, with the ported LArWheelCalculator of the absorbers and of the electrodes of the wheel:
+// - the fan period is the phi interval between the neutral fibres of the two absorbers around the point (the nearest absorber, from
+//   DistanceToTheNearestFan, and the next one on the side of the point);
+// - the liquid argon of the period is made of two intervals: from the surface of the lower absorber (distance to its neutral fibre
+//   equal to its half thickness, GetFanHalfThickness) to the surface of the electrode (distance to the electrode neutral fibre equal
+//   to minus the electrode half thickness), and from the other surface of the electrode to the surface of the upper absorber; the
+//   distances are those of DistanceToTheNeutralFibre, the same that decide inside and outside in the ATLAS wheel;
+// - the fraction f of the point in the full period is mapped linearly onto the cumulated length of the two intervals.
+// Each boundary is found by bisection in phi down to the resolution of a double (no tolerance). If a boundary is not bracketed (it
+// should not happen) the point is not moved.
+double CaloHitMaker::emecLArPhiShift( const CLHEP::Hep3Vector &p ) const
+{
+  const LArG4::EC::EnergyCalculator *calc = m_emecCalculator;
+  const LArWheelCalculator *lwc = calc->calculator(), *elc = calc->electrodeCalculator();
+  const double r = p.perp(), z = p.z(), phi = p.phi();
+  const double step = lwc->GetFanStepOnPhi();
+  const int nFans = lwc->GetNumberOfFans();
+  auto at = [&]( double ph ){ return CLHEP::Hep3Vector( r * std::cos(ph), r * std::sin(ph), z ); };
+  // signed distance to the neutral fibre of the fan of the calculator c rotated by theta (fan number fan)
+  auto dist = [&]( const LArWheelCalculator *c, double theta, int fan, double ph ){
+    CLHEP::Hep3Vector q = at( ph ); q.rotateZ( -theta ); return c->DistanceToTheNeutralFibre( q, fan ); };
+  // bisection of f between lo and hi (opposite signs) down to the resolution of a double; NaN if not bracketed
+  auto root = []( auto f, double lo, double hi ){
+    double flo = f(lo), fhi = f(hi);
+    if( flo == 0 ) return lo;
+    if( fhi == 0 ) return hi;
+    if( ( flo < 0 ) == ( fhi < 0 ) ) return std::nan("");
+    for(;;){
+      const double m = 0.5 * ( lo + hi );
+      if( m <= lo || m >= hi ) return m;
+      const double fm = f(m);
+      if( fm == 0 ) return m;
+      if( ( fm < 0 ) == ( flo < 0 ) ){ lo = m; flo = fm; } else { hi = m; }
+    }
+  };
+  // the nearest absorber: its rotation and number; the period goes from the absorber below the point to the one above it
+  CLHEP::Hep3Vector pa = p; int fa = 0;
+  const double da = lwc->DistanceToTheNearestFan( pa, fa );
+  const double theta = phi - pa.phi();
+  const double thLo = ( da >= 0 ) ? theta : theta - step, thHi = thLo + step;
+  const int fanLo = ( da >= 0 ) ? fa : ( fa + nFans - 1 ) % nFans, fanHi = ( fanLo + 1 ) % nFans;
+  const double hA = lwc->GetFanHalfThickness(), hE = elc->GetFanHalfThickness();
+  const double phA0 = root( [&]( double x ){ return dist( lwc, thLo, fanLo, x ); }, phi - step, phi );
+  const double phA1 = root( [&]( double x ){ return dist( lwc, thHi, fanHi, x ); }, phi, phi + step );
+  // the electrode between the two absorbers
+  const double phMid = 0.5 * ( phA0 + phA1 );
+  CLHEP::Hep3Vector pe = at( phMid ); int fe = 0;
+  elc->DistanceToTheNearestFan( pe, fe );
+  const double thE = phMid - pe.phi();
+  auto dE = [&]( double x ){ return dist( elc, thE, fe, x ); };
+  const double phE = root( dE, phA0, phA1 );
+  const double s1 = root( [&]( double x ){ return dist( lwc, thLo, fanLo, x ) - hA; }, phA0, phE );
+  const double s2 = root( [&]( double x ){ return dE(x) + hE; }, phA0, phE );
+  const double s3 = root( [&]( double x ){ return dE(x) - hE; }, phE, phA1 );
+  const double s4 = root( [&]( double x ){ return dist( lwc, thHi, fanHi, x ) + hA; }, phE, phA1 );
+  const double l1 = s2 - s1, l2 = s4 - s3;
+  if( !( l1 > 0 && l2 > 0 && phA1 > phA0 ) ){
+    static std::atomic<long> nFailures{0};
+    const long n = ++nFailures;
+    if( n <= 10 || ( n & (n - 1) ) == 0 )
+      MSG_WARNING( "EMEC charge collection: no liquid argon found around the local point (" << p.x() << ", " << p.y() << ", "
+                   << p.z() << "); not moved (" << n << " so far)" );
+    return 0.;
+  }
+  const double f = ( phi - phA0 ) / ( phA1 - phA0 );
+  const double t = f * ( l1 + l2 );
+  const double phNew = ( t < l1 ) ? s1 + t : s3 + ( t - l1 );
+  return phNew - phi;
 }
 
 //!=====================================================================
