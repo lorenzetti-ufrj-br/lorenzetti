@@ -5,6 +5,10 @@ if( GEOMODEL_LIBRARIES )
     "-std=c++20;-isystem;${GEOMODEL_DIR}/include;-isystem;${GEOMODEL_DIR}/include/eigen3" )
 endif()
 file(GLOB_RECURSE HEADERS src/*.h )
+# The ported ATLAS charge collection of the EM end-cap (F41 conserto 29): compiled as in the Athena release 23.0.14 (-O2 -DNDEBUG; in
+# Athena the asserts of these files are off, and the code must go on where an assert would stop it)
+file(GLOB EMEC_PORT_SOURCES src/GeoSpecialShapes_*.cxx src/LArG4EC_*.cxx)
+set_source_files_properties( ${EMEC_PORT_SOURCES} PROPERTIES COMPILE_OPTIONS "-O2;-DNDEBUG" )
 file(GLOB_RECURSE HEADERS src/D*.h )
 
 

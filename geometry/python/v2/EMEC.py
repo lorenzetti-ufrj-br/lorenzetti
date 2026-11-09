@@ -348,7 +348,7 @@ def atlasEmecConeRadius(eta, z):
 
 # Volume fraction of liquid argon of the ATLAS accordion per radial band of 100 mm (key: lower edge of the band, mm), averaged over the
 # depth inside the wheel (outer 1.375 < |eta| < 2.5, inner 2.5 < |eta| < 3.2): the LArWheelCalculator of Athena 23.0.14 (ported in
-# F41 conserto 29), phi scanned over one period of the wheel at each (r, z) on a grid of 10 mm (F41 c36,
+# geometry/GeoSpecialShapes, F41 conserto 29), phi scanned over one period of the wheel at each (r, z) on a grid of 10 mm (F41 c36,
 # c36_emec_frac.cxx, tables EmecTables-ATLAS-P2-RUN4-01-01-00). Used with EMEC_ATLAS_ARGON_FRACTION (conserto 37).
 EMEC_ATLAS_ARGON_FRACTION_TABLE = {
     "outer": {600: 0.4692, 700: 0.5050, 800: 0.5437, 900: 0.5735, 1000: 0.5980, 1100: 0.6180, 1200: 0.6352, 1300: 0.6502,
