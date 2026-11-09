@@ -17,6 +17,8 @@ class Pileup( Cpp ):
                 "Select",
                 "DeltaEta",
                 "DeltaPhi",
+                "PtMinCharged",
+                "PtMinNeutral",
                 "OutputLevel",
                 ]
 
@@ -30,6 +32,8 @@ class Pileup( Cpp ):
                 Select         : int=2,
                 DeltaEta       : float=0.22,
                 DeltaPhi       : float=0.22,
+                PtMinCharged   : float=0.7,
+                PtMinNeutral   : float=0.05,
                 OutputLevel    : int=0
               ): 
     
@@ -45,6 +49,10 @@ class Pileup( Cpp ):
     self.setProperty( "Select"        , Select         )
     self.setProperty( "DeltaEta"      , DeltaEta       )
     self.setProperty( "DeltaPhi"      , DeltaPhi       )
+    # Minimum pT (GeV) of the particles passed to the simulation. The charged cut stands in
+    # for the solenoid field when it is not simulated; use 0 for both when the field is on.
+    self.setProperty( "PtMinCharged"  , PtMinCharged   )
+    self.setProperty( "PtMinNeutral"  , PtMinNeutral   )
 
 
   def gun(self):
