@@ -72,7 +72,8 @@ def parse_args():
                              "global time minus the time of flight from the interaction point (liquid argon: minus |r|/c; tile "
                              "cells of ATLAS: the time of TileGeoG4SDCalc with the TOF correction, each PMT with its own delay). "
                              "Without it the global time of Geant4 is used, and the in-time energy of the end-cap, HEC and FCal "
-                             "(more than 12.5 ns from the interaction point) falls in bunch crossing +1. On by default with --detector v2 (--no-atlas-hit-time switches it off), off with v1.")
+                             "(more than 12.5 ns from the interaction point) falls in bunch crossing +1. The free-running hits "
+                             "always use the ATLAS time. On by default with --detector v2 (--no-atlas-hit-time switches it off), off with v1.")
     parser.add_argument('--enable-solenoid-field', action=argparse.BooleanOptionalAction, default=None,
                         dest='enable_solenoid_field', required=False,
                         help="Enable a uniform 2 T axial field only inside the ATLAS central solenoid "
@@ -164,7 +165,7 @@ def parse_args():
                              "per side) and the cable troughs, from the public ATLAS GeoModel geometry; the cell of a deposit is "
                              "the tile of its electrode, as in the ATLAS simulation. The electrodes come from the file given by "
                              "--atlas-fcal-electrodes. The FCal cells go to the hit collection (samplings FCAL1-FCAL3, "
-                             "one cell per ATLAS tile). Needs --atlas-fcal. Simulation only. On by default with --detector v2 (--no-atlas-fcal-cells switches it off), off with v1.")
+                             "one cell per ATLAS tile) and, with --free-running-hits, to LArHitFCAL. Needs --atlas-fcal. Simulation only. On by default with --detector v2 (--no-atlas-fcal-cells switches it off), off with v1.")
     parser.add_argument('--atlas-fcal-frozen-showers', action=argparse.BooleanOptionalAction, default=None,
                         dest='atlas_fcal_frozen_showers', required=False,
                         help="Frozen showers in the FCal of ATLAS, as the ATLAS simulation (FrozenShowersFCalOnly of the Athena "
@@ -197,25 +198,25 @@ def parse_args():
                         help="The ATLAS material outside the calorimeters, imported as passive material from the GeoModel dump of "
                              "--atlas-run4: the whole MuonSys (end-cap and barrel toroids, forward shielding JD/JT/JF with its borated "
                              "polyethylene, NSW, muon stations, calorimeter saddle) and the girders, fingers and extended-barrel saddles "
-                             "of the tile calorimeter; world of 30 m. Needs --atlas-run4. Simulation only. "
+                             "of the tile calorimeter; world of 30 m. Needs --atlas-run4; needed by --free-running-atlas-format. Simulation only. "
                              "On by default with --detector v2 (--no-atlas-forward-shielding switches it off), off with v1.")
     parser.add_argument('--atlas-full-field', action=argparse.BooleanOptionalAction, default=None, dest='atlas_full_field', required=False,
                         help="The field of the ATLAS simulation as in the production: the map in the whole world (not only in the cylinder "
                              "of the calorimeters) and, as MuonFieldOnlyInCalo of ATLAS, only the muons in the field inside the barrel EM "
                              "calorimeter (the SwitchingFieldManager of Athena, 1500 < r < 1900 mm, |z| < 2000 mm). Needs "
-                             "--atlas-forward-shielding. Simulation only. On by default with --detector v2 (--no-atlas-full-field switches it off), off with v1.")
+                             "--atlas-forward-shielding; needed by --free-running-atlas-format. Simulation only. On by default with --detector v2 (--no-atlas-full-field switches it off), off with v1.")
     parser.add_argument('--atlas-barrel-gap-services', action=argparse.BooleanOptionalAction, default=None, dest='atlas_barrel_gap_services', required=False,
                         help="The dead material of ATLAS in the gap between the barrel and the extended barrel, imported from the GeoModel "
                              "dump of --atlas-run4 instead of the services of --tile-atlas-itc (DM::ITC::Services, 5%% of aluminium): the "
                              "LAr::DM::* volumes of the barrel cryostat (sector envelopes, bridges, base and sector plates, pedestals, front-end "
                              "boards, crates), the signal feedthroughs and their cables, and the saddles of the tile barrel. Needs "
-                             "--atlas-forward-shielding. Simulation only. On by default with --detector v2 (--no-atlas-barrel-gap-services switches it off), off with v1.")
+                             "--atlas-forward-shielding; needed by --free-running-atlas-format. Simulation only. On by default with --detector v2 (--no-atlas-barrel-gap-services switches it off), off with v1.")
     parser.add_argument('--tile-atlas-run4', action=argparse.BooleanOptionalAction, default=None, dest='tile_atlas_run4', required=False,
                         help="The extended barrel, ITC, gap and crack of the tile calorimeter at the positions of the ATLAS simulation of "
                              "Run 4 (the GeoModel dump of --atlas-run4: 40 mm further on side A and 30 mm on side C than the nominal "
                              "positions of --tile-atlas-gap), with their cells; with --atlas-barrel-gap-services the sector and bridge "
-                             "envelopes of the LAr services are then imported too. Needs --atlas-run4 and --tile-atlas-gap. "
-                             "Simulation only. On by default with --detector v2 (--no-tile-atlas-run4 switches it off), off with v1.")
+                             "envelopes of the LAr services are then imported too. Needs --atlas-run4 and --tile-atlas-gap; needed by "
+                             "--free-running-atlas-format. Simulation only. On by default with --detector v2 (--no-tile-atlas-run4 switches it off), off with v1.")
     parser.add_argument('--detector', action='store',
                         dest='detector', required=False,
                         type=str, default='v1', choices=['v1', 'v2'],
@@ -223,8 +224,30 @@ def parse_args():
                              "ATLAS geometry need v2.")
     parser.add_argument('--atlas-emec-argon-fraction', action=argparse.BooleanOptionalAction, default=None, dest='atlas_emec_argon_fraction', required=False,
                         help="The gap of each radial band of the ATLAS-like EMEC from the volume fraction of liquid argon of the ATLAS "
-                             "accordion (LArWheelCalculator of Athena), instead of the gap linear in r of --atlas-emec. Needs --atlas-emec. "
-                             "On by default with --detector v2 (--no-atlas-emec-argon-fraction switches it off), off with v1.")
+                             "accordion (LArWheelCalculator of Athena), instead of the gap linear in r of --atlas-emec. Needs --atlas-emec; "
+                             "needed by --free-running-atlas-format. On by default with --detector v2 (--no-atlas-emec-argon-fraction switches it off), off with v1.")
+    parser.add_argument('--free-running-atlas-format', action='store_true', dest='free_running_atlas_format', required=False,
+                        help="Write the free-running hits as the ATLAS HITS ntuple: the LAr energy and time compressed as the ATLAS "
+                             "HITS (LArHitContainerCnv_p2) and filtered as FilterHit_tf (LArHitFilter, including its layer cuts in the "
+                             "HEC and FCAL), without the extra tglobal branches. Needs --free-running-hits. Off by default.")
+    parser.add_argument('--atlas-emec-charge-collection', action='store_true', dest='atlas_emec_charge_collection', required=False,
+                        help="Energy of the free-running hits of the EMEC as in the ATLAS simulation (Athena 23.0.14, LArG4::EC::"
+                             "EnergyCalculator with EnergyCorrection = 8): Birks' law with the local field (HV / gap) and the current of "
+                             "the charge collection (CalculateChargeCollection1, field map ec.fieldzv03, HV map HVEMECMap_v02.dat), with the "
+                             "ported ATLAS code, on each step brought to the frame of the ATLAS wheel and moved in phi into the liquid argon "
+                             "of the accordion. Needs --free-running-hits; needed by --free-running-atlas-format. Off by default.")
+    parser.add_argument('--atlas-emec-tables', action='store', dest='atlas_emec_tables', required=False, type=str,
+                        default=os.path.join(os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR', ''), 'EmecTables-ATLAS-P2-RUN4-01-01-00.csv'),
+                        help="Tables of the EMEC wheels for --atlas-emec-charge-collection (geometry/scripts/emec_tables_from_geomdb.py); "
+                             "default: geometry/data/EmecTables-ATLAS-P2-RUN4-01-01-00.csv.")
+    parser.add_argument('--atlas-emec-field-map', action='store', dest='atlas_emec_field_map', required=False, type=str,
+                        default=os.path.join(os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR', ''), 'ec.fieldzv03'),
+                        help="Field map of the EMEC charge collection (LArG4EC/ec.fieldzv03 of ATLASCALDATA, CVMFS); default: "
+                             "geometry/data/ec.fieldzv03.")
+    parser.add_argument('--atlas-emec-hv-map', action='store', dest='atlas_emec_hv_map', required=False, type=str,
+                        default=os.path.join(os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR', ''), 'HVEMECMap_v02.dat'),
+                        help="HV map of the EMEC (LArG4EC/HVEMECMap_v02.dat of ATLASCALDATA, CVMFS); default: "
+                             "geometry/data/HVEMECMap_v02.dat.")
     parser.add_argument('--atlas-fcal-electrodes', action='store', dest='atlas_fcal_electrodes', required=False,
                         type=str, default=os.environ.get('LORENZETTI_FCAL_ELECTRODES',
                                   os.path.join(os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR', ''), 'LArFCalElectrodes-06.csv')),
@@ -275,11 +298,37 @@ def parse_args():
     parser.add_argument('--save-all-hits', action='store_true',
                         dest='save_all_hits', required=False,
                         help="Save all hits into the output file.")
+    parser.add_argument('--free-running-hits', action='store_true',
+                        dest='free_running_hits', required=False,
+                        help="Write the tile and LAr hits in the layout of the ATLAS HITS ntuple (tree CollectionTree: "
+                             "EventNumber, TileCalHit_cellID/energy/time/eta/phi/sampling/side/module/tower and "
+                             "LArHitEMB/EMEC/HEC_cellID/energy/time/eta/phi/region/sampling/barrel_ec (pos_neg in the HEC), "
+                             "LArHitFCAL_cellID/energy/time/eta/phi/module, plus the extra *_tglobal) instead of the standard HIT "
+                             "stream. Tile, as in the ATLAS simulation: one entry per PMT, with the ATLAS identifier (pmt_id, "
+                             "64-bit), the visible energy (active medium and Birks' law, switched on by this option), the "
+                             "time of TileGeoG4SDCalc (time of flight and fibre corrections, PMT delays, hits after "
+                             "350.5 ns kept at 99995 ns) and its time bins (0.5 ns within +-75.25 ns, 5 ns outside). "
+                             "LAr and FCal, as in the ATLAS simulation (LArG4SimpleSD): one entry per cell and time bin (2.5 ns up to "
+                             "10 ns, 5 ns up to 50 ns, 25 ns up to 100 ns, one bin above), with the ATLAS identifier "
+                             "(channel_id), the energy in the liquid argon with Birks' law, the global time minus r/c and no "
+                             "time window; no energy threshold and full precision (the FilterHit_tf cuts and compression of "
+                             "the ATLAS ntuples are applied outside). "
+                             "Needs --tile-atlas-geometry, --tile-atlas-cells, --tile-atlas-gap, --atlas-emb-cells, --atlas-hec, "
+                             "--atlas-emec, --atlas-fcal-cells, --atlas-fcal-frozen-showers, --atlas-g4 and --atlas-run4 (all on by "
+                             "default with --detector v2); switches on --tile-dual-readout (U-shape). Off by default, also with "
+                             "--detector v2.")
     parser.add_argument('--neutron-time-cut', action='store', type=float, default=None,
                         dest='neutron_time_cut', required=False,
                         help="Kill every neutron this time (ns) after the start of the event, as the ATLAS simulation does "
                              "with 150 ns (Sim.NeutronTimeCut; arXiv:1005.4568, sec. 5.5). Without it, the default of "
-                             "Geant4 (10 us in FTFP_BERT). 150 ns by default with --detector v2.")
+                             "Geant4 (10 us in FTFP_BERT). 150 ns by default with --detector v2 and with --free-running-hits.")
+    parser.add_argument('--free-running-no-binning', action='store_true',
+                        dest='free_running_no_binning', required=False,
+                        help="With --free-running-hits: one entry per PMT and Geant4 step, without the time bins.")
+    parser.add_argument('--free-running-keep-hits', action='store_true',
+                        dest='free_running_keep_hits', required=False,
+                        help="With --free-running-hits, for checks: keep also the standard HIT stream (tree "
+                             "CollectionTree) and write the free-running hits in the tree FreeRunningTree.")
     parser.add_argument('--dry-run', action='store_true',
                         dest='dry_run', required=False,
                         help="Run the script without executing the main logic.")
@@ -315,7 +364,12 @@ def main(logging_level: str,
          tile_atlas_run4: bool,
          atlas_emec_argon_fraction: bool,
          atlas_field_map: str,
+         free_running_atlas_format: bool,
          detector: str,
+         atlas_emec_charge_collection: bool,
+         atlas_emec_tables: str,
+         atlas_emec_field_map: str,
+         atlas_emec_hv_map: str,
          tile_atlas_gap: bool,
          atlas_endcap_cryostat: bool,
          atlas_barrel_cryostat: bool,
@@ -324,6 +378,9 @@ def main(logging_level: str,
          birks_law: bool,
          atlas_hit_time: bool,
          save_all_hits : bool,
+         free_running_hits : bool,
+         free_running_binning : bool,
+         free_running_keep_hits : bool,
          neutron_time_cut : float,
          timeout: int,
          number_of_events: int,
@@ -367,6 +424,9 @@ def main(logging_level: str,
         birks_law (bool): Apply Birks' law in the scintillator and in the liquid argon.
         atlas_hit_time (bool): Bunch crossing of the hits from the time of the ATLAS simulation (time of flight taken out).
         save_all_hits (bool): If True, saves all hits regardless of Region of Interest (RoI).
+        free_running_hits (bool): Write the tile, LAr and FCal hits in the layout of the ATLAS HITS ntuple instead of the HIT stream.
+        free_running_binning (bool): Time bins of the ATLAS simulation for the free-running hits.
+        free_running_keep_hits (bool): Keep also the standard HIT stream (free-running hits in the tree FreeRunningTree).
         neutron_time_cut (float): Time (ns) after which neutrons are killed; 0 keeps the Geant4 default.
         timeout (int): Timeout in minutes.
         number_of_events (int): Number of events to process.
@@ -432,25 +492,58 @@ def main(logging_level: str,
                                  BirksLaw=birks_law,
                                  AtlasHitTime=atlas_hit_time,
                                  TileDualReadout=tile_dual_readout,
+                                 FreeRunningHits=free_running_hits,
+                                 FreeRunningBinning=free_running_binning,
+                                 FreeRunningNtupleName=("FreeRunningTree" if free_running_keep_hits else "CollectionTree"),
+                                 FreeRunningAtlasFormat=free_running_atlas_format,
+                                 EmecChargeCollection=atlas_emec_charge_collection,
+                                 EmecChargeTables=atlas_emec_tables,
+                                 EmecChargeFieldMap=atlas_emec_field_map,
+                                 EmecChargeHVMap=atlas_emec_hv_map,
                                  InputEventKey=recordable("Events")
                                  )
     
     gun.merge(acc)
     calorimeter.merge(acc)
-    HIT = RootStreamHITMaker("RootStreamHITMaker",
-                             OutputLevel=outputLevel,
-                             OnlyRoI= not save_all_hits,
-                             InputHitsKey=recordable("Hits"),
-                             InputEventKey=recordable("Events"),
-                             InputTruthKey=recordable("Particles"),
-                             InputSeedsKey=recordable("Seeds"),
-                             )
-    acc += HIT
+    if free_running_hits and not free_running_keep_hits:
+        # only the free-running hits (CaloFreeRunningHitWriter, added by the CaloHitBuilder)
+        HIT = None
+    else:
+        HIT = RootStreamHITMaker("RootStreamHITMaker",
+                                 OutputLevel=outputLevel,
+                                 OnlyRoI= not save_all_hits,
+                                 InputHitsKey=recordable("Hits"),
+                                 InputEventKey=recordable("Events"),
+                                 InputTruthKey=recordable("Particles"),
+                                 InputSeedsKey=recordable("Seeds"),
+                                 )
+    if HIT is not None:
+        acc += HIT
     
     exec(pre_exec)
     if not dry_run:
         acc.run(number_of_events)
         exec(post_exec)
+        if free_running_atlas_format:
+            keep_only_collection_tree(output_file)
+
+
+def keep_only_collection_tree(path):
+    """
+    The file of --free-running-atlas-format as the ATLAS ntuple (F41 conserto 28): only the CollectionTree, without the monitoring
+    directories of the framework (Event/, Expert/). The tree is copied as it is (fast clone, same compression settings).
+    """
+    import ROOT
+    src = ROOT.TFile.Open(path)
+    tree = src.Get("CollectionTree")
+    if not tree:
+        src.Close()
+        return
+    tmp = path + ".tmp"
+    dst = ROOT.TFile(tmp, "RECREATE", "", src.GetCompressionSettings())
+    tree.CloneTree(-1, "fast").Write()
+    dst.Close(); src.Close()
+    os.replace(tmp, path)
 
 
 
@@ -508,6 +601,62 @@ if __name__ == "__main__":
     if args.atlas_fcal_cells and not os.path.isfile(args.atlas_fcal_electrodes):
         parser.error("--atlas-fcal-cells needs the file of the FCal electrodes (--atlas-fcal-electrodes or "
                      "LORENZETTI_FCAL_ELECTRODES): '%s' not found" % args.atlas_fcal_electrodes)
+    if args.free_running_hits:
+        # free-running hits as in the ATLAS simulation: ATLAS tile cells, active medium, Birks' law, U-shape dual readout
+        if not (args.tile_atlas_geometry and args.tile_atlas_cells):
+            parser.error("--free-running-hits needs --tile-atlas-geometry and --tile-atlas-cells")
+        # the LAr cells with the ATLAS identifier (F41 conserto 19)
+        if not (args.atlas_emb_cells and args.atlas_hec and args.atlas_emec):
+            parser.error("--free-running-hits needs --atlas-emb-cells, --atlas-hec and --atlas-emec (the LAr cells of ATLAS)")
+        # the gap/crack and ITC cells of ATLAS (F41 conserto 21)
+        if not args.tile_atlas_gap:
+            parser.error("--free-running-hits needs --tile-atlas-gap (the E1-E4, C10 and D4 cells of ATLAS)")
+        # the FCal cells of ATLAS (F41 conserto 22)
+        if not args.atlas_fcal_cells:
+            parser.error("--free-running-hits needs --atlas-fcal-cells (the FCal cells of ATLAS)")
+        # the frozen showers of the ATLAS FCal (F41 conserto 23)
+        if not args.atlas_fcal_frozen_showers:
+            parser.error("--free-running-hits needs --atlas-fcal-frozen-showers (the frozen showers of the ATLAS FCal)")
+        # the Geant4 settings of the ATLAS production (F41 conserto 24)
+        if not args.atlas_g4:
+            parser.error("--free-running-hits needs --atlas-g4 (the Geant4 settings of the ATLAS production)")
+        # the ATLAS Run 4 geometry and field of the simulation (F41 conserto 27)
+        if not args.atlas_run4:
+            parser.error("--free-running-hits needs --atlas-run4 (the ATLAS Run 4 geometry and field of the simulation)")
+        # the charge collection of the ATLAS EM end-cap (F41 conserto 29)
+        # the ATLAS material outside the calorimeters (F41 conserto 32)
+        # the field of the ATLAS simulation as in the production (F41 conserto 33)
+        # the dead material of ATLAS in the gap between the barrel and the extended barrel (F41 conserto 34)
+        # the tile extended barrel, ITC, gap and crack at the positions of the ATLAS simulation of Run 4 (F41 conserto 35)
+        # the region of the hit makers at the midpoint of the step (F41 conserto 36)
+        # the argon fraction of the ATLAS accordion in the EMEC (F41 conserto 37)
+        if args.free_running_atlas_format and not args.atlas_emec_argon_fraction:
+            parser.error("--free-running-atlas-format needs --atlas-emec-argon-fraction (the argon fraction of the ATLAS EMEC)")
+        if args.free_running_atlas_format and not args.tile_atlas_run4:
+            parser.error("--free-running-atlas-format needs --tile-atlas-run4 (the tile end-cap parts at the ATLAS simulation positions)")
+        if args.free_running_atlas_format and not args.atlas_barrel_gap_services:
+            parser.error("--free-running-atlas-format needs --atlas-barrel-gap-services (the ATLAS dead material of the barrel gap)")
+        if args.free_running_atlas_format and not args.atlas_full_field:
+            parser.error("--free-running-atlas-format needs --atlas-full-field (the field of the ATLAS simulation as in the production)")
+        if args.free_running_atlas_format and not args.atlas_forward_shielding:
+            parser.error("--free-running-atlas-format needs --atlas-forward-shielding (the ATLAS material outside the calorimeters)")
+        if args.free_running_atlas_format and not args.atlas_emec_charge_collection:
+            parser.error("--free-running-atlas-format needs --atlas-emec-charge-collection (the EMEC energy of the ATLAS simulation)")
+        if args.atlas_emec_charge_collection:
+            for f in (args.atlas_emec_tables, args.atlas_emec_field_map, args.atlas_emec_hv_map):
+                if not os.path.isfile(f):
+                    parser.error("--atlas-emec-charge-collection: file '%s' not found" % f)
+        if args.tile_dual_readout and args.tile_pmt_split != 'ushape':
+            parser.error("--free-running-hits uses the U-shape sharing of the ATLAS simulation (--tile-pmt-split ushape)")
+        args.active_energy_only = True
+        args.birks_law = True
+        args.tile_dual_readout = True
+        args.tile_pmt_split = 'ushape'
+        if args.neutron_time_cut is None:
+            args.neutron_time_cut = 150.
+    elif args.free_running_no_binning or args.free_running_keep_hits or args.free_running_atlas_format or args.atlas_emec_charge_collection:
+        parser.error("--free-running-no-binning, --free-running-keep-hits, --free-running-atlas-format and "
+                     "--atlas-emec-charge-collection need --free-running-hits")
     if args.atlas_forward_shielding and not args.atlas_run4:
         parser.error("--atlas-forward-shielding needs --atlas-run4")
     if args.atlas_full_field and not args.atlas_forward_shielding:
@@ -551,7 +700,12 @@ if __name__ == "__main__":
              tile_atlas_run4       = args.tile_atlas_run4,
              atlas_emec_argon_fraction = args.atlas_emec_argon_fraction,
              atlas_field_map       = args.atlas_field_map,
+             free_running_atlas_format = args.free_running_atlas_format,
              detector              = args.detector,
+             atlas_emec_charge_collection = args.atlas_emec_charge_collection,
+             atlas_emec_tables     = args.atlas_emec_tables,
+             atlas_emec_field_map  = args.atlas_emec_field_map,
+             atlas_emec_hv_map     = args.atlas_emec_hv_map,
              tile_atlas_gap        = args.tile_atlas_gap,
              atlas_endcap_cryostat = args.atlas_endcap_cryostat,
              atlas_barrel_cryostat = args.atlas_barrel_cryostat,
@@ -561,6 +715,9 @@ if __name__ == "__main__":
              birks_law             = args.birks_law,
              atlas_hit_time        = args.atlas_hit_time,
              save_all_hits         = args.save_all_hits,
+             free_running_hits     = args.free_running_hits,
+             free_running_binning  = not args.free_running_no_binning,
+             free_running_keep_hits = args.free_running_keep_hits,
              neutron_time_cut      = args.neutron_time_cut or 0,
              timeout               = args.timeout,
              number_of_events      = args.number_of_events,
