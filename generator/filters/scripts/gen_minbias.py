@@ -60,6 +60,25 @@ def parse_args():
                         dest='pileup_file', required=False,
                         type=str, default=PILEUP_FILE,
                         help="The pythia pileup file configuration.")
+    parser.add_argument('--pt-min-charged', action='store',
+                        dest='pt_min_charged', required=False,
+                        type=float, default=0.7,
+                        help="Minimum pT (GeV) of the charged particles passed to the simulation. "
+                             "The cut stands in for the solenoid field when the field is not simulated; "
+                             "use 0 (as ATLAS, which applies no particle cut) when the field is simulated.")
+    parser.add_argument('--pt-min-neutral', action='store',
+                        dest='pt_min_neutral', required=False,
+                        type=float, default=0.05,
+                        help="Minimum pT (GeV) of the neutral particles passed to the simulation. "
+                             "Use 0 to keep every particle, as ATLAS does.")
+    parser.add_argument('--sigma-z', action='store',
+                        dest='sigma_z', required=False,
+                        type=float, default=56,
+                        help="Gaussian spread (RMS, in mm) of the collision vertex along the beam axis.")
+    parser.add_argument('--sigma-t', action='store',
+                        dest='sigma_t', required=False,
+                        type=float, default=200,
+                        help="Gaussian spread (RMS, in ps) of the collision time.")
     
     return merge_args(parser)
 
@@ -74,7 +93,11 @@ def main(events: List[int],
          pileup_per_bunch_crossing : float,
          mb_file: str,
          bc_id_start: int,
-         bc_id_end: int):
+         bc_id_end: int,
+         pt_min_charged: float,
+         pt_min_neutral: float,
+         sigma_z: float,
+         sigma_t: float):
 
     outputLevel = LoggingLevel.toC(logging_level)
 
@@ -99,6 +122,10 @@ def main(events: List[int],
                     OutputLevel=outputLevel,
                     DeltaEta=999,
                     DeltaPhi=999,
+                    PtMinCharged=pt_min_charged,
+                    PtMinNeutral=pt_min_neutral,
+                    VertexSigmaZ=sigma_z,
+                    VertexSigmaT=sigma_t,
     )
     tape += pileup
     tape.run(events)
@@ -120,5 +147,9 @@ if __name__ == "__main__":
         pileup_per_bunch_crossing=args.pileup_per_bunch_crossing,
         mb_file=args.pileup_file,
         bc_id_start=args.bc_id_start,
-        bc_id_end=args.bc_id_end
+        bc_id_end=args.bc_id_end,
+        pt_min_charged=args.pt_min_charged,
+        pt_min_neutral=args.pt_min_neutral,
+        sigma_z=args.sigma_z,
+        sigma_t=args.sigma_t
     )
