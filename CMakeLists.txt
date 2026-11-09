@@ -37,6 +37,24 @@ endif()
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 include(${Geant4_USE_FILE})
+
+# Optional: the GeoModel libraries (GeoModelCore, GeoModelIO, GeoModelG4 of the GeoModel project, release 6.29.0) for --atlas-run4, which
+# imports volumes of the ATLAS geometry of the simulation from its GeoModel SQLite dump (geometry/src/AtlasGeoModelImport.h; F41 conserto
+# 27). GEOMODEL_DIR (CMake variable or environment) is their install prefix; without it Lorenzetti is built as before.
+set( GEOMODEL_DIR $ENV{GEOMODEL_DIR} CACHE PATH "Install prefix of the GeoModel libraries (optional)" )
+set( GEOMODEL_LIBRARIES "" )
+if( GEOMODEL_DIR AND EXISTS ${GEOMODEL_DIR}/lib/libGeoModel2G4.so )
+  message( STATUS "GeoModel found in ${GEOMODEL_DIR}: --atlas-run4 enabled" )
+  add_definitions( -DLORENZETTI_WITH_GEOMODEL )
+  foreach( lib GeoModelRead GeoModelDBManager GeoModelKernel GeoModel2G4 GeoMaterial2G4 GeoModelHelpers GeoGenericFunctions
+           GeoModelIOHelpers TFPersistification )
+    list( APPEND GEOMODEL_LIBRARIES ${GEOMODEL_DIR}/lib/lib${lib}.so )
+  endforeach()
+  find_library( SQLITE3_LIBRARY NAMES sqlite3 libsqlite3.so.0 )
+  list( APPEND GEOMODEL_LIBRARIES ${SQLITE3_LIBRARY} )
+else()
+  message( STATUS "GeoModel not found (GEOMODEL_DIR): --atlas-run4 disabled" )
+endif()
 include_directories(${CMAKE_SOURCE_DIR} ${Geant4_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 
 
@@ -147,7 +165,11 @@ target_link_Libraries(lorenzetti ${ROOT_LIBRARIES}
                                  ${Geant4_LIBRARIES} 
                                  ${FASTJET_LIBRARIES} 
                                  ${HEPMC_LIBRARIES}
-                                 ${PYTHIA8_LIBRARIES} )
+                                 ${PYTHIA8_LIBRARIES}
+                                 ${GEOMODEL_LIBRARIES} )
+if( GEOMODEL_LIBRARIES )
+  set_target_properties( lorenzetti PROPERTIES BUILD_RPATH "${GEOMODEL_DIR}/lib" INSTALL_RPATH "${GEOMODEL_DIR}/lib" )
+endif()
 
 
 

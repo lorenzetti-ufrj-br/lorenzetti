@@ -1,0 +1,494 @@
+/*
+  Copyright (C) 2002-2022 CERN for the benefit of the ATLAS collaboration
+*/
+// Ported to Lorenzetti from Athena release 23.0.14 (MagneticField/MagFieldElements) for --atlas-run4 (F41 conserto 27); changes: none (verbatim copy).
+
+#include "CxxUtils/vec.h"
+// constructor
+template<class T>
+BFieldMesh<T>::BFieldMesh(double zmin,
+                          double zmax,
+                          double rmin,
+                          double rmax,
+                          double phimin,
+                          double phimax,
+                          double bscale)
+  : m_scale(bscale)
+  , m_nomScale(bscale)
+{
+  m_min = { zmin, rmin, phimin };
+  m_max = { zmax, rmax, phimax };
+}
+// set ranges
+template<class T>
+void
+BFieldMesh<T>::setRange(double zmin,
+                        double zmax,
+                        double rmin,
+                        double rmax,
+                        double phimin,
+                        double phimax)
+{
+  m_min = { zmin, rmin, phimin };
+  m_max = { zmax, rmax, phimax };
+}
+
+// set bscale
+template<class T>
+void
+BFieldMesh<T>::setBscale(double bscale)
+{
+  m_scale = m_nomScale = bscale;
+}
+
+// scale bscale by a factor
+template<class T>
+void
+BFieldMesh<T>::scaleBscale(double factor)
+{
+  m_scale = factor * m_nomScale;
+}
+
+//
+// Reserve space in the vectors to avoid unnecessary memory re-allocations.
+//
+template<class T>
+void
+BFieldMesh<T>::reserve(int nz, int nr, int nphi, int nfield)
+{
+  m_mesh[0].reserve(nz);
+  m_mesh[1].reserve(nr);
+  m_mesh[2].reserve(nphi);
+  m_field.reserve(nfield);
+}
+
+template<class T>
+void
+BFieldMesh<T>::reserve(int nz, int nr, int nphi)
+{
+  reserve(nz, nr, nphi, nz * nr * nphi);
+}
+
+// add elements to vectors
+template<class T>
+void
+BFieldMesh<T>::appendMesh(int axis, double value)
+{
+  m_mesh[axis].push_back(value);
+}
+
+template<class T>
+void
+BFieldMesh<T>::appendField(const BFieldVector<T>& field)
+{
+  m_field.push_back(field);
+}
+
+//
+// Construct the look-up table to accelerate bin-finding.
+//
+template<class T>
+void
+BFieldMesh<T>::buildLUT()
+{
+  for (int j = 0; j < 3; ++j) { // z, r, phi
+    // align the m_mesh edges to m_min/m_max
+    m_mesh[j].front() = m_min[j];
+    m_mesh[j].back() = m_max[j];
+    // determine the unit size, q, to be used in the LUTs
+    const double width = m_mesh[j].back() - m_mesh[j].front();
+    double q(width);
+    for (unsigned i = 0; i < m_mesh[j].size() - 1; ++i) {
+      q = std::min(q, m_mesh[j][i + 1] - m_mesh[j][i]);
+    }
+    // find the number of units in the LUT
+    int n = int(width / q) + 1;
+    q = width / (n + 0.5);
+    m_invUnit[j] = 1.0 / q; // new unit size
+    ++n;
+    int m = 0;                    // mesh number
+    for (int i = 0; i < n; ++i) { // LUT index
+      if (i * q + m_mesh[j].front() > m_mesh[j][m + 1]) {
+        m++;
+      }
+      m_LUT[j].push_back(m);
+    }
+  }
+  m_roff = m_mesh[2].size();          // index offset for incrementing r by 1
+  m_zoff = m_roff * m_mesh[1].size(); // index offset for incrementing z by 1
+}
+
+template<class T>
+int
+BFieldMesh<T>::memSize() const
+{
+  int size = 0;
+  size += sizeof(double) * 10;
+  size += sizeof(int) * 2;
+  for (int i = 0; i < 3; ++i) {
+    size += sizeof(double) * m_mesh[i].capacity();
+    size += sizeof(int) * m_LUT[i].capacity();
+  }
+  size += sizeof(BFieldVector<T>) * m_field.capacity();
+  return size;
+}
+
+//
+// Test if a point (z,r,phi) is inside this mesh region.
+//
+template<class T>
+bool
+BFieldMesh<T>::inside(double z, double r, double phi) const
+{
+  // assume phi is in [-pi,pi].
+  // phimax() is in [0,2pi], but phimin() may be < 0 if the range crosses phi =
+  // 0. we have to test twice to get all possible cases.
+  if (phi < phimin()) {
+    phi += 2.0 * M_PI;
+  }
+  return (phi >= phimin() && phi <= phimax() && z >= zmin() && z <= zmax() &&
+          r >= rmin() && r <= rmax());
+}
+
+//
+// Find and return the cache of the bin containing (z,r,phi)
+//
+template<class T>
+void
+BFieldMesh<T>::getCache(double z,
+                        double r,
+                        double phi,
+                        BFieldCache& cache,
+                        double scaleFactor) const
+{
+  // make sure phi is inside this zone
+  if (phi < phimin()) {
+    phi += 2.0 * M_PI;
+  }
+  // find the mesh, and relative location in the mesh
+  // z
+  const std::vector<double>& mz(m_mesh[0]);
+  int iz = static_cast<int>((z - zmin()) * m_invUnit[0]); // index to LUT
+  iz = m_LUT[0][iz]; // tentative mesh index from LUT
+  if (z > mz[iz + 1]) {
+    ++iz;
+  }
+  // r
+  const std::vector<double>& mr(m_mesh[1]);
+  int ir = static_cast<int>((r - rmin()) * m_invUnit[1]); // index to LUT
+  ir = m_LUT[1][ir]; // tentative mesh index from LUT
+  if (r > mr[ir + 1]) {
+    ++ir;
+  }
+  // phi
+  const std::vector<double>& mphi(m_mesh[2]);
+  int iphi = static_cast<int>((phi - phimin()) * m_invUnit[2]); // index to LUT
+  iphi = m_LUT[2][iphi]; // tentative mesh index from LUT
+  if (phi > mphi[iphi + 1]) {
+    ++iphi;
+  }
+  // store the bin edges
+  cache.setRange(
+    mz[iz], mz[iz + 1], mr[ir], mr[ir + 1], mphi[iphi], mphi[iphi + 1]);
+  // store the B field at the 8 corners of the bin in the cache
+  const int im0 = iz * m_zoff + ir * m_roff + iphi; // index of the first corner
+  const double sf = scaleFactor;
+  // store the B scale
+  cache.setBscale(m_scale);
+  // In the usual case the  m_field is of type short int
+  // else (special case) can be double
+  if constexpr (std::is_same<T, short>::value) {
+    CxxUtils::vec<int, 8> field1I = { (m_field[im0][0]),
+                                      (m_field[im0 + m_roff][0]),
+                                      (m_field[im0 + m_zoff][0]),
+                                      (m_field[im0 + m_zoff + m_roff][0]),
+                                      (m_field[im0 + 1][0]),
+                                      (m_field[im0 + m_roff + 1][0]),
+                                      (m_field[im0 + m_zoff + 1][0]),
+                                      (m_field[im0 + m_zoff + m_roff + 1][0]) };
+
+    CxxUtils::vec<double, 8> field1;
+    CxxUtils::vconvert(field1, field1I);
+
+    CxxUtils::vec<int, 8> field2I = { (m_field[im0][1]),
+                                      (m_field[im0 + m_roff][1]),
+                                      (m_field[im0 + m_zoff][1]),
+                                      (m_field[im0 + m_zoff + m_roff][1]),
+                                      (m_field[im0 + 1][1]),
+                                      (m_field[im0 + m_roff + 1][1]),
+                                      (m_field[im0 + m_zoff + 1][1]),
+                                      (m_field[im0 + m_zoff + m_roff + 1][1]) };
+
+    CxxUtils::vec<double, 8> field2;
+    CxxUtils::vconvert(field2, field2I);
+
+    CxxUtils::vec<int, 8> field3I = { (m_field[im0][2]),
+                                      (m_field[im0 + m_roff][2]),
+                                      (m_field[im0 + m_zoff][2]),
+                                      (m_field[im0 + m_zoff + m_roff][2]),
+                                      (m_field[im0 + 1][2]),
+                                      (m_field[im0 + m_roff + 1][2]),
+                                      (m_field[im0 + m_zoff + 1][2]),
+                                      (m_field[im0 + m_zoff + m_roff + 1][2]) };
+
+    CxxUtils::vec<double, 8> field3;
+    CxxUtils::vconvert(field3, field3I);
+
+    cache.setField(sf * field1, sf * field2, sf * field3);
+  } else {
+    CxxUtils::vec<double, 8> field1 = {
+      (m_field[im0][0]),
+      (m_field[im0 + m_roff][0]),
+      (m_field[im0 + m_zoff][0]),
+      (m_field[im0 + m_zoff + m_roff][0]),
+      (m_field[im0 + 1][0]),
+      (m_field[im0 + m_roff + 1][0]),
+      (m_field[im0 + m_zoff + 1][0]),
+      (m_field[im0 + m_zoff + m_roff + 1][0])
+    };
+
+    CxxUtils::vec<double, 8> field2 = {
+      (m_field[im0][1]),
+      (m_field[im0 + m_roff][1]),
+      (m_field[im0 + m_zoff][1]),
+      (m_field[im0 + m_zoff + m_roff][1]),
+      (m_field[im0 + 1][1]),
+      (m_field[im0 + m_roff + 1][1]),
+      (m_field[im0 + m_zoff + 1][1]),
+      (m_field[im0 + m_zoff + m_roff + 1][1])
+    };
+
+    CxxUtils::vec<double, 8> field3 = {
+      (m_field[im0][2]),
+      (m_field[im0 + m_roff][2]),
+      (m_field[im0 + m_zoff][2]),
+      (m_field[im0 + m_zoff + m_roff][2]),
+      (m_field[im0 + 1][2]),
+      (m_field[im0 + m_roff + 1][2]),
+      (m_field[im0 + m_zoff + 1][2]),
+      (m_field[im0 + m_zoff + m_roff + 1][2])
+    };
+
+    cache.setField(sf * field1, sf * field2, sf * field3);
+  }
+}
+
+//
+// Compute the magnetic field (and the derivatives) without caching
+//
+template<class T>
+void
+BFieldMesh<T>::getB(const double* ATH_RESTRICT xyz,
+                    double* ATH_RESTRICT B,
+                    double* ATH_RESTRICT deriv) const
+{
+  // cylindrical coordinates
+  const double x = xyz[0];
+  const double y = xyz[1];
+  const double z = xyz[2];
+  const double r = sqrt(x * x + y * y);
+  double phi = std::atan2(y, x);
+  if (phi < phimin()) {
+    phi += 2.0 * M_PI;
+  }
+  // is it inside this map?
+  if (!inside(z, r, phi)) { // no
+    B[0] = B[1] = B[2] = 0.0;
+    if (deriv) {
+      for (int i = 0; i < 9; ++i) {
+        deriv[i] = 0.0;
+      }
+    }
+    return;
+  }
+  // find the bin
+  // z
+  const std::vector<double>& mz(m_mesh[0]);
+  int iz = int((z - zmin()) * m_invUnit[0]); // index to LUT
+  iz = m_LUT[0][iz];                         // tentative mesh index from LUT
+  if (z > mz[iz + 1]) {
+    ++iz;
+  }
+  // r
+  const std::vector<double>& mr(m_mesh[1]);
+  int ir = int((r - rmin()) * m_invUnit[1]); // index to LUT
+  ir = m_LUT[1][ir];                         // tentative mesh index from LUT
+  if (r > mr[ir + 1]) {
+    ++ir;
+  }
+  // phi
+  const std::vector<double>& mphi(m_mesh[2]);
+  int iphi = int((phi - phimin()) * m_invUnit[2]); // index to LUT
+  iphi = m_LUT[2][iphi]; // tentative mesh index from LUT
+  if (phi > mphi[iphi + 1]) {
+    ++iphi;
+  }
+  // get the B field at the 8 corners
+  int im0 = iz * m_zoff + ir * m_roff + iphi; // index of the first corner
+  const std::array<BFieldVector<T>, 8> field = {
+    m_field[im0],
+    m_field[im0 + 1],
+    m_field[im0 + m_roff],
+    m_field[im0 + m_roff + 1],
+    m_field[im0 + m_zoff],
+    m_field[im0 + m_zoff + 1],
+    m_field[im0 + m_zoff + m_roff],
+    m_field[im0 + m_zoff + m_roff + 1]
+  };
+  // fractional position inside this mesh
+  const double fz = (z - mz[iz]) / (mz[iz + 1] - mz[iz]);
+  const double gz = 1.0 - fz;
+  const double fr = (r - mr[ir]) / (mr[ir + 1] - mr[ir]);
+  const double gr = 1.0 - fr;
+  const double fphi = (phi - mphi[iphi]) / (mphi[iphi + 1] - mphi[iphi]);
+  const double gphi = 1.0 - fphi;
+  const double scale = m_scale;
+  // interpolate field values in z, r, phi
+  double Bzrphi[3];
+  for (int i = 0; i < 3; ++i) { // z, r, phi
+    Bzrphi[i] = scale * (gz * (gr * (gphi * field[0][i] + fphi * field[1][i]) +
+                               fr * (gphi * field[2][i] + fphi * field[3][i])) +
+                         fz * (gr * (gphi * field[4][i] + fphi * field[5][i]) +
+                               fr * (gphi * field[6][i] + fphi * field[7][i])));
+  }
+  // convert (Bz,Br,Bphi) to (Bx,By,Bz)
+  const double c = (r > 0.0) ? x / r : cos(mphi[iphi]);
+  const double s = (r > 0.0) ? y / r : sin(mphi[iphi]);
+  B[0] = Bzrphi[1] * c - Bzrphi[2] * s;
+  B[1] = Bzrphi[1] * s + Bzrphi[2] * c;
+  B[2] = Bzrphi[0];
+
+  // compute field derivatives if requested
+  if (deriv) {
+    const double sz = m_scale / (mz[iz + 1] - mz[iz]);
+    const double sr = m_scale / (mr[ir + 1] - mr[ir]);
+    const double sphi = m_scale / (mphi[iphi + 1] - mphi[iphi]);
+
+    std::array<double, 3> dBdz;
+    std::array<double, 3> dBdr;
+    std::array<double, 3> dBdphi;
+    for (int j = 0; j < 3; ++j) { // Bz, Br, Bphi components
+      dBdz[j] = sz * (gr * (gphi * (field[4][j] - field[0][j]) +
+                            fphi * (field[5][j] - field[1][j])) +
+                      fr * (gphi * (field[6][j] - field[2][j]) +
+                            fphi * (field[7][j] - field[3][j])));
+      dBdr[j] = sr * (gz * (gphi * (field[2][j] - field[0][j]) +
+                            fphi * (field[3][j] - field[1][j])) +
+                      fz * (gphi * (field[6][j] - field[4][j]) +
+                            fphi * (field[7][j] - field[5][j])));
+      dBdphi[j] = sphi * (gz * (gr * (field[1][j] - field[0][j]) +
+                                fr * (field[3][j] - field[2][j])) +
+                          fz * (gr * (field[5][j] - field[4][j]) +
+                                fr * (field[7][j] - field[6][j])));
+    }
+    // convert to cartesian coordinates
+    const double cc = c * c;
+    const double cs = c * s;
+    const double ss = s * s;
+    deriv[0] = cc * dBdr[1] - cs * dBdr[2] - cs * dBdphi[1] / r +
+               ss * dBdphi[2] / r + s * B[1] / r;
+    deriv[1] = cs * dBdr[1] - ss * dBdr[2] + cc * dBdphi[1] / r -
+               cs * dBdphi[2] / r - c * B[1] / r;
+    deriv[2] = c * dBdz[1] - s * dBdz[2];
+    deriv[3] = cs * dBdr[1] + cc * dBdr[2] - ss * dBdphi[1] / r -
+               cs * dBdphi[2] / r - s * B[0] / r;
+    deriv[4] = ss * dBdr[1] + cs * dBdr[2] + cs * dBdphi[1] / r +
+               cc * dBdphi[2] / r + c * B[0] / r;
+    deriv[5] = s * dBdz[1] + c * dBdz[2];
+    deriv[6] = c * dBdr[0] - s * dBdphi[0] / r;
+    deriv[7] = s * dBdr[1] + c * dBdphi[0] / r;
+    deriv[8] = dBdz[0];
+  }
+}
+// accessors
+template<class T>
+double
+BFieldMesh<T>::min(size_t axis) const
+{
+  return m_min[axis];
+}
+
+template<class T>
+double
+BFieldMesh<T>::max(size_t axis) const
+{
+  return m_max[axis];
+}
+
+template<class T>
+double
+BFieldMesh<T>::zmin() const
+{
+  return m_min[0];
+}
+
+template<class T>
+double
+BFieldMesh<T>::zmax() const
+{
+  return m_max[0];
+}
+
+template<class T>
+double
+BFieldMesh<T>::rmin() const
+{
+  return m_min[1];
+}
+
+template<class T>
+double
+BFieldMesh<T>::rmax() const
+{
+  return m_max[1];
+}
+
+template<class T>
+double
+BFieldMesh<T>::phimin() const
+{
+  return m_min[2];
+}
+
+template<class T>
+double
+BFieldMesh<T>::phimax() const
+{
+  return m_max[2];
+}
+
+template<class T>
+unsigned
+BFieldMesh<T>::nmesh(size_t axis) const
+{
+  return m_mesh[axis].size();
+}
+
+template<class T>
+double
+BFieldMesh<T>::mesh(size_t axis, size_t index) const
+{
+  return m_mesh[axis][index];
+}
+
+template<class T>
+unsigned
+BFieldMesh<T>::nfield() const
+{
+  return m_field.size();
+}
+
+template<class T>
+const BFieldVector<T>&
+BFieldMesh<T>::field(size_t index) const
+{
+  return m_field[index];
+}
+
+template<class T>
+double
+BFieldMesh<T>::bscale() const
+{
+  return m_scale;
+}
+

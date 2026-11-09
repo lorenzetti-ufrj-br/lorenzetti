@@ -30,7 +30,7 @@ namespace generator{
         };
         // A particle is invisible if in current table of such.
         bool isVisibleSave = true;
-        int idSave = particle->pid();
+        int idSave = std::abs(particle->pid());   // the table has the particles only: antineutrinos are invisible too
         for (int i = 0; i < INVISIBLENUMBER; ++i) 
             if (idSave == INVISIBLETABLE[i]) isVisibleSave = false;
 
@@ -54,7 +54,7 @@ namespace generator{
 
       float et(const HepMC3::GenParticle *particle){
         float eta = particle->momentum().eta();
-        float et = eta != 0.0 ? (particle->momentum().e())/cosh(std::abs(eta)) : 0.0;
+        float et = (particle->momentum().e())/cosh(eta);   // at eta = 0, Et = E (it was 0)
         return et;
       }
 

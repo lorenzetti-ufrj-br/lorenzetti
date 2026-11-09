@@ -216,6 +216,57 @@ _(Cut view of the detector geometry)_
 ![Detector Front View](geometry/doc/front_view.png)
 _(Front view showing the concentric calorimeter layers)_
 
+## 🏗️ Detector Construction (Version 2): the ATLAS detector
+
+`simu_trf.py --detector v2` and `digit_trf.py --detector v2` build the calorimeters, field and physics of ATLAS, following the public
+ATLAS sources (GeoModel geometry database, Athena code). Every part is on by default and can be switched off with `--no-<option>`
+(see `simu_trf.py --help`). Version 1 stays the default.
+
+Version 2 needs three external files, too large for the repository, and the GeoModel libraries:
+
+| What | Size | How to get it | Where Lorenzetti looks |
+| :--- | :---: | :--- | :--- |
+| GeoModel 6.29.0 (libraries) | | `bash geometry/scripts/build_geomodel.sh [prefix]` in the Lorenzetti container (default prefix `~/geomodel`) | `GEOMODEL_DIR` at build time |
+| Run 4 geometry dump, `geometry-ATLAS-P2-RUN4-01-01-00-sim.db` | 92 MB | `bash geometry/scripts/atlas_run4_dumpgeo.sh` on a machine with CVMFS and Athena (lxplus) | `--atlas-run4-geometry` or `LORENZETTI_ATLAS_RUN4_GEOMETRY` |
+| ATLAS field map, `bfieldmap_7730_20400_14m.root` | 126 MB | `/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/MagneticFieldMaps/` | `--atlas-field-map` or `LORENZETTI_FIELD_MAP` |
+| FCal shower libraries, `MC23_v1` | 31 MB | `/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/LArG4ShowerLibData/MC23_v1` | `geometry/data/LArG4ShowerLibData/MC23_v1` |
+
+Build with GeoModel:
+
+```bash
+bash geometry/scripts/build_geomodel.sh ~/geomodel
+export GEOMODEL_DIR=~/geomodel
+make
+source build/lzt_setup.sh
+```
+
+Without `GEOMODEL_DIR`, Lorenzetti builds as before; version 1 runs, and version 2 stops with a message (the Run 4 geometry needs
+GeoModel). A missing file stops the job with a message naming the option or variable to set.
+
+## ⏱️ Free-running hits: the hits as the ATLAS simulation writes them
+
+`simu_trf.py --detector v2 --free-running-hits` writes, in place of the HIT stream, the calorimeter hits in the layout of the ATLAS HITS
+ntuple (tree `CollectionTree`: `TileCalHit_*`, `LArHitEMB_*`, `LArHitEMEC_*`, `LArHitHEC_*`, `LArHitFCAL_*`). Each hit carries the ATLAS
+identifier, the visible energy and the time of the ATLAS simulation, summed in its time bins, with no bunch-crossing window, for a
+digitization made outside Lorenzetti. It is off by default, also with `--detector v2`.
+
+| Option | What it does |
+| :--- | :--- |
+| `--free-running-hits` | the hits in the layout of the ATLAS HITS ntuple; Tile per PMT, LAr and FCal per cell |
+| `--free-running-atlas-format` | the file as the ATLAS HITS ntuple: LAr energy and time compressed and filtered as `FilterHit_tf`, no extra `tglobal` branches; needs the EMEC charge collection |
+| `--atlas-emec-charge-collection` | the EMEC energy of the ATLAS simulation (charge collection of `LArG4::EC::EnergyCalculator`, ported from Athena 23.0.14) |
+| `--free-running-keep-hits` | keeps also the HIT stream, with the free-running hits in the tree `FreeRunningTree` (for checks) |
+| `--free-running-no-binning` | one entry per Geant4 step, without the time bins |
+
+The EMEC charge collection reads three files of `geometry/data`. Two are in the repository (`HVEMECMap_v02.dat` and
+`EmecTables-ATLAS-P2-RUN4-01-01-00.csv`, made by `geometry/scripts/emec_tables_from_geomdb.py`); the field map is not:
+
+| What | Size | How to get it | Where Lorenzetti looks |
+| :--- | :---: | :--- | :--- |
+| EMEC field map, `ec.fieldzv03` | 24 MB | `/cvmfs/atlas.cern.ch/repo/sw/software/23.0/atlas/offline/ReleaseData/v20/LArG4EC/ec.fieldzv03` | `--atlas-emec-field-map`, default `geometry/data/ec.fieldzv03` |
+
+Copy it to `geometry/data`, or give its path with `--atlas-emec-field-map`.
+
 ## 🤝 Contribution
 
 We welcome everyone to contribute! 🌍 Whether it's fixing bugs, adding new generators, or improving documentation.

@@ -73,6 +73,11 @@ class DetectorConstruction_v1( Cpp ):
     
     volumes = [pv for pv in self.volumes]
     volumes.extend( [samp.volume() for samp in self.samplings] )
+    # Each volume once: samplings that share a volume (the two segments of each HEC layer, the segments of the EMEC samplings) would
+    # place it more than once, one copy on top of the other
+    unique = {}
+    for pv in volumes: unique.setdefault( id(pv), pv )
+    volumes = list( unique.values() )
           
     for pv in tqdm( volumes, desc="Compiling  volumes...", ncols=70):
       self._core.AddVolume( pv.Name, pv.Plates, pv.AbsorberMaterial, pv.GapMaterial, 

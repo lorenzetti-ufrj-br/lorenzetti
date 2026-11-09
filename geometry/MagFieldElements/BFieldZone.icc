@@ -1,0 +1,79 @@
+/*
+  Copyright (C) 2002-2020 CERN for the benefit of the ATLAS collaboration
+*/
+// Ported to Lorenzetti from Athena release 23.0.14 (MagneticField/MagFieldElements) for --atlas-run4 (F41 conserto 27); changes: none (verbatim copy).
+
+inline BFieldZone::BFieldZone(int id,
+                              double zmin,
+                              double zmax,
+                              double rmin,
+                              double rmax,
+                              double phimin,
+                              double phimax,
+                              double scale)
+  : BFieldMesh<short>(zmin, zmax, rmin, rmax, phimin, phimax, scale)
+  , m_id(id)
+{}
+
+inline void
+BFieldZone::appendCond(const BFieldCond& cond)
+{
+  m_cond.push_back(cond);
+}
+
+
+inline void
+BFieldZone::addBiotSavart(const double* ATH_RESTRICT xyz,
+                          double* ATH_RESTRICT B,
+                          double* ATH_RESTRICT deriv) const
+{
+  for (unsigned i = 0; i < m_cond.size(); i++) {
+    m_cond[i].addBiotSavart(1, xyz, B, deriv);
+  }
+}
+
+inline int
+BFieldZone::id() const
+{
+  return m_id;
+}
+
+inline unsigned
+BFieldZone::ncond() const
+{
+  return m_cond.size();
+}
+
+inline const BFieldCond&
+BFieldZone::cond(int i) const
+{
+  return m_cond[i];
+}
+
+inline const std::vector<BFieldCond>*
+BFieldZone::condVector() const
+{
+  return &m_cond;
+}
+
+inline int
+BFieldZone::memSize() const
+{
+  return BFieldMesh<short>::memSize() + sizeof(int) +
+         sizeof(BFieldCond) * m_cond.capacity();
+}
+
+inline void
+BFieldZone::adjustMin(int i, double x)
+{
+  m_min[i] = x;
+  m_mesh[i].front() = x;
+}
+
+inline void
+BFieldZone::adjustMax(int i, double x)
+{
+  m_max[i] = x;
+  m_mesh[i].back() = x;
+}
+
