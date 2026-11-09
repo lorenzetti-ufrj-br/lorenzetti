@@ -19,6 +19,8 @@ class Pileup( Cpp ):
                 "DeltaPhi",
                 "PtMinCharged",
                 "PtMinNeutral",
+                "VertexSigmaZ",
+                "VertexSigmaT",
                 "OutputLevel",
                 ]
 
@@ -34,6 +36,8 @@ class Pileup( Cpp ):
                 DeltaPhi       : float=0.22,
                 PtMinCharged   : float=0.7,
                 PtMinNeutral   : float=0.05,
+                VertexSigmaZ   : float=56,
+                VertexSigmaT   : float=200,
                 OutputLevel    : int=0
               ): 
     
@@ -53,6 +57,11 @@ class Pileup( Cpp ):
     # for the solenoid field when it is not simulated; use 0 for both when the field is on.
     self.setProperty( "PtMinCharged"  , PtMinCharged   )
     self.setProperty( "PtMinNeutral"  , PtMinNeutral   )
+    # Gaussian spread of each collision vertex along the beam (VertexSigmaZ, in mm) and in
+    # time (VertexSigmaT, in ps). The C++ properties Sigma_z and Sigma_t are both in mm
+    # (Sigma_t is c times the time spread), so the time is converted here.
+    self.setProperty( "Sigma_z"       , VertexSigmaZ   )
+    self.setProperty( "Sigma_t"       , VertexSigmaT * 1e-12 * 299792458.0 * 1e3 )
 
 
   def gun(self):
