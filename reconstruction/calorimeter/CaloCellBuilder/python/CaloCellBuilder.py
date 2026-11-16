@@ -86,7 +86,8 @@ class CaloCellBuilder(Logger):
         """
         MSG_INFO(self, "Configure CaloCellBuilder.")
 
-        for samp in self.Detector.samplings:
+        all_samplings = list(self.Detector.samplings) + list(getattr(self.Detector, "fcal_modules", []))
+        for samp in all_samplings:
             do_crosstalk: bool = (
                 CaloFlags.DoCrossTalk
                 and (samp.Sampling == CaloSampling.EMEC2 or samp.Sampling == CaloSampling.EMB2)
@@ -97,6 +98,7 @@ class CaloCellBuilder(Logger):
                 f"Create new CaloCellMaker and dump all cells into {samp.CollectionKey} collection",
             )
 
+            noise_std = getattr(samp, "DigitNoise", samp.Noise)
             pulse: Configurable = Configurable(
                 ROOT.PulseGenerator,
                 "PulseGenerator",
@@ -108,7 +110,7 @@ class CaloCellBuilder(Logger):
                 DeformationMean=0.0,
                 DeformationStd=0.0,
                 NoiseMean=0.0,
-                NoiseStd=samp.Noise,
+                NoiseStd=noise_std,
                 StartSamplingBC=samp.StartSamplingBC,
             )
 
@@ -181,6 +183,7 @@ class CaloCellBuilder(Logger):
             ROOT.CaloCellMerge,
             "CaloCellMerge",
             InputCollectionKeys=self.OutputCollectionKeys,
+            InputHitsKey=self.InputHitsKey,
             OutputTruthCellsKey=self.OutputTruthCellsKey,
             OutputCellsKey=self.OutputCellsKey,
             OutputDescriptorsKey=self.OutputDescriptorsKey,

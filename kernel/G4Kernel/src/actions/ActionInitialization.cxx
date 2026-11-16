@@ -4,6 +4,8 @@
 #include "G4Kernel/actions/RunAction.h"
 #include "G4Kernel/actions/EventAction.h"
 #include "G4Kernel/actions/SteppingAction.h"
+#include "G4Kernel/actions/StackingAction.h"
+#include "G4Kernel/AtlasG4Settings.h"
 #include "G4MTRunManager.hh"
 #include <iostream>
 
@@ -60,5 +62,7 @@ void ActionInitialization::Build() const
   SetUserAction(new RunAction(m_numberOfThreads, m_timeout, m_acc, m_output));
   SetUserAction(new EventAction());
   SetUserAction(new SteppingAction());
+  // the stacking action of the ATLAS simulation (F41 conserto 24)
+  if( AtlasG4Settings::instance().enabled ) SetUserAction(new StackingAction());
 }  
 

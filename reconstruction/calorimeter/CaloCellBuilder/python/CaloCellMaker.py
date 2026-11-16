@@ -9,7 +9,7 @@ import ROOT
 
 from GaugiKernel import Configurable, LoggingLevel
 
-__all__ = ["CaloCellMakerCfg"]
+__all__ = ["CaloCellMakerCfg", "CaloCellMaker"]
 
 
 def CaloCellMakerCfg(
@@ -20,6 +20,7 @@ def CaloCellMakerCfg(
     OutputLevel: int = LoggingLevel.toC("INFO"),
     DetailedHistograms: bool = False,
     HistogramPath: str = "/Hists/Cells",
+    **extra_kwargs,
 ) -> Configurable:
     """
     Configures and returns a CaloCellMaker algorithm instance for a given calorimeter sampling.
@@ -36,9 +37,7 @@ def CaloCellMakerCfg(
     Returns:
         Configurable: Configured ROOT.CaloCellMaker algorithm wrapper.
     """
-    return Configurable(
-        ROOT.CaloCellMaker,
-        name,
+    props = dict(
         InputHitsKey=InputHitsKey,
         OutputCollectionKey=OutputCollectionKey,
         OutputLevel=OutputLevel,
@@ -56,3 +55,22 @@ def CaloCellMakerCfg(
         BunchIdEnd=sampling.BunchIdEnd,
         BunchDuration=25,
     )
+
+    cells = getattr(sampling.sensitive(), "Cells", None)
+    if cells:
+        props["CellEta"] = [float(x) for x in cells["Eta"]]
+        props["CellDeltaEta"] = [float(x) for x in cells["DeltaEta"]]
+
+    tiles = getattr(sampling, "Tiles", None)
+    if tiles:
+        props["CellBin"] = [int(x) for x in tiles["Bin"]]
+        props["CellEta"] = [float(x) for x in tiles["Eta"]]
+        props["CellPhi"] = [float(x) for x in tiles["Phi"]]
+        props["CellDeltaEta"] = [float(x) for x in tiles["DeltaEta"]]
+        props["CellDeltaPhi"] = [float(x) for x in tiles["DeltaPhi"]]
+
+    props.update(extra_kwargs)
+    return Configurable(ROOT.CaloCellMaker, name, **props)
+
+
+CaloCellMaker = CaloCellMakerCfg

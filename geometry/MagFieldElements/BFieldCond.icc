@@ -1,0 +1,64 @@
+/*
+  Copyright (C) 2002-2020 CERN for the benefit of the ATLAS collaboration
+*/
+// Ported to Lorenzetti from Athena release 23.0.14 (MagneticField/MagFieldElements) for --atlas-run4 (F41 conserto 27); changes: Eigen::Vector3d, Eigen::Map<const Eigen::Vector3d>, Eigen::Map<Eigen::Vector3d> and Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> replaced by BFieldCondMath::Vector3d, Vector3d, Vector3dMap and RowMajorMatrix3Map (BFieldCond.h); "D += v * w.transpose()" written as D.addOuterProduct(v, w), same element-wise update D(i,j) += v(i) * w(j).
+
+
+/*
+ * Compute the Biot-Savart field due to this conductor
+ * If deriv[9] is passed, also computes the field derivatives
+ * The results are _added_ to B[] and deriv[].
+ */
+inline void
+BFieldCond::addBiotSavart(double scaleFactor,
+                          const double* ATH_RESTRICT xyz,
+                          double* ATH_RESTRICT B_in,
+                          double* ATH_RESTRICT deriv) const
+{
+  static const double mu04pi = 1.0e-7;    // mu_0/4pi
+  static const double minvsq = 10. * 10.; // (1 cm)^2
+
+  const BFieldCondMath::Vector3d pos(xyz);
+  BFieldCondMath::Vector3dMap B(B_in);
+
+  const BFieldCondMath::Vector3d r1 = pos - m_p1;
+  const BFieldCondMath::Vector3d r2 = pos - m_p2;
+  const BFieldCondMath::Vector3d v = m_u.cross(r1);
+  const double vsq = std::max(v.squaredNorm(), minvsq);
+
+  const double r1u = r1.dot(m_u);
+
+  const double r2u = r2.dot(m_u);
+  const double r1n = r1.norm();
+
+  const double r2n = r2.norm();
+
+  const double f0 = mu04pi * m_curr * scaleFactor / vsq;
+  const double f1 = f0 * (m_finite ? r1u / r1n - r2u / r2n : 2.0);
+  const double f2 = 2.0 * f1 / vsq;
+
+  B += f1 * v;
+
+  if (deriv) {
+    BFieldCondMath::RowMajorMatrix3Map D(deriv);
+
+    D(0, 1) -= f1 * m_u(2);
+    D(0, 2) += f1 * m_u(1);
+    D(1, 0) += f1 * m_u(2);
+    D(1, 2) -= f1 * m_u(0);
+    D(2, 0) -= f1 * m_u(1);
+    D(2, 1) += f1 * m_u(0);
+
+    if (vsq > minvsq) {
+      BFieldCondMath::Vector3d w = f2 * (m_u * r1u - r1);
+
+      if (m_finite) {
+        // Finite conductor segment
+        w += f0 * ((m_u - r1 * r1u / (r1n * r1n)) / r1n -
+                   (m_u - r2 * r2u / (r2n * r2n)) / r2n);
+      }
+
+      D.addOuterProduct(v, w);
+    }
+  }
+}

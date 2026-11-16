@@ -95,6 +95,9 @@ class ComponentAccumulator(Configurable):
         NumberOfThreads: int = 1,
         Timeout: int = 120 * MINUTES,
         UseGUI: bool = False,
+        NeutronTimeCut: float = 0.0,
+        FastSimulation: bool = False,
+        AtlasG4: bool = False,
     ):
         """
         Initializes the Geant4 simulation environment and `RunManager` backend.
@@ -123,6 +126,9 @@ class ComponentAccumulator(Configurable):
             NumberOfThreads=NumberOfThreads,
             Timeout=Timeout,
             UseGUI=UseGUI,
+            NeutronTimeCut=float(NeutronTimeCut),
+            FastSimulation=bool(FastSimulation) or bool(AtlasG4),
+            AtlasG4=bool(AtlasG4),
         )
 
         # Step 3: Prepare thread-specific output file names for multi-threaded simulation runs

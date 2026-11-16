@@ -68,6 +68,9 @@ private:
 
   /*! Multiplier threshold for noise sigma cut (reco energy > m_sigmaThreshold * sigma) */
   float m_sigmaThreshold;
+
+  /*! hits of the event (empty: no check): the hits with energy and no cell are counted and reported */
+  std::string m_hitsKey;
 };
 
 #endif

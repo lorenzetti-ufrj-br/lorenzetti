@@ -8,8 +8,10 @@ class RootStreamHITFlags(EnumStringification):
 
 
 class RootStreamESDFlags(EnumStringification):
+    OnlyRoI: bool = True
     EtaWindow: float = 0.4
     PhiWindow: float = 0.4
+    SaveAllCells: bool = False
 
 
 class RootStreamAODFlags(EnumStringification):

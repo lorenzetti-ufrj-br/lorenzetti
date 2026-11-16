@@ -55,6 +55,10 @@ public:
     m_toolHandles.push_back(tool);
   }
 
+  void push_back(Gaugi::Tool *tool) {
+    m_toolHandles.push_back(tool);
+  }
+
   /**
    * @brief Set the pulse generator tool.
    * @param tool Pointer to the PulseGenerator tool.
@@ -93,6 +97,16 @@ private:
   float m_zMin;
   float m_zMax;
   float m_z;
+
+  // Cells given by a table instead of the eta x phi grid (the (r, z) boxes of the simulation, ATLAS-like HEC):
+  // eta of the centre and delta eta of each cell, in the order of the hits (CaloHitMaker). Empty by default.
+  std::vector<float> m_cellEta;
+  std::vector<float> m_cellDeltaEta;
+  // Cells given one by one (the ATLAS FCal, whose tiles are not an eta x phi grid): the local hash of each cell (as the hits of
+  // CaloHitMaker), with CellEta, CellPhi, CellDeltaEta and CellDeltaPhi. Empty by default.
+  std::vector<int>   m_cellBin;
+  std::vector<float> m_cellPhi;
+  std::vector<float> m_cellDeltaPhi;
 
   bool m_detailedHistograms;
 

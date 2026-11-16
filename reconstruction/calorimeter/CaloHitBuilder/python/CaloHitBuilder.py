@@ -39,6 +39,11 @@ class CaloHitBuilder(Logger):
         MinEnergy: float = 0.0,
         HistogramPath: str = "Expert",
         OutputLevel: int = LoggingLevel.toC("INFO"),
+        ActiveEnergyOnly: bool = False,
+        BirksLaw: bool = False,
+        AtlasHitTime: bool = False,
+        TileDualReadout: int = 0,
+        InputEventKey: str = "Events",
     ) -> None:
         """
         Initializes the CaloHitBuilder.
@@ -55,6 +60,11 @@ class CaloHitBuilder(Logger):
             MinEnergy: Minimum energy threshold for hit retention in MeV.
             HistogramPath: Root path for monitoring histograms.
             OutputLevel: Logging verbosity level.
+            ActiveEnergyOnly: Keep only the energy deposited in the active medium.
+            BirksLaw: Apply Birks' law in scintillator and liquid argon.
+            AtlasHitTime: Bunch crossing from the ATLAS simulation time.
+            TileDualReadout: Dual readout of tile cells (0=off, 1=ATLAS U-shape, 2=linear).
+            InputEventKey: StoreGate key for input event headers.
         """
         super().__init__(name)
         self.RecoAlgs: List[Configurable] = []
@@ -68,9 +78,14 @@ class CaloHitBuilder(Logger):
         self.CellHashes: Optional[List[int]] = CellHashes
         self.FilterEmptyHits: bool = FilterEmptyHits
         self.MinEnergy: float = MinEnergy
+        self.ActiveEnergyOnly: bool = ActiveEnergyOnly
+        self.BirksLaw: bool = BirksLaw
+        self.AtlasHitTime: bool = AtlasHitTime
+        self.TileDualReadout: int = TileDualReadout
+        self.InputEventKey: str = InputEventKey
         self.OutputCollectionKeys: List[str] = []
 
-    def compile(self, detector_construction: Configurable) -> None:
+    def compile(self, detector_construction: Any) -> None:
         """
         Configures all CaloHitMaker algorithms and the CaloHitMerge algorithm.
         """
@@ -91,10 +106,33 @@ class CaloHitBuilder(Logger):
                 HistogramPath=histogramPath,
                 OutputLevel=self.OutputLevel,
                 DetailedHistograms=False,
+                ActiveEnergyOnly=self.ActiveEnergyOnly,
+                BirksLaw=self.BirksLaw,
+                AtlasHitTime=self.AtlasHitTime,
+                TileDualReadout=self.TileDualReadout,
             )
 
             self.RecoAlgs.append(alg)
             self.OutputCollectionKeys.append(samp.CollectionKey)
+
+        # ATLAS FCal with its cells (geometry/python/v2/FCAL.py): one maker per module and side
+        for fm in getattr(detector_construction, "fcal_modules", []):
+            MSG_INFO(
+                self,
+                f"Create CaloHitMaker for {fm.Name} and dump all hits into {fm.CollectionKey} collection",
+            )
+            alg = CaloHitMakerCfg(
+                "CaloHitMaker",
+                fm,
+                OutputCollectionKey=fm.CollectionKey,
+                HistogramPath=f"{self.HistogramPath}/{fm.name()}",
+                OutputLevel=self.OutputLevel,
+                ActiveEnergyOnly=self.ActiveEnergyOnly,
+                BirksLaw=self.BirksLaw,
+                AtlasHitTime=self.AtlasHitTime,
+            )
+            self.RecoAlgs.append(alg)
+            self.OutputCollectionKeys.append(fm.CollectionKey)
 
         MSG_INFO(
             self,
@@ -127,6 +165,6 @@ class CaloHitBuilder(Logger):
         Args:
             acc: The ComponentAccumulator to merge with.
         """
-        self.compile(acc.get_detector_construction())
+        self.compile(acc.detector_construction if hasattr(acc, "detector_construction") else acc.get_detector_construction())
         for reco in self.RecoAlgs:
             acc += reco

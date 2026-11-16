@@ -1,4 +1,9 @@
 file(GLOB SOURCES src/*.cxx)
+# The import of the ATLAS geometry (F41 conserto 27) uses the GeoModel headers, which need C++20
+if( GEOMODEL_LIBRARIES )
+  set_source_files_properties( src/AtlasGeoModelImport.cxx PROPERTIES COMPILE_OPTIONS
+    "-std=c++20;-isystem;${GEOMODEL_DIR}/include;-isystem;${GEOMODEL_DIR}/include/eigen3" )
+endif()
 file(GLOB_RECURSE HEADERS src/*.h )
 file(GLOB_RECURSE HEADERS src/D*.h )
 

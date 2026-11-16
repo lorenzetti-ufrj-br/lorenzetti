@@ -25,3 +25,7 @@ from .CaloCellBuilder import *
 from . import CaloCellNoiseSuppression
 __all__.extend(CaloCellNoiseSuppression.__all__)
 from .CaloCellNoiseSuppression import *
+
+from . import CaloCellMerge
+__all__.extend(CaloCellMerge.__all__)
+from .CaloCellMerge import *
