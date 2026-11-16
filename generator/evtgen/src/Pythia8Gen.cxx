@@ -94,9 +94,12 @@ float Pythia8Gen::random_flat()
   return m_gun.rndm.flat();
 }
 
+// Standard normal number (mean 0, width 1): Pythia's rndm.gauss() already has unit width.
+// Dividing it by sqrt(2*pi), as before, made every Gaussian draw (vertex z and t spread,
+// pileup average spread) 2.5 times narrower than declared.
 float Pythia8Gen::random_gauss()
 {
-  return m_gun.rndm.gauss() / sqrt(2 * M_PI);
+  return m_gun.rndm.gauss();
 }
 
 void Pythia8Gen::clear()

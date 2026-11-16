@@ -1,6 +1,10 @@
 
 #include "helper.h"
 #include <math.h>
+#include <set>
+#include <iostream>
+#include "TDatabasePDG.h"
+#include "TParticlePDG.h"
 
 namespace generator{
 
@@ -58,8 +62,19 @@ namespace generator{
         return et;
       }
 
+      // Electric charge from the ROOT PDG table (TDatabasePDG, charge in units of |e|/3).
+      // Codes unknown to the table are treated as charged, with one warning per code.
       bool isCharged(const HepMC3::GenParticle *particle){
-        return particle->pid() > 0? false : true;
+        const int pdg = particle->pid();
+        const TParticlePDG *info = TDatabasePDG::Instance()->GetParticle(pdg);
+        if (!info) {
+          static std::set<int> warned;
+          if (warned.insert(pdg).second)
+            std::cerr << "ParticleHelper::isCharged: PDG code " << pdg
+                      << " not in TDatabasePDG, treated as charged" << std::endl;
+          return true;
+        }
+        return info->Charge() != 0;
       }
 
 
