@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2002-2020 CERN for the benefit of the ATLAS collaboration
 */
-#include "FCalShowerLib.h"
+#include "geometry/FCalShowerLib.h"
 
 #include "G4Track.hh"
 #include "G4ParticleDefinition.hh"

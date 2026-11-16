@@ -60,6 +60,8 @@ else()
   message( STATUS "GeoModel not found (GEOMODEL_DIR): --atlas-run4 disabled" )
 endif()
 include_directories(${CMAKE_SOURCE_DIR} ${Geant4_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/geometry/AtlasAthenaUtils/include)
+include_directories(${CMAKE_SOURCE_DIR}/geometry/AtlasMagField)
 
 
 #----------------------------------------------------------------------------
@@ -154,6 +156,7 @@ add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:CaloRings>
   $<TARGET_OBJECTS:Egamma>
   $<TARGET_OBJECTS:SpacePoint>
+  $<TARGET_OBJECTS:AtlasMagField>
   $<TARGET_OBJECTS:geometry>
   $<TARGET_OBJECTS:CaloHitBuilder>
   $<TARGET_OBJECTS:CaloCellBuilder>

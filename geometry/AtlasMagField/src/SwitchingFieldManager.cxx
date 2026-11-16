@@ -6,7 +6,7 @@
 
 #include "G4ThreeVector.hh"
 #include "G4Field.hh"
-#include "SwitchingFieldManager.h"
+#include "AtlasMagField/SwitchingFieldManager.h"
 #include "G4ChordFinder.hh"
 #include "G4Track.hh"
 #include "G4MuonPlus.hh"

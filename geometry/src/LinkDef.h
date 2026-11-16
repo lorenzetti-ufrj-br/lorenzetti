@@ -2,8 +2,8 @@
 
 #ifdef __CINT__
 
-#include "src/DetectorConstruction_v1.h"
-#include "src/DetectorConstruction_v2.h"
+#include "geometry/DetectorConstruction_v1.h"
+#include "geometry/DetectorConstruction_v2.h"
 
 
 #pragma link off all globals;

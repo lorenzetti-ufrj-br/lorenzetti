@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2002-2022 CERN for the benefit of the ATLAS collaboration
 */
-#include "FCalFrozenShowerModel.h"
+#include "geometry/FCalFrozenShowerModel.h"
 
 #include "G4FastTrack.hh"
 #include "G4FastStep.hh"
