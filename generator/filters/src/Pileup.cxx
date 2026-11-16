@@ -21,6 +21,12 @@ Pileup::Pileup(const std::string name, IGenerator *gen):
   declareProperty( "Select"         , m_select=2          );
   declareProperty( "DeltaEta"       , m_delta_eta=0.22    );
   declareProperty( "DeltaPhi"       , m_delta_phi=0.22    );
+  // Minimum pT (GeV) of the generated particles passed to the simulation. The cut on charged
+  // particles stands in for the solenoid field when the field is not simulated: soft charged
+  // particles would curl up before reaching the calorimeter. Set both to 0 to keep every
+  // particle, as ATLAS does, when the solenoid field is simulated.
+  declareProperty( "PtMinCharged"   , m_ptMinCharged=0.7  );
+  declareProperty( "PtMinNeutral"   , m_ptMinNeutral=0.05 );
 }
 
 Pileup::~Pileup()
@@ -42,7 +48,7 @@ StatusCode Pileup::initialize()
 StatusCode Pileup::execute(  generator::Event &ctx )
 {
 
-  ParticleHelper::ParticleFilter det_acc_filter( m_select, m_etaMax + .05, 0.0, 0.7, 0.05 );
+  ParticleHelper::ParticleFilter det_acc_filter( m_select, m_etaMax + .05, 0.0, m_ptMinCharged, m_ptMinNeutral );
 
   const int nWin = m_bc_id_end - m_bc_id_start + 1;
   float nPileUpMean(0);

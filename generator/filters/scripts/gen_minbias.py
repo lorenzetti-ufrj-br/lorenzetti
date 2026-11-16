@@ -32,6 +32,37 @@ def main(
     bc_id_start: Annotated[int, typer.Option("--bc-id-start", help="The bunch crossing id start.")] = -21,
     bc_id_end: Annotated[int, typer.Option("--bc-id-end", help="The bunch crossing id end.")] = 4,
     pileup_file: Annotated[str, typer.Option("--pileup-file", help="The pythia pileup configuration file.")] = PILEUP_FILE,
+    pt_min_charged: Annotated[
+        float,
+        typer.Option(
+            "--pt-min-charged",
+            help="Minimum pT (GeV) of the charged particles passed to the simulation. "
+            "The cut stands in for the solenoid field when the field is not simulated; "
+            "use 0 (as ATLAS, which applies no particle cut) when the field is simulated.",
+        ),
+    ] = 0.7,
+    pt_min_neutral: Annotated[
+        float,
+        typer.Option(
+            "--pt-min-neutral",
+            help="Minimum pT (GeV) of the neutral particles passed to the simulation. "
+            "Use 0 to keep every particle, as ATLAS does.",
+        ),
+    ] = 0.05,
+    sigma_z: Annotated[
+        float,
+        typer.Option(
+            "--sigma-z",
+            help="Gaussian spread (RMS, in mm) of the collision vertex along the beam axis.",
+        ),
+    ] = 56.0,
+    sigma_t: Annotated[
+        float,
+        typer.Option(
+            "--sigma-t",
+            help="Gaussian spread (RMS, in ps) of the collision time.",
+        ),
+    ] = 200.0,
 ):
     """
     Generates minimum bias events using Pythia8 and the Pileup filter.
@@ -56,6 +87,10 @@ def main(
         OutputLevel=outputLevel,
         DeltaEta=999.0,
         DeltaPhi=999.0,
+        PtMinCharged=pt_min_charged,
+        PtMinNeutral=pt_min_neutral,
+        VertexSigmaZ=sigma_z,
+        VertexSigmaT=sigma_t,
     )
     tape += pileup
     tape.run(events)
