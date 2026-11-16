@@ -3,11 +3,21 @@
 [![reco](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/reco_sequence.yml/badge.svg)](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/reco_sequence.yml)
 [![anomaly](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml/badge.svg)](https://github.com/lorenzetti-ufrj-br/lorenzetti/actions/workflows/anomaly_sequence.yml)
 
-# Lorenzetti Framework
+# 🔬 Lorenzetti Framework
 
 Lorenzetti is a modular High Energy Physics (HEP) simulation, digitization, and reconstruction framework designed for research and development in calorimeter signal processing, trigger algorithms, and machine learning applications.
 
 Built upon **Geant4**, **Pythia8**, and **ROOT**, the framework models the complete calorimeter readout chain: primary particle generation, energy shower evolution in detector media, electronic pulse shaping across bunch crossings, Gaussian noise injection, cell-to-cell cross-talk, Optimal Filtering (OF/COF) signal reconstruction, topological clustering, concentric shower ring summation (Ringer), and electron/photon identification.
+
+This framework addresses a critical gap in the community: **Access to quality data**. Experiment-specific data is often restricted or difficult to generate for outsiders. Lorenzetti democratizes this by establishing a standard reference for:
+
+- 🧠 **Algorithm Development**: Fast prototyping of filters (Optimal Filtering, Wiener), clustering algorithms, and jet reconstruction.
+- 🤖 **Machine Learning**: Generating massive, labelled datasets ideal for training Neural Networks (e.g., for _anomaly detection_, _pileup mitigation_, or _super-resolution_).
+- ⚡ **Trigger Studies**: Simulating hardware-level constraints to test fast decision-making logic.
+
+### 🌪️ Advanced Pileup Simulation via Overlay
+
+One of Lorenzetti's most defining features is its ability to realistically simulate **high-luminosity environments** through a sophisticated **Overlay Strategy**. High Energy Physics experiments often face the challenge of **Pileup**—multiple proton-proton collisions occurring simultaneously. Lorenzetti accurately models this by overlaying background "Minimum Bias" events onto the signal event of interest.
 
 ---
 
@@ -35,6 +45,27 @@ cd lorenzetti
 make
 source build/lzt_setup.sh
 ```
+
+### 💻 macOS (Apple Silicon)
+
+> 💡 **Prerequisite:** Lorenzetti requires an `x86_64` architecture. Using **[OrbStack](https://orbstack.dev/)** (`brew install orbstack`) instead of Docker Desktop is strongly recommended for much faster Rosetta 2 emulation (_OrbStack Settings > System > Use Rosetta to run Intel code_).
+
+Create a local workspace folder and run the container (`--platform linux/amd64` forces Rosetta emulation):
+
+```bash
+mkdir -p ~/lorenzetti_work
+cd ~/lorenzetti_work
+
+docker run --platform linux/amd64 -it --rm \
+  --name lorenzetti_session \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  lorenzetti/lorenzetti:latest
+```
+
+Once inside the container, proceed with the **Local Build** instructions above to clone the repository into `/workspace`, compile, and load the environment.
+
+📄 **Full Installation Guide**: [docs/installation.md](docs/installation.md)
 
 ---
 
@@ -70,6 +101,12 @@ Surrounds the electromagnetic calorimeter to measure hadronic showers and missin
 | | EndCap (HEC) | 1--3 | All Layers | $Cu / LAr$ | $0.1 \times 0.1 \text{ to } 0.2 \times 0.2$ |
 
 Detector geometry parameters (depths, materials, and segmentation) are fully configurable via Python descriptors without requiring C++ kernel recompilation.
+
+![Detector Cut View](geometry/doc/cut_view.png)
+*(Cut view of the detector geometry)*
+
+![Detector Front View](geometry/doc/front_view.png)
+*(Front view showing the concentric calorimeter layers)*
 
 ---
 
