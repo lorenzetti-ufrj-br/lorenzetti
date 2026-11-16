@@ -1,120 +1,59 @@
 # Detector Geometry Package (`geometry/`)
 
-The `geometry/` package implements the detector geometry description for the **Lorenzetti** simulation framework. It models a full-acceptance, high-granularity calorimeter system modeled after the **ATLAS** detector at the Large Hadron Collider (LHC), coupling a high-performance **Geant4** C++ engine (`DetectorConstruction_v1`) with flexible, modular Python volume builders.
+The `geometry/` package manages detector geometries for the **Lorenzetti** simulation framework. It is modularized into two distinct versions:
+
+- **[v1 (Classical Lorenzetti Geometry)](v1/README.md)**: Standard cylindrical $4\pi$ calorimeter model implemented with Geant4 primitives. Lightweight, fast, and self-contained.
+- **[v2 (ATLAS Run 4 Geometry)](v2/README.md)**: High-fidelity ATLAS Run 4 geometry imported from official GeoModel SQLite dumps, featuring realistic FCal forward calorimetry, frozen shower models, and integration with the standalone [`magfield/`](../magfield/README.md) package.
 
 ---
 
-## 1. Visual Overview
+## Architecture Overview
 
-The detector model features fine $\eta \times \phi$ granularity, accordion/cell approximations, dead material cryostats, and forward endcaps:
-
-| 3D Isometric Cutaway View | Frontal ($x-y$) Cross-Section |
-| :---: | :---: |
-| ![Detector Cutaway View](doc/cut_view.png) | ![Detector Front View](doc/front_view.png) |
-
-| Longitudinal ($z-r$) Lateral Profile |
-| :---: |
-| ![Detector Lateral View](doc/lateral_view.png) |
-
----
-
-## 2. Geometry Hierarchy & Architecture
-
-```mermaid
-flowchart TD
-    World["World Volume (Air / Vacuum)"]
-    
-    subgraph TrackingRegion ["Inner Tracking Region"]
-        Tracker["Beam Pipe &amp; Tracking Cavity<br/>(Silicon Pixel / Strip envelope)"]
-    end
-
-    subgraph CaloSystem ["Calorimeter System"]
-        subgraph BarrelCalo ["Barrel System (|&eta;| &lt; 1.475)"]
-            LArBarrel["LAr Electromagnetic Barrel (ECAL)<br/>PreSampler, EM1, EM2, EM3"]
-            TileBarrel["Scintillating Tile Calorimeter (TILE)<br/>HAD1, HAD2, HAD3"]
-        end
-
-        subgraph EndcapCalo ["Endcap System (1.375 &lt; |&eta;| &lt; 3.2)"]
-            EMEC["LAr EM Endcap (EMEC)<br/>Outer &amp; Inner Wheels"]
-            HEC["Hadronic Endcap (HEC)<br/>Copper / Liquid Argon"]
-            TileExt["Tile Extended Barrel<br/>Extended HAD1, HAD2, HAD3"]
-        end
-
-        subgraph PassiveMaterials ["Dead Material &amp; Structural Support"]
-            Cryostats["Cryostat Envelopes (Aluminum / Steel)"]
-            Crack["Barrel-Endcap Crack Absorbers"]
-        end
-    end
-
-    World --> TrackingRegion
-    World --> CaloSystem
-    CaloSystem --> BarrelCalo
-    CaloSystem --> EndcapCalo
-    CaloSystem --> PassiveMaterials
+```text
+geometry/
+├── CMakeLists.txt              # Top-level geometry orchestrator
+├── README.md                   # This overview file
+├── python/                     # Unified facade for backward compatibility
+│   ├── __init__.py             # Re-exports DetectorConstruction_v1 and v2
+│   ├── v1 -> ../v1/python      # Symlink to v1 Python package
+│   └── v2 -> ../v2/python      # Symlink to v2 Python package
+├── data/                       # Unified symlinks for data resolution
+├── scripts/                    # Unified symlinks for scripts
+├── v1/                         # Self-contained Classical Detector Package
+│   ├── README.md
+│   ├── CMakeLists.txt
+│   ├── v1/
+│   ├── src/
+│   ├── python/
+│   ├── data/
+│   ├── scripts/
+│   └── doc/
+└── v2/                         # Self-contained ATLAS Run 4 Package
+    ├── README.md
+    ├── CMakeLists.txt
+    ├── v2/
+    ├── src/
+    ├── python/
+    ├── data/
+    └── scripts/
 ```
 
 ---
 
-## 3. Subdetector Specifications
+## Python API Usage
 
-The geometry is partitioned into physical sampling layers matching the standard ATLAS calorimeter segmentation:
-
-| Subdetector | Module Code | Material / Technology | Layers / Samplings | Acceptance Coverage |
-| :--- | :--- | :--- | :--- | :--- |
-| **LAr ECAL Barrel** | `LArBarrel` | Liquid Argon & Lead Absorber | PreSampler (PS), EM1, EM2, EM3 | $|\eta| < 1.475$ |
-| **Tile Calorimeter** | `TileBarrel` | Iron Absorber & Plastic Scintillator Tiles | HAD1, HAD2, HAD3 | $|\eta| < 1.0$ |
-| **Tile Extended** | `TileExtended` | Iron Absorber & Scintillator Tiles | ExtHAD1, ExtHAD2, ExtHAD3 | $0.8 < |\eta| < 1.7$ |
-| **LAr EM Endcap** | `LArEMEC` | Liquid Argon & Lead Wheels | EMEC1, EMEC2, EMEC3 | $1.375 < |\eta| < 3.2$ |
-| **Hadronic Endcap** | `HEC` | Copper Plates & Liquid Argon Gaps | HEC1, HEC2, HEC3, HEC4 | $1.5 < |\eta| < 3.2$ |
-| **Cryostats & Crack**| `DeadMaterials`| Aluminum, Cables, Support Structures | Barrel/Endcap cryostats, crack absorbers | Full coverage |
-
----
-
-## 4. Python Configuration API
-
-The primary interface to construct and attach the detector model is `DetectorConstruction_v1`:
-
-### `DetectorConstruction_v1` Parameters
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `name` | `str` | `"DetectorConstruction_v1"` | Identifier for the Geant4 detector construction instance. |
-| `UseMagneticField` | `bool` | `False` | Enables central solenoidal magnetic field in tracking and calorimeter volumes. |
-| `CutOnPhi` | `bool` | `False` | Slices the cylindrical geometry along $\phi$ (useful for fast simulation slices and 3D cutaway visualization). |
-
-### Example Setup with `ComponentAccumulator`
-
+You can import either from the top-level facade:
 ```python
-import ROOT
-from G4Kernel import ComponentAccumulator
-from geometry import DetectorConstruction_v1
-
-# 1. Instantiate the detector construction
-detector = DetectorConstruction_v1(
-    "ATLASDetector",
-    UseMagneticField=False,
-    CutOnPhi=False,
-)
-
-# 2. Attach to the Geant4 ComponentAccumulator
-acc = ComponentAccumulator(
-    "ComponentAccumulator",
-    detector,
-    NumberOfThreads=4,
-    Seed=512,
-    OutputFile="G4Simulation.root",
-)
+from geometry import DetectorConstruction_v1, DetectorConstruction_v2
 ```
 
----
-
-## 5. Interactive 3D Visualization
-
-The package includes an interactive visualization script located at [`geometry/scripts/run_vis.py`](scripts/run_vis.py) which initializes Geant4 with visualization drivers (e.g. Qt, OpenGL, or RayTracer):
-
-```bash
-# Run within Singularity container
-python3 geometry/scripts/run_vis.py
+Or directly from the respective version submodule:
+```python
+from geometry.v1 import DetectorConstruction_v1
+from geometry.v2 import DetectorConstruction_v2
 ```
 
-This launches the interactive Geant4 visualizer, allowing rotation, zooming, layer peeling, and particle trajectory inspection.
+For detailed subdetector specifications and parameters, consult:
+- **[geometry/v1 Documentation](v1/README.md)**
+- **[geometry/v2 Documentation](v2/README.md)**
+- **[magfield Documentation](../magfield/README.md)**

@@ -3,7 +3,7 @@
 */
 // Ported to Lorenzetti from Athena release 23.0.14 (MagneticField/MagFieldElements) for --atlas-run4 (F41 conserto 27); changes: none (verbatim copy).
 
-#include "CxxUtils/vec.h"
+#include "GaugiKernel/vec.h"
 // constructor
 template<class T>
 BFieldMesh<T>::BFieldMesh(double zmin,

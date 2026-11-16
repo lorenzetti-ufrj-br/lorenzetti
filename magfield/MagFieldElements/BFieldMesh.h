@@ -32,7 +32,7 @@
 #ifndef BFIELDMESH_H
 #define BFIELDMESH_H
 
-#include "CxxUtils/restrict.h"
+#include "GaugiKernel/restrict.h"
 #include "MagFieldElements/BFieldCache.h"
 #include "MagFieldElements/BFieldVector.h"
 #include <array>

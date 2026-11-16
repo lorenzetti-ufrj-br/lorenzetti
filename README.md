@@ -102,40 +102,54 @@ Surrounds the electromagnetic calorimeter to measure hadronic showers and missin
 
 Detector geometry parameters (depths, materials, and segmentation) are fully configurable via Python descriptors without requiring C++ kernel recompilation.
 
-![Detector Cut View](geometry/doc/cut_view.png)
+![Detector Cut View](geometry/v1/doc/cut_view.png)
 *(Cut view of the detector geometry)*
 
-![Detector Front View](geometry/doc/front_view.png)
+![Detector Front View](geometry/v1/doc/front_view.png)
 *(Front view showing the concentric calorimeter layers)*
+
+---
+
+## 📦 Package Architecture
+
+| Package | Subpackages / Path | Description | Key Technologies |
+| :--- | :--- | :--- | :--- |
+| **`kernel/`** | `GaugiKernel`, `G4Kernel`, `GenKernel` | Core framework orchestration, event loop, StoreGate, message streaming, units, and Geant4 integration. | C++, OpenMP, Geant4 |
+| **`magfield/`** | `MagField`, `MagFieldElements` | Standalone magnetic field service (ATLAS 2D/3D tabulated solenoid & toroid field maps, SIMD cache, Geant4 steppers). | C++, Geant4, ROOT |
+| **`geometry/v1/`** | `v1`, `src`, `python`, `data`, `scripts`, `doc` | Classical Lorenzetti cylindrical $4\pi$ calorimeter model. Self-contained and lightweight. | Geant4, Python, ROOT |
+| **`geometry/v2/`** | `v2`, `src`, `python`, `data`, `scripts` | High-fidelity ATLAS Run 4 calorimeter model with GeoModel SQLite import, detailed FCal, and frozen showers. | C++20, GeoModel, SQLite, ROOT |
+| **`events/`** | `CaloHit`, `CaloCell`, `CaloCluster`, `CaloRings`, `Egamma`, `EventInfo` | Event Data Model (EDM) containers, smart pointers, and persistified objects. | C++, ROOT TTree |
+| **`reconstruction/`** | `calorimeter`, `physics`, `io`, `reco` | Digitization, optimal filtering (OF/COF), clustering, Ringer feature extraction, and pipeline transforms (`simu_trf.py`, `digit_trf.py`). | C++, Python (Typer) |
+| **`generator/`** | `filters` | Primary event generation with Pythia8, particle guns, and kinematic filter chains. | Pythia8, HepMC3 |
 
 ---
 
 ## 🏗️ Detector Construction (Version 2): the ATLAS detector
 
-`simu_trf.py --detector v2` and `digit_trf.py --detector v2` build the calorimeters, field and physics of ATLAS, following the public
-ATLAS sources (GeoModel geometry database, Athena code). Every part is on by default and can be switched off with `--no-<option>`
-(see `simu_trf.py --help`). Version 1 stays the default.
+`simu_trf.py --detector v2` and `digit_trf.py --detector v2` build the calorimeters, field ([`magfield/`](magfield/README.md)) and physics of ATLAS, following the public ATLAS sources (GeoModel geometry database, Athena code). Every part is on by default and can be switched off with `--no-<option>` (see `simu_trf.py --help`). Version 1 stays the default.
 
 Version 2 needs three external files, too large for the repository, and the GeoModel libraries:
 
 | What | Size | How to get it | Where Lorenzetti looks |
 | :--- | :---: | :--- | :--- |
-| GeoModel 6.29.0 (libraries) | | `bash geometry/scripts/build_geomodel.sh [prefix]` in the Lorenzetti container (default prefix `~/geomodel`) | `GEOMODEL_DIR` at build time |
-| Run 4 geometry dump, `geometry-ATLAS-P2-RUN4-01-01-00-sim.db` | 92 MB | `bash geometry/scripts/atlas_run4_dumpgeo.sh` on a machine with CVMFS and Athena (lxplus) | `--atlas-run4-geometry` or `LORENZETTI_ATLAS_RUN4_GEOMETRY` |
+| GeoModel 6.29.0 (libraries) | | `bash geometry/v2/scripts/build_geomodel.sh [prefix]` in the Lorenzetti container (default prefix `~/geomodel`) | `GEOMODEL_DIR` at build time |
+| Run 4 geometry dump, `geometry-ATLAS-P2-RUN4-01-01-00-sim.db` | 92 MB | `bash geometry/v2/scripts/atlas_run4_dumpgeo.sh` on a machine with CVMFS and Athena (lxplus) | `--atlas-run4-geometry` or `LORENZETTI_ATLAS_RUN4_GEOMETRY` |
 | ATLAS field map, `bfieldmap_7730_20400_14m.root` | 126 MB | `/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/MagneticFieldMaps/` | `--atlas-field-map` or `LORENZETTI_FIELD_MAP` |
-| FCal shower libraries, `MC23_v1` | 31 MB | `/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/LArG4ShowerLibData/MC23_v1` | `geometry/data/LArG4ShowerLibData/MC23_v1` |
+| FCal shower libraries, `MC23_v1` | 31 MB | `/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/LArG4ShowerLibData/MC23_v1` | `geometry/v2/data/LArG4ShowerLibData/MC23_v1` |
 
 Build with GeoModel:
 
 ```bash
-bash geometry/scripts/build_geomodel.sh ~/geomodel
+bash geometry/v2/scripts/build_geomodel.sh ~/geomodel
 export GEOMODEL_DIR=~/geomodel
 make
 source build/lzt_setup.sh
 ```
 
-Without `GEOMODEL_DIR`, Lorenzetti builds as before; version 1 runs, and version 2 stops with a message (the Run 4 geometry needs
-GeoModel). A missing file stops the job with a message naming the option or variable to set.
+Without `GEOMODEL_DIR`, Lorenzetti builds as before; version 1 runs, and version 2 stops with a message (the Run 4 geometry needs GeoModel). A missing file stops the job with a message naming the option or variable to set. For full technical details, consult:
+- **[geometry/v1 Documentation](geometry/v1/README.md)**
+- **[geometry/v2 Documentation](geometry/v2/README.md)**
+- **[magfield Documentation](magfield/README.md)**
 
 ---
 

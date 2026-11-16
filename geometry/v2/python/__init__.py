@@ -1,5 +1,9 @@
 __all__ = []
 
+from . import DetectorConstruction_v2
+__all__.extend(DetectorConstruction_v2.__all__)
+from .DetectorConstruction_v2 import *
+
 from . import PhysicalVolume
 __all__.extend(PhysicalVolume.__all__)
 from .PhysicalVolume import *
@@ -31,6 +35,26 @@ from .EMEC import *
 from . import HEC
 __all__.extend(HEC.__all__)
 from .HEC import *
+
+from . import FCAL
+__all__.extend(FCAL.__all__)
+from .FCAL import *
+
+from . import AtlasFCal
+__all__.extend(AtlasFCal.__all__)
+from .AtlasFCal import *
+
+from . import AtlasRun4
+__all__.extend(AtlasRun4.__all__)
+from .AtlasRun4 import *
+
+from . import AtlasBarrelCryostat
+__all__.extend(AtlasBarrelCryostat.__all__)
+from .AtlasBarrelCryostat import *
+
+from . import AtlasBarrelFront
+__all__.extend(AtlasBarrelFront.__all__)
+from .AtlasBarrelFront import *
 
 from . import DeadMaterials
 __all__.extend(DeadMaterials.__all__)

@@ -16,7 +16,7 @@
 #define BFIELDCACHEZR_H
 
 #include "MagFieldElements/BFieldVectorZR.h"
-#include "CxxUtils/restrict.h"
+#include "GaugiKernel/restrict.h"
 #include <cmath>
 
 class BFieldCacheZR

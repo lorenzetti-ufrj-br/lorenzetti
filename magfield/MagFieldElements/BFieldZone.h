@@ -21,7 +21,7 @@
 #ifndef BFIELDZONE_H
 #define BFIELDZONE_H
 
-#include "CxxUtils/restrict.h"
+#include "GaugiKernel/restrict.h"
 #include "MagFieldElements/BFieldCond.h"
 #include "MagFieldElements/BFieldMesh.h"
 #include <vector>

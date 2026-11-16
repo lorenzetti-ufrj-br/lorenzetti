@@ -18,8 +18,8 @@
 #ifndef BFIELDCACHE_H
 #define BFIELDCACHE_H
 
-#include "CxxUtils/restrict.h"
-#include "CxxUtils/vec.h"
+#include "GaugiKernel/restrict.h"
+#include "GaugiKernel/vec.h"
 #include "MagFieldElements/BFieldVector.h"
 
 class BFieldCache

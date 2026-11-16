@@ -1,5 +1,9 @@
 __all__ = []
 
+from . import DetectorConstruction_v1
+__all__.extend(DetectorConstruction_v1.__all__)
+from .DetectorConstruction_v1 import *
+
 from . import PhysicalVolume
 __all__.extend(PhysicalVolume.__all__)
 from .PhysicalVolume import *

@@ -113,7 +113,7 @@
 #ifndef CXXUTILS_VEC_H
 #define CXXUTILS_VEC_H
 
-#include "CxxUtils/features.h"
+#include "GaugiKernel/features.h"
 #include <cstdlib>
 #include <cstring>
 #include <type_traits>
@@ -411,5 +411,9 @@ vpermute2(VEC& dst, const VEC& src1, const VEC& src2)
 
 
 } // namespace CxxUtils
+
+namespace Gaugi {
+  namespace SIMD = CxxUtils;
+}
 
 #endif // not CXXUTILS_VEC_H

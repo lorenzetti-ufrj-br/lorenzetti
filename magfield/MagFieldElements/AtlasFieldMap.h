@@ -14,7 +14,7 @@
 #define MAGFIELDCONDITIONS_ATLASFIELDMAP_H 1
 
 // MagField includes
-#include "CxxUtils/restrict.h"
+#include "GaugiKernel/restrict.h"
 #include "MagFieldElements/BFieldCache.h"
 #include "MagFieldElements/BFieldCacheZR.h"
 #include "MagFieldElements/BFieldCond.h"
