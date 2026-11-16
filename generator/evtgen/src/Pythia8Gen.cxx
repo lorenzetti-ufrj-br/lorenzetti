@@ -41,6 +41,7 @@ StatusCode Pythia8Gen::initialize()
   m_gun.readString(cmdseed.str());
 
   m_nAbort = m_gun.mode("Main:timesAllowErrors");
+  m_iAbort = 0;
   // Initialization for main (LHC) event
   m_gun.init();
   m_nEvent = 0;
@@ -58,6 +59,7 @@ StatusCode Pythia8Gen::execute(HepMC3::GenEvent &evt)
       MSG_ERROR("Event generation aborted prematurely, owing to error in main event!");
       throw AbortPrematurely();
     }
+    return StatusCode::FAILURE;   // the event is incomplete: the caller generates another one
   }
 
   float weight = m_gun.info.mergingWeight();

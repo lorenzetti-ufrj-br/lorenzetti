@@ -145,7 +145,7 @@ StatusCode JF17::execute( generator::Event &ctx )
         
         // Window check (FastJet's eta/phi)
         if( std::abs(p.eta() - jet.eta()) <= m_etaWindow/2.0 && 
-            std::abs(p.phi() - jet.phi()) <= m_phiWindow/2.0 )
+            std::abs(p.delta_phi_to(jet)) <= m_phiWindow/2.0 )   // FastJet phi is 0 to 2 pi: across 0 the plain difference is near 2 pi
           {
             float xProd = 0, yProd = 0, zProd = 0, tProd = 0;
             if (part->production_vertex()) {
