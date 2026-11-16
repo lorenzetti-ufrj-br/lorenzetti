@@ -1,7 +1,14 @@
 import ROOT
 import sys
 
+import os
+
 def test_copy_sigma():
+    lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "build/lib/liblorenzetti.so"))
+    if os.path.exists(lib_path):
+        ROOT.gSystem.Load(lib_path)
+    else:
+        ROOT.gSystem.Load("liblorenzetti")
     # Inicializa o descritor com parâmetros dummy
     celula_original = ROOT.xAOD.CaloDetDescriptor(0.0, 0.0, 0.1, 0.1, 0, 0.0, 0, 0, 25.0, 0, 3, False)
     
