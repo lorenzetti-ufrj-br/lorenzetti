@@ -1,0 +1,91 @@
+// F41 conserto 29: evaluation shared by the Athena harness (EmecHarnessAlg) and the program of the port (evaluate_port.cxx).
+// The same code calls the functions of the EnergyCalculator of Athena 23.0.14 and of the port, with the same names; everything
+// is written in hexadecimal (%a) for a bit by bit comparison. Needs the private members (#define private public).
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
+#include <cmath>
+#include <exception>
+#include <vector>
+#include <string>
+
+namespace c29 {
+
+inline void hx(FILE* f, double v) { std::fprintf(f, " %a", v); }
+
+// FNV-1a checksum of the bytes of an array of doubles
+inline uint64_t fnv(const double* p, long n, uint64_t h = 1469598103934665603ULL) {
+  const unsigned char* b = reinterpret_cast<const unsigned char*>(p);
+  for (long i = 0; i < n * (long)sizeof(double); ++i) { h ^= b[i]; h *= 1099511628211ULL; }
+  return h;
+}
+
+// initialization parameters of a calculator (wheel, field map, sin/cos polynomials)
+template <class EC> void dumpInit(FILE* f, const char* name, const EC* ec) {
+  const auto* w = ec->lwc();
+  const auto* e = ec->elc();
+  std::fprintf(f, "INIT %s nfans %d nwaves %d zside %d", name, w->GetNumberOfFans(), w->GetNumberOfWaves(), w->GetAtlasZside());
+  hx(f, w->GetWheelThickness()); hx(f, w->GetdWRPtoFrontFace()); hx(f, w->GetStraightStartSection());
+  hx(f, w->GetFanFoldRadius()); hx(f, w->GetZeroFanPhi()); hx(f, w->GetActiveLength()); hx(f, w->GetFanStepOnPhi());
+  hx(f, w->GetHalfWaveLength()); hx(f, w->GetQuarterWaveLength()); hx(f, w->GetFanHalfThickness()); hx(f, w->GetElecFocaltoWRP());
+  hx(f, e->GetFanHalfThickness()); hx(f, e->GetZeroFanPhi());
+  for (int i = 0; i < 6; ++i) { hx(f, w->m_sin_parametrization[i]); hx(f, w->m_cos_parametrization[i]); }
+  for (int i = 0; i < 6; ++i) { hx(f, e->m_sin_parametrization[i]); hx(f, e->m_cos_parametrization[i]); }
+  for (int i = 0; i < 5; ++i) hx(f, w->m_slant_parametrization[i]);
+  hx(f, ec->ElectrodeFanHalfThickness()); hx(f, ec->FanEleThickness()); hx(f, ec->FanAbsThickness()); hx(f, ec->WaveLength());
+  hx(f, ec->FanEleThicknessOld()); hx(f, ec->FanEleFoldRadiusOld()); hx(f, ec->CHC_Esr()); hx(f, EC::s_AverageCurrent);
+  std::fprintf(f, "\n");
+  const auto* wt = ec->ChCollWheelType();
+  std::fprintf(f, "MAP %s nlayer %d", name, wt->NumberOfRadialLayer);
+  for (int i = 0; i < wt->NumberOfRadialLayer; ++i) { hx(f, wt->RadiusOfLayers[i]); hx(f, wt->FoldinAngleOfLayers[i]); hx(f, wt->HalfLArGapSizeOfLayers[i]); }
+  hx(f, wt->GridShift);
+  std::fprintf(f, "\n");
+  for (int fold = 0; fold < 2; ++fold) {
+    const auto& fm = fold == 0 ? wt->Fold1 : wt->Fold0;
+    std::fprintf(f, "FOLD %s %d prepared %d", name, fold, (int)fm.FieldMapPrepared);
+    if (fm.FieldMapPrepared) {
+      for (int i = 0; i < wt->NumberOfRadialLayer; ++i) {
+        std::fprintf(f, " |");
+        hx(f, fm.MinZofLayer[i]); hx(f, fm.MaxZofLayer[i]); hx(f, fm.MinYofLayer[i]); hx(f, fm.MaxYofLayer[i]);
+        std::fprintf(f, " %d %d %d %d", fm.NofColofLayer[i], fm.NofRowofLayer[i], fm.NofPointsinLayer[i], fm.pLayer[i]);
+      }
+      const int n = wt->NumberOfRadialLayer;
+      const long len = fm.pLayer[n - 1] + 3L * fm.NofPointsinLayer[n - 1];
+      std::fprintf(f, " len %ld fnv %016llx", len, (unsigned long long)fnv(fm.FieldMap, len));
+    }
+    std::fprintf(f, "\n");
+  }
+}
+
+// one step: the quantities of Process_Default and of the charge collection, and the geometry functions at both points
+template <class EC, class V3> void evalStep(FILE* f, long idx, const EC* ec, const V3& p1, const V3& p2, double edep) {
+  std::fprintf(f, "S %ld", idx);
+  const V3 mid = (p1 + p2) * 0.5;
+  double gap = NAN, hv = NAN;
+  try { gap = ec->GetGapSize(mid); hx(f, gap); } catch (const std::exception&) { std::fprintf(f, " EXC"); }
+  try { hv = ec->m_HVHelper->GetVoltage(mid); hx(f, hv); } catch (const std::exception&) { std::fprintf(f, " EXC"); }
+  const double efield = 0.01 * hv / gap;
+  hx(f, efield);
+  const double lencm = (p2 - p1).mag() / 10.;   // CLHEP::cm = 10 mm
+  try { hx(f, (*ec->m_birksLaw)(edep, lencm, efield)); } catch (const std::exception&) { std::fprintf(f, " EXC"); }
+  try { hx(f, ec->CalculateChargeCollection1(edep, p1, p2, 0.654321)); } catch (const std::exception&) { std::fprintf(f, " EXC"); }
+  try { hx(f, ec->distance_to_the_nearest_electrode(p1)); } catch (const std::exception&) { std::fprintf(f, " EXC"); }
+  for (const V3* pp : {&p1, &p2}) {
+    const V3& p = *pp;
+    try {
+      auto g = ec->lwc()->GetPhiGapAndSide(p); std::fprintf(f, " | %d %d", g.first, g.second);
+      auto ge = ec->elc()->GetPhiGapAndSide(p); std::fprintf(f, " %d %d", ge.first, ge.second);
+      V3 pa = p; int fa = 0; const double da = ec->lwc()->DistanceToTheNearestFan(pa, fa);
+      std::fprintf(f, " %d", fa); hx(f, da); hx(f, pa.x()); hx(f, pa.y()); hx(f, pa.z());
+      V3 pe = p; int fe = 0; const double de = ec->elc()->DistanceToTheNearestFan(pe, fe);
+      std::fprintf(f, " %d", fe); hx(f, de); hx(f, pe.x()); hx(f, pe.y()); hx(f, pe.z());
+      for (int s = -1; s <= 1; ++s) hx(f, ec->lwc()->AmplitudeOfSurface(pa, s, fa));
+      for (int s = -1; s <= 1; s += 2) hx(f, ec->elc()->AmplitudeOfSurface(pe, s, fe));
+      hx(f, ec->lwc()->parameterized_slant_angle(p.perp()));
+      hx(f, ec->lwc()->DistanceToTheNeutralFibre(pa, fa));
+    } catch (const std::exception&) { std::fprintf(f, " EXC"); }
+  }
+  std::fprintf(f, "\n");
+}
+
+} // namespace c29

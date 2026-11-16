@@ -96,7 +96,7 @@ class DetectorConstruction_v2( Cpp ):
     self.samplings = []
     self.volumes = []
     # Modules of the ATLAS FCal with their electrodes (AtlasFcalCells; geometry/python/v1/FCAL.py): built by AddFCalModule;
-    # their hit makers record one hit per tile in the hit collection (CaloHitBuilder)
+    # their hit makers record one hit per tile in the hit collection and, with the free-running hits, feed LArHitFCAL (CaloHitBuilder)
     self.fcal_modules = []
     # Mixtures defined by the geometry (name: (density in g/cm3, {element symbol: mass fraction})).
     self.mixtures = {}

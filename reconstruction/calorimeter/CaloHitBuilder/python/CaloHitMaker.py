@@ -24,6 +24,13 @@ def CaloHitMakerCfg(
     BirksLaw: bool = False,
     AtlasHitTime: bool = False,
     TileDualReadout: int = 0,
+    FreeRunningHits: bool = False,
+    FreeRunningListKey: str = "FreeRunningHits",
+    FreeRunningBinning: bool = True,
+    EmecChargeCollection: bool = False,
+    EmecChargeTables: str = "",
+    EmecChargeFieldMap: str = "",
+    EmecChargeHVMap: str = "",
     **extra_kwargs,
 ) -> Configurable:
     """
@@ -41,6 +48,13 @@ def CaloHitMakerCfg(
         BirksLaw: Apply Birks' law in scintillator and liquid argon.
         AtlasHitTime: Bunch crossing from the ATLAS simulation time.
         TileDualReadout: Dual readout of tile cells (0=off, 1=ATLAS U-shape, 2=linear).
+        FreeRunningHits: Free-running hits as in ATLAS simulation.
+        FreeRunningListKey: StoreGate key for free-running hit list.
+        FreeRunningBinning: Sum deposits in ATLAS simulation time bins.
+        EmecChargeCollection: Enable charge collection in the ATLAS EM end-cap.
+        EmecChargeTables: Path to EMEC tables CSV.
+        EmecChargeFieldMap: Path to EMEC field map file.
+        EmecChargeHVMap: Path to EMEC HV map file.
 
     Returns:
         Configurable: Configured ROOT.CaloHitMaker algorithm wrapper.
@@ -55,6 +69,9 @@ def CaloHitMakerCfg(
         BirksLaw=BirksLaw,
         AtlasHitTime=AtlasHitTime,
         TileDualReadout=TileDualReadout,
+        FreeRunningHits=FreeRunningHits,
+        FreeRunningListKey=FreeRunningListKey,
+        FreeRunningBinning=FreeRunningBinning,
     )
 
     if hasattr(sampling, "sensitive") and sampling.sensitive() is not None:
@@ -82,6 +99,11 @@ def CaloHitMakerCfg(
                     props[key] = [int(x) for x in cells[key]]
                 for key in ("EmecWheelRMin", "EmecWheelRMax", "EmecWheelZMin", "EmecWheelZMax"):
                     props[key] = [float(x) for x in cells[key]]
+                if EmecChargeCollection:
+                    props["EmecChargeCollection"] = True
+                    props["EmecChargeTables"] = EmecChargeTables
+                    props["EmecChargeFieldMap"] = EmecChargeFieldMap
+                    props["EmecChargeHVMap"] = EmecChargeHVMap
             if "EmbSampling" in cells:
                 props["EmbMode"] = int(cells["EmbMode"])
                 props["EmbSampling"] = int(cells["EmbSampling"])
@@ -97,6 +119,9 @@ def CaloHitMakerCfg(
             if "AtlasLArPart" in cells:
                 props["AtlasLArPart"] = int(cells["AtlasLArPart"])
                 props["AtlasBarrelEc"] = int(cells["AtlasBarrelEc"])
+                props["AtlasLArSampling"] = int(cells["AtlasLArSampling"])
+                props["AtlasLArRegion"] = int(cells["AtlasLArRegion"])
+                props["CellAtlasEtaIndex"] = [int(x) for x in cells["AtlasEtaIndex"]]
             if "NPmt" in cells:
                 props["CellNPmt"] = [int(x) for x in cells["NPmt"]]
             if "UShapePart" in cells:
@@ -106,12 +131,18 @@ def CaloHitMakerCfg(
                 props["SpecialModule"] = [int(x) for x in cells["SpecialModule"]]
                 props["SpecialNPmt"] = [int(x) for x in cells["SpecialNPmt"]]
             if "ReplaceSection" in cells:
+                props["ReplaceSection"] = int(cells["ReplaceSection"])
+                props["ReplaceTower"] = int(cells["ReplaceTower"])
+                props["ReplaceSampling"] = int(cells["ReplaceSampling"])
                 props["ReplaceRCentre"] = float(cells["ReplaceRCentre"])
                 props["ReplaceZCentre"] = float(cells["ReplaceZCentre"])
             if "ReplaceCollectionKey" in cells:
                 props["ReplaceCollectionKey"] = str(cells["ReplaceCollectionKey"])
                 props["ReplaceHashBase"] = int(cells["ReplaceHashBase"])
             if "AtlasSection" in cells:
+                props["CellAtlasSection"] = [int(x) for x in cells["AtlasSection"]]
+                props["CellAtlasTower"] = [int(x) for x in cells["AtlasTower"]]
+                props["CellAtlasSampling"] = [int(x) for x in cells["AtlasSampling"]]
                 props["CellRCentre"] = [float(x) for x in cells["RCentre"]]
                 props["CellZCentre"] = [float(x) for x in cells["ZCentre"]]
 
@@ -158,6 +189,5 @@ def CaloHitMakerCfg(
 
     props.update(extra_kwargs)
     return Configurable(ROOT.CaloHitMaker, name, **props)
-
 
 CaloHitMaker = CaloHitMakerCfg
