@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2002-2017 CERN for the benefit of the ATLAS collaboration
 */
-#include "geometry/AtlasDeadMaterialShower.h"
+#include "v2/AtlasDeadMaterialShower.h"
 
 #include "G4FastTrack.hh"
 #include "G4FastStep.hh"

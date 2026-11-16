@@ -3,7 +3,7 @@
 */
 // Ported to Lorenzetti from Athena release 23.0.14 (Simulation/G4Atlas/G4AtlasServices, StandardFieldSvc.cxx) for --atlas-run4 (F41 conserto 27); changes: createFieldMap turned into the static helper AtlasMagneticField::loadMap; ATH_MSG_* replaced by std::cerr/std::cout; PathResolver dropped (explicit path); an IsZombie() check added after opening the file.
 
-#include "AtlasMagField/AtlasMagneticField.h"
+#include "MagField/AtlasMagneticField.h"
 
 // Field map
 #include "MagFieldElements/AtlasFieldMap.h"

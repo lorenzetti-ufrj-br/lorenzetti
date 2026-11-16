@@ -60,8 +60,8 @@ else()
   message( STATUS "GeoModel not found (GEOMODEL_DIR): --atlas-run4 disabled" )
 endif()
 include_directories(${CMAKE_SOURCE_DIR} ${Geant4_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/geometry/AtlasAthenaUtils/include)
-include_directories(${CMAKE_SOURCE_DIR}/geometry/AtlasMagField)
+include_directories(${CMAKE_SOURCE_DIR}/kernel/GaugiKernel)
+include_directories(${CMAKE_SOURCE_DIR}/magfield)
 
 
 #----------------------------------------------------------------------------
@@ -122,6 +122,8 @@ add_subdirectory( events/EventInfo )
 add_subdirectory( events/TruthParticle )
 add_subdirectory( events/CaloRings )
 add_subdirectory( events/Egamma)
+# magnetic field service
+add_subdirectory( magfield )
 # detector definitions
 add_subdirectory( geometry )
 
@@ -148,6 +150,9 @@ add_subdirectory( generator/filters )
 add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:GaugiKernel>
   $<TARGET_OBJECTS:G4Kernel>
+  $<TARGET_OBJECTS:MagField>
+  $<TARGET_OBJECTS:geometry_v1>
+  $<TARGET_OBJECTS:geometry_v2>
   $<TARGET_OBJECTS:CaloHit>
   $<TARGET_OBJECTS:CaloCell>
   $<TARGET_OBJECTS:CaloCluster>
@@ -156,8 +161,6 @@ add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:CaloRings>
   $<TARGET_OBJECTS:Egamma>
   $<TARGET_OBJECTS:SpacePoint>
-  $<TARGET_OBJECTS:AtlasMagField>
-  $<TARGET_OBJECTS:geometry>
   $<TARGET_OBJECTS:CaloHitBuilder>
   $<TARGET_OBJECTS:CaloCellBuilder>
   $<TARGET_OBJECTS:CaloClusterBuilder>

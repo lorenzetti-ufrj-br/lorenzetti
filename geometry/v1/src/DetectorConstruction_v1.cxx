@@ -1,4 +1,4 @@
-#include "geometry/DetectorConstruction_v1.h"
+#include "v1/DetectorConstruction_v1.h"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4Box.hh"

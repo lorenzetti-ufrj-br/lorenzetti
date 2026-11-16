@@ -3,7 +3,7 @@
   Copyright (C) 2002-2017 CERN for the benefit of the ATLAS collaboration
 */
 
-#include "AtlasMagField/TightMuonSteppingFieldManager.h"
+#include "MagField/TightMuonSteppingFieldManager.h"
 #include "G4Track.hh"
 #include "G4ChordFinder.hh"
 #include "G4MuonPlus.hh"

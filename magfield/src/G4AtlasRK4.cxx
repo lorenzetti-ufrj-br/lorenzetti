@@ -33,7 +33,7 @@
 //   2018.01.29 J.A.:  Ensure that momentum is correct in Stepper call
 // -------------------------------------------------------------------
 
-#include "AtlasMagField/G4AtlasRK4.h"
+#include "MagField/G4AtlasRK4.h"
 #include <iostream>
 #include <iomanip>
 
