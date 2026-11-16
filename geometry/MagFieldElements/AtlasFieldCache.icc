@@ -1,0 +1,77 @@
+/*
+  Copyright (C) 2002-2022 CERN for the benefit of the ATLAS collaboration
+*/
+// Ported to Lorenzetti from Athena release 23.0.14 (MagneticField/MagFieldElements) for --atlas-run4 (F41 conserto 27); changes: none (verbatim copy).
+inline MagField::AtlasFieldCache::AtlasFieldCache(double solFieldScale,
+                                                  double torFieldScale,
+                                                  const AtlasFieldMap* fieldMap)
+  : m_solScale(solFieldScale)
+  , m_torScale(torFieldScale)
+  , m_fieldMap(fieldMap)
+{
+  if (m_fieldMap) {
+    // save ZR bfield
+    m_meshZR = m_fieldMap->getBFieldMesh();
+    // Get solenoid zone id from field service
+    m_solZoneId = fieldMap->solenoidZoneId();
+  }
+}
+
+inline bool
+MagField::AtlasFieldCache::fillFieldCache(double z, double r, double phi)
+{
+  // We have gone outside of a cache volume. For the solenoid, it is 'safe' to
+  // just check\n if we are inside the solenoid zone, and then we can find the
+  // next cache volume. For toroid, it is best to not check if we are inside
+  // the zone, and just find the zone for the current point.
+  // So we need to look up a fieldZone:
+  // 1) If we do NOT have one
+  // 2) Everytime we are in a Zone that does NOT have a solenoid ID
+  // 3)  If it has solenoid ID and we are NOT inside
+  if (!m_zone3d || m_zone3d->id() != m_solZoneId ||
+      !m_zone3d->inside(z, r, phi)) {
+    m_zone3d = m_fieldMap ? m_fieldMap->findBFieldZone(z, r, phi) : nullptr;
+  }
+
+  if (!m_zone3d) {
+    // we failed to find a zone
+    return false;
+  }
+
+  // set scale for field
+  m_scaleToUse = (m_zone3d->id() == m_solZoneId) ? m_solScale : m_torScale;
+  // fill the cache, pass in current scale factor
+  m_zone3d->getCache(z, r, phi, m_cache3d, m_scaleToUse);
+  // save pointer to the conductors in the zone
+  m_cond = m_zone3d->condVector();
+
+  return true;
+}
+
+inline bool
+MagField::AtlasFieldCache::fillFieldCacheZR(double z, double r)
+{
+  // No mesh available
+  if (!m_meshZR) {
+    return false;
+  }
+  // Not inside the solenoid zone?
+  if (!m_meshZR->inside(z, r)) {
+    return false;
+  }
+  // fill the cache, pass in current scale factor
+  m_meshZR->getCache(z, r, m_cacheZR, m_solScale);
+  return true;
+}
+
+inline bool
+MagField::AtlasFieldCache::solenoidOn() const
+{
+  return m_fieldMap ? m_fieldMap->solenoidOn() && m_solScale > 0.0 : false;
+}
+
+inline bool
+MagField::AtlasFieldCache::toroidOn() const
+{
+  return m_fieldMap ? m_fieldMap->toroidOn() && m_torScale > 0.0 : false;
+}

@@ -28,6 +28,7 @@ using namespace Gaugi;
  * 
  * Properties:
  * - Eta/PhiWindow: Size of the RoI to save cells around truth particles.
+ * - OnlyRoI: If true (default), only saves the cells inside the RoI; if false, saves all cells.
  */
 RootStreamESDMaker::RootStreamESDMaker( std::string name ) : 
   IMsgService(name),
@@ -47,6 +48,7 @@ RootStreamESDMaker::RootStreamESDMaker( std::string name ) :
   declareProperty( "NtupleName"         , m_ntupleName="CollectionTree"     );
   declareProperty( "EtaWindow"          , m_etaWindow=0.6                   );
   declareProperty( "PhiWindow"          , m_phiWindow=0.6                   );
+  declareProperty( "OnlyRoI"            , m_onlyRoI=true                    );
 
 }
 
@@ -251,53 +253,61 @@ StatusCode RootStreamESDMaker::serialize( EventContext &ctx ) const
 
     std::map<unsigned long int,const xAOD::CaloCell*> cell_map;
 
-    for (const auto par : **particles.ptr() )
+    // Saves one cell (once, even when RoIs overlap) with its truth cell and its descriptor
+    auto save = [&]( const xAOD::CaloCell *cell ){
+        const xAOD::CaloDetDescriptor *descriptor = cell->descriptor();
+        // NOTE: avoid cell duplication given RoI superposition
+        if ( cell_map.count(descriptor->hash())){
+          //MSG_WARNING("Cell already exists for cell " << descriptor->hash() );
+          return;
+        }
+        cell_map.insert( std::make_pair( descriptor->hash(), cell ) );
+
+        if ( !cell_truth_map.count(descriptor->hash())){
+          MSG_WARNING("Cell truth not found for cell " << descriptor->hash() );
+          return;
+        }
+
+        const xAOD::CaloCell* cell_truth = cell_truth_map[descriptor->hash()];
+        xAOD::CaloCell_t cell_truth_t;
+        xAOD::CaloCellConverter cell_truth_cnv;
+        cell_truth_cnv.convert(cell_truth, cell_truth_t);
+
+        xAOD::CaloCell_t cell_t;
+        xAOD::CaloCellConverter cell_cnv;
+        cell_cnv.convert(cell, cell_t);
+
+
+        xAOD::CaloDetDescriptor_t descriptor_t;
+        xAOD::CaloDetDescriptorConverter descriptor_cnv;
+        descriptor_cnv.convert( descriptor, descriptor_t);
+
+        container_cells->push_back(cell_t);
+        container_cells_truth->push_back(cell_truth_t);
+        container_descriptor->push_back(descriptor_t);
+
+    };
+
+    if( !m_onlyRoI )
     {
-        //MSG_DEBUG("New particle...");
+        for (const auto cell : **container.ptr() ) save( cell );
+    }
+    else
+    {
+      for (const auto par : **particles.ptr() )
+      {
         for (const auto cell : **container.ptr() ){
 
             const xAOD::CaloDetDescriptor *descriptor = cell->descriptor();
             float deltaEta = std::abs( par->eta() - descriptor->eta());
             float deltaPhi = std::abs( CaloPhiRange::diff(par->phi(), descriptor->phi()) );
 
-            if ( deltaEta < m_etaWindow/2 && deltaPhi < m_phiWindow/2 )
-            {
+            if ( deltaEta < m_etaWindow/2 && deltaPhi < m_phiWindow/2 ) save( cell );
 
-                // NOTE: avoid cell duplication given RoI superposition
-                if ( cell_map.count(descriptor->hash())){
-                  //MSG_WARNING("Cell already exists for cell " << descriptor->hash() );
-                  continue;
-                }
-                cell_map.insert( std::make_pair( descriptor->hash(), cell ) );
-
-                if ( !cell_truth_map.count(descriptor->hash())){
-                  MSG_WARNING("Cell truth not found for cell " << descriptor->hash() );
-                  continue;
-                }
-
-                const xAOD::CaloCell* cell_truth = cell_truth_map[descriptor->hash()];
-                xAOD::CaloCell_t cell_truth_t;
-                xAOD::CaloCellConverter cell_truth_cnv;
-                cell_truth_cnv.convert(cell_truth, cell_truth_t);
-
-                xAOD::CaloCell_t cell_t;
-                xAOD::CaloCellConverter cell_cnv;
-                cell_cnv.convert(cell, cell_t);
-
-
-                xAOD::CaloDetDescriptor_t descriptor_t;
-                xAOD::CaloDetDescriptorConverter descriptor_cnv;
-                descriptor_cnv.convert( descriptor, descriptor_t);
-
-                container_cells->push_back(cell_t);
-                container_cells_truth->push_back(cell_truth_t);
-                container_descriptor->push_back(descriptor_t);
-
-            }// check if cell is inside of the window
-        
         }// loop over all cells
 
-    }// loop over all seeds
+      }// loop over all seeds
+    }
 
   }
 

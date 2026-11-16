@@ -49,6 +49,8 @@ class CaloCellMerge : public Gaugi::Algorithm
     // std::string m_xtcellsKey;
     /*! CaloCellContainer key for truth cells */
     std::string m_truthCellsKey;
+    /*! hits of the event (empty: no check): the hits with energy and no cell are counted and reported */
+    std::string m_hitsKey;
 };
 
 

@@ -1,0 +1,35 @@
+diff --git a/GeoModelCore/GeoModelKernel/src/GeoDefinitions.cxx b/GeoModelCore/GeoModelKernel/src/GeoDefinitions.cxx
+index 01e4914..b8744c4 100755
+--- a/GeoModelCore/GeoModelKernel/src/GeoDefinitions.cxx
++++ b/GeoModelCore/GeoModelKernel/src/GeoDefinitions.cxx
+@@ -92,7 +92,7 @@ namespace GeoTrf {
+      return std::abs(phi) > rotTolerance || std::abs(theta) > rotTolerance || std::abs(psi) > rotTolerance;
+   }
+   EulerAngles EulerAngles::inverse() const {
+-     return getGeoRotationAngles(GeoRotation(*this).inverse());
++     return getGeoRotationAngles(RotationMatrix3D(GeoRotation(*this).inverse()));
+   }
+ 
+ 
+@@ -109,7 +109,7 @@ namespace GeoTrf {
+      return std::abs(alpha) > rotTolerance || std::abs(beta) > rotTolerance || std::abs(gamma) > rotTolerance;
+   }
+   CoordEulerAngles CoordEulerAngles::inverse() const {
+-     return getCoordRotationAngles(GeoRotation(*this).inverse());
++     return getCoordRotationAngles(RotationMatrix3D(GeoRotation(*this).inverse()));
+   }
+ 
+   GeoTransformRT::GeoTransformRT(const EulerAngles& angles, const Vector3D& trans):
+diff --git a/GeoModelIO/GeoModelRead/GeoModelRead/ReadGeoModel.tpp b/GeoModelIO/GeoModelRead/GeoModelRead/ReadGeoModel.tpp
+index f302dab..0cd37fc 100644
+--- a/GeoModelIO/GeoModelRead/GeoModelRead/ReadGeoModel.tpp
++++ b/GeoModelIO/GeoModelRead/GeoModelRead/ReadGeoModel.tpp
+@@ -63,7 +63,7 @@ namespace GeoModelIO {
+             } else if constexpr ( std::is_same_v<GeoAlignableTransform*, N> ) {
+                 volPtr = getBuiltAlignableTransform(volID);
+             } else {
+-                static_assert(false, "Unsupported type");
++                static_assert(sizeof(T) == 0, "Unsupported type");
+             }
+             if (!volPtr) {
+                 THROW_EXCEPTION("Failed to fetch element "<<volID<<" of type "<<typeid(N).name());

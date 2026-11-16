@@ -1,0 +1,125 @@
+/*
+  Copyright (C) 2002-2021 CERN for the benefit of the ATLAS collaboration
+*/
+// Ported to Lorenzetti from Athena release 23.0.14 (MagneticField/MagFieldElements) for --atlas-run4 (F41 conserto 27); changes: none (verbatim copy).
+
+//
+// Find and return the cache of the bin containing (z,r)
+//
+inline void
+BFieldMeshZR::getCache(double z,
+                       double r,
+                       BFieldCacheZR& cache,
+                       double scaleFactor) const
+{
+  // find the mesh, and relative location in the mesh
+  // z
+  const std::vector<double>& mz(m_mesh[0]);
+  int iz = int((z - zmin()) * m_invUnit[0]); // index to LUT
+  iz = m_LUT[0][iz];                         // tentative mesh index from LUT
+  if (z > mz[iz + 1]) {
+    ++iz;
+  }
+  // r
+  const std::vector<double>& mr(m_mesh[1]);
+  int ir = int((r - rmin()) * m_invUnit[1]); // index to LUT
+  ir = m_LUT[1][ir];                         // tentative mesh index from LUT
+  if (r > mr[ir + 1]) {
+    ++ir;
+  }
+  // store the bin edges
+  cache.setRange(mz[iz], mz[iz + 1], mr[ir], mr[ir + 1]);
+  // store the B field at the 8 corners
+  int im0 = iz * m_zoff + ir; // index of the first corner
+  cache.setField(0, m_field[im0], scaleFactor);
+  cache.setField(1, m_field[im0 + 1], scaleFactor);
+  cache.setField(2, m_field[im0 + m_zoff], scaleFactor);
+  cache.setField(3, m_field[im0 + m_zoff + 1], scaleFactor);
+}
+
+inline BFieldMeshZR::BFieldMeshZR(double zmin,
+                                  double zmax,
+                                  double rmin,
+                                  double rmax)
+  : m_min { zmin, rmin },
+    m_max { zmax, rmax }
+{
+}
+
+inline void
+BFieldMeshZR::reserve(int nz, int nr)
+{
+  m_mesh[0].reserve(nz);
+  m_mesh[1].reserve(nr);
+  m_field.reserve(nz * nr);
+}
+// add elements to vectors
+inline void
+BFieldMeshZR::appendMesh(int i, double mesh)
+{
+  m_mesh[i].push_back(mesh);
+}
+inline void
+BFieldMeshZR::appendField(const BFieldVectorZR& field)
+{
+  m_field.push_back(field);
+}
+
+// test if a point is inside this zone
+inline bool
+BFieldMeshZR::inside(double z, double r) const
+{
+  return (z >= zmin() && z <= zmax() && r >= rmin() && r <= rmax());
+}
+
+inline double
+BFieldMeshZR::min(size_t i) const
+{
+  return m_min[i];
+}
+inline double
+BFieldMeshZR::max(size_t i) const
+{
+  return m_max[i];
+}
+inline double
+BFieldMeshZR::zmin() const
+{
+  return m_min[0];
+}
+inline double
+BFieldMeshZR::zmax() const
+{
+  return m_max[0];
+}
+inline double
+BFieldMeshZR::rmin() const
+{
+  return m_min[1];
+}
+inline double
+BFieldMeshZR::rmax() const
+{
+  return m_max[1];
+}
+inline unsigned
+BFieldMeshZR::nmesh(size_t i) const
+{
+  return m_mesh[i].size();
+}
+inline double
+BFieldMeshZR::mesh(size_t i, size_t j) const
+{
+  return m_mesh[i][j];
+}
+inline unsigned
+BFieldMeshZR::nfield() const
+{
+  return m_field.size();
+}
+inline const BFieldVectorZR&
+BFieldMeshZR::field(size_t i) const
+{
+  return m_field[i];
+}
+

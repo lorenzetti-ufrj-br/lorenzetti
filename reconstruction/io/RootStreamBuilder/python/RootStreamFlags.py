@@ -13,6 +13,7 @@ class RootStreamHITFlags(EnumStringification):
 
 class RootStreamESDFlags(EnumStringification):
 
+    OnlyRoI = True
     EtaWindow = 0.4
     PhiWindow = 0.4
 

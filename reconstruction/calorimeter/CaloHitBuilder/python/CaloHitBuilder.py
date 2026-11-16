@@ -18,6 +18,11 @@ class CaloHitBuilder(Logger):
                  OutputHitsKey: str,
                  HistogramPath: str = "Expert",
                  OutputLevel: int = LoggingLevel.toC('INFO'),
+                 ActiveEnergyOnly: bool = False,
+                 BirksLaw: bool = False,
+                 AtlasHitTime: bool = False,
+                 TileDualReadout: int = 0,
+                 InputEventKey: str = "Events",
                  ):
 
         Logger.__init__(self, name)
@@ -25,6 +30,12 @@ class CaloHitBuilder(Logger):
         self.HistogramPath = HistogramPath
         self.OutputLevel = OutputLevel
         self.OutputHitsKey = OutputHitsKey
+        self.ActiveEnergyOnly = ActiveEnergyOnly
+        self.BirksLaw = BirksLaw
+        # Bunch crossing of the hits from the time of the ATLAS simulation (CaloHitMaker::hitTime)
+        self.AtlasHitTime = AtlasHitTime
+        self.TileDualReadout = TileDualReadout
+        self.InputEventKey = InputEventKey
         self.OutputCollectionKeys = []
 
     def configure(self):
@@ -45,11 +56,28 @@ class CaloHitBuilder(Logger):
                                HistogramPath=histogramPath,
                                OutputLevel=self.OutputLevel,
                                # Use True when debug with only one thread
-                               DetailedHistograms=False
+                               DetailedHistograms=False,
+                               ActiveEnergyOnly=self.ActiveEnergyOnly,
+                               BirksLaw=self.BirksLaw,
+                               AtlasHitTime=self.AtlasHitTime,
+                               TileDualReadout=self.TileDualReadout
                                )
 
             self.__recoAlgs.append(alg)
             self.OutputCollectionKeys.append(samp.CollectionKey)
+
+        # ATLAS FCal with its cells (F41 conserto 22; geometry/python/v2/FCAL.py): one maker per module and side, for the hit
+        # collection (one hit per tile, merged with the others)
+        for fm in getattr(self.__detector, 'fcal_modules', []):
+            MSG_INFO(self, "Create CaloHitMaker for %s and dump all hits into %s collection", fm.Name, fm.CollectionKey)
+            self.__recoAlgs.append( CaloHitMaker("CaloHitMaker", fm,
+                                                 OutputCollectionKey=fm.CollectionKey,
+                                                 HistogramPath=self.HistogramPath + '/' + fm.name(),
+                                                 OutputLevel=self.OutputLevel,
+                                                 ActiveEnergyOnly=self.ActiveEnergyOnly,
+                                                 BirksLaw=self.BirksLaw,
+                                                 AtlasHitTime=self.AtlasHitTime) )
+            self.OutputCollectionKeys.append(fm.CollectionKey)
 
         MSG_INFO(
             self,

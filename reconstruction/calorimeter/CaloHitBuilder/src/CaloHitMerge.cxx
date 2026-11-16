@@ -134,8 +134,13 @@ StatusCode CaloHitMerge::post_execute( EventContext &ctx ) const
                                     );
 
 
+      hit->setDualReadout( const_hit->dualReadout() );
       for ( int bcid = hit->bcid_start();  bcid <= hit->bcid_end(); ++bcid )
       {
+        if( const_hit->dualReadout() ){ // energy of each PMT (tile dual readout)
+          hit->edepPmt( 0, bcid, const_hit->edepPmt(0, bcid) );
+          hit->edepPmt( 1, bcid, const_hit->edepPmt(1, bcid) );
+        }
         hit->edep( bcid, const_hit->edep(bcid) ); // truth energy for each bunch crossing
         hit->tof ( bcid, const_hit->tof(bcid) );  // truth time for each bunch crossing 
                                                   // (in fact, this time is the time from the signal at the

@@ -34,5 +34,13 @@ class CaloSampling(EnumStringification):
     HEC1      = 14
     HEC2      = 15
     HEC3      = 16
+    # First sampling of the ATLAS-like HEC (--atlas-hec; not used by default). Outside the range of the others so that
+    # the hash (sampling + 17 side) 1e7 + segment 1e6 + bin stays unique (see enumeration.h).
+    HEC0      = 60
+    # The three modules of the ATLAS FCal with its cells (--atlas-fcal-cells; not used by default), one cell per tile of the
+    # ATLAS FCal, outside the range of the others for the same reason as HEC0 (see enumeration.h).
+    FCAL1     = 61
+    FCAL2     = 62
+    FCAL3     = 63
 
 

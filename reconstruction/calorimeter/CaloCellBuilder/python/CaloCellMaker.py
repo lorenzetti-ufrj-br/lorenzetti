@@ -31,6 +31,20 @@ class CaloCellMaker( Cpp ):
     self.setProperty( "Sampling"                , sampling.Sampling           )
     self.setProperty( "Segment"                 , sampling.sensitive().Segment)
     self.setProperty( "Detector"                , sampling.Detector           )
+    # Cells given by a table (ATLAS-like HEC, geometry/python/v1/HEC.py): the eta and delta eta of each cell, in the
+    # order of the hits. Only set when present (setProperty cannot convert an empty list); without them, the grid.
+    cells = getattr( sampling.sensitive(), "Cells", None )
+    if cells:
+      self.setProperty( "CellEta"               , [float(x) for x in cells["Eta"]]      )
+      self.setProperty( "CellDeltaEta"          , [float(x) for x in cells["DeltaEta"]] )
+    # Cells given one by one (the ATLAS FCal, geometry/python/v2/FCAL.py): local hash, centre and widths of each cell
+    tiles = getattr( sampling, "Tiles", None )
+    if tiles:
+      self.setProperty( "CellBin"               , [int(x) for x in tiles["Bin"]]        )
+      self.setProperty( "CellEta"               , [float(x) for x in tiles["Eta"]]      )
+      self.setProperty( "CellPhi"               , [float(x) for x in tiles["Phi"]]      )
+      self.setProperty( "CellDeltaEta"          , [float(x) for x in tiles["DeltaEta"]] )
+      self.setProperty( "CellDeltaPhi"          , [float(x) for x in tiles["DeltaPhi"]] )
     self.setProperty( "BunchIdStart"            , sampling.BunchIdStart       )
     self.setProperty( "BunchIdEnd"              , sampling.BunchIdEnd         )
     self.setProperty( "BunchDuration"           , 25                          )

@@ -25,6 +25,10 @@ bool CaloHitConverter::convert( const CaloHit *hit, CaloHit_t &hit_t )
     {
       hit_t.edep.push_back( hit->edep(bcid) );
       hit_t.tof.push_back ( hit->tof(bcid)  ); //
+      if( hit->dualReadout() ){
+        hit_t.edep_pmt0.push_back( hit->edepPmt(0, bcid) );
+        hit_t.edep_pmt1.push_back( hit->edepPmt(1, bcid) );
+      }
     }
 
     return true;
@@ -50,8 +54,13 @@ bool CaloHitConverter::convert( const CaloHit_t &hit_t, CaloHit *&hit )
                            hit_t.bcid_end );
 
   int pos=0;
+  if( !hit_t.edep_pmt0.empty() ) hit->setDualReadout(true);
   for ( int bcid = hit->bcid_start();  bcid <= hit->bcid_end(); ++bcid)
   {
+    if( !hit_t.edep_pmt0.empty() ){
+      hit->edepPmt( 0, bcid, hit_t.edep_pmt0.at(pos) );
+      hit->edepPmt( 1, bcid, hit_t.edep_pmt1.at(pos) );
+    }
     if(!hit_t.edep.empty())
       hit->edep( bcid, hit_t.edep.at(pos) ); // truth energy for each bunch crossing
     if(!hit_t.tof.empty())

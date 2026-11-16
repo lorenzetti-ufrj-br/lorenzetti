@@ -1,6 +1,8 @@
 
 #include "CaloCell/CaloCellContainer.h"
 #include "CaloCell/CaloDetDescriptorCollection.h"
+#include "CaloHit/CaloHitContainer.h"
+#include <unordered_set>
 
 #include "CaloCellMerge.h"
 #include "TVector3.h"
@@ -37,6 +39,7 @@ CaloCellMerge::CaloCellMerge( std::string name ) :
   declareProperty( "InputCollectionKeys"    , m_collectionKeys={}           );
   declareProperty( "OutputCellsKey"         , m_cellsKey="Cells"            );
   declareProperty( "OutputTruthCellsKey"    , m_truthCellsKey="TruthCells"  );
+  declareProperty( "InputHitsKey"           , m_hitsKey=""                  );
   declareProperty( "OutputLevel"            , m_outputLevel=1               );
 }
 
@@ -159,6 +162,29 @@ StatusCode CaloCellMerge::post_execute( EventContext &ctx ) const
 
     }// Loop over all descriptorCells
   }// Loop over all collections
+
+  // Hits with energy that no cell received (a hit and a cell are matched only by the hash): before, dropped in silence
+  if( !m_hitsKey.empty() ){
+    SG::ReadHandle<xAOD::CaloHitContainer> hits( m_hitsKey, ctx );
+    if( hits.isValid() ){
+      std::unordered_set<unsigned long int> cellHashes;
+      for ( auto key : m_collectionKeys ){
+        SG::ReadHandle<xAOD::CaloDetDescriptorCollection> collection( key, ctx );
+        if( !collection.isValid() ) continue;
+        for (const auto &pair : **collection.ptr() ) cellHashes.insert( pair.second->hash() );
+      }
+      unsigned nLost = 0; float eLost = 0;
+      for ( const auto& hit : **hits.ptr() ){
+        float e = 0;
+        for ( int bcid = hit->bcid_start(); bcid <= hit->bcid_end(); ++bcid ) e += hit->edep(bcid);
+        if( e <= 0 ) continue;
+        if( !cellHashes.count( hit->hash() ) ){ ++nLost; eLost += e; }
+      }
+      if( nLost > 0 )
+        MSG_WARNING( nLost << " hits with energy (" << eLost << " MeV in all) have no cell in the digitization and were dropped: "
+                     "use the same geometry options as in the simulation" );
+    }
+  }
 
   MSG_DEBUG( "All collections were merged into two CaloCellContainer" );
   return StatusCode::SUCCESS;
