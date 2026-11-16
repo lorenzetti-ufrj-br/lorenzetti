@@ -141,7 +141,7 @@ def _cellsFromRows(rows):
     for i, name in enumerate(names):
         eta, _ = _cellEta(boxes[name]); deta = _ticlDeltaEta(name)
         table['Names'].append(name); table['Eta'].append(round(eta, 5)); table['DeltaEta'].append(round(deta, 5))
-        # ATLAS identifier fields and area centroid in (r, z) of the cell (the centroid gives the ATLAS time, CaloHitMaker::tileTime)
+        # ATLAS identifier fields (free-running hits) and area centroid in (r, z) of the cell (the ATLAS time, CaloHitMaker::tileTime)
         section, tower, sampling = atlasTileIdFields(name)
         b = boxes[name]; area = sum((x[1]-x[0])*(x[3]-x[2]) for x in b)
         table['AtlasSection'].append(section); table['AtlasTower'].append(tower); table['AtlasSampling'].append(sampling)
@@ -210,7 +210,8 @@ def getAtlasTileCells(sampling_name, side=1, atlas_gap=False):
     return _cellsFromRows([(rmin, rmax, cells)])
 
 
-# ATLAS identifier fields (section, tower, sampling) of each ATLAS tile cell, kept in the cell table.
+# ATLAS identifier fields (section, tower, sampling) of each ATLAS tile cell, kept in the cell table and used by the free-running
+# hits of simu_trf.py.
 # Fields and allowed combinations from the public ATLAS identifier dictionary, Athena (Apache 2.0),
 # DetectorDescription/IdDictParser/data/IdDictTileCalorimeter.xml: section 1 = long barrel, 2 = extended barrel;
 # sampling 0 = A, 1 = BC (B in the extended barrel), 2 = D; tower = the 0.1 eta tower of the cell. Allowed (section, tower):
