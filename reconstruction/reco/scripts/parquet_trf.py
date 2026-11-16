@@ -8,7 +8,7 @@ from GaugiKernel import file_parallel_job, ComponentAccumulator, LoggingLevel
 from RootStreamBuilder import RootStreamAODReader, recordable, RootStreamParquetMaker
 
 
-@file_parallel_job(ntuple_name="", output_replace=(".AOD.root", ".parquet"))
+@file_parallel_job(ntuple_name="", output_replace=(".root", ".parquet"))
 def main(
     input_file: Annotated[str | Path, typer.Option("-i", "--input-file", help="The input file or folder to run the job.")],
     output_file: Annotated[str | Path, typer.Option("-o", "--output-file", help="The output file or folder.")],

@@ -116,8 +116,12 @@ def RootStreamHITReaderCfg(
     name: str = "RootStreamHITReader",
     InputFile: str = "",
     TreeName: str = "CollectionTree",
+    OutputHitsKey: str = "",
+    OutputEventKey: str = "",
+    OutputTruthKey: str = "",
+    OutputSeedsKey: str = "",
     OutputLevel: int = 0,
-    **_kwargs,
+    **kwargs,
 ) -> Configurable:
     """
     Auto-discovery reader preset for HIT files (compatible with legacy scripts).
@@ -126,7 +130,12 @@ def RootStreamHITReaderCfg(
         name=name,
         InputFile=InputFile,
         TreeName=TreeName,
+        OutputHitsKey=OutputHitsKey,
+        OutputEventKey=OutputEventKey,
+        OutputTruthKey=OutputTruthKey,
+        OutputSeedsKey=OutputSeedsKey,
         OutputLevel=OutputLevel,
+        **kwargs,
     )
 
 

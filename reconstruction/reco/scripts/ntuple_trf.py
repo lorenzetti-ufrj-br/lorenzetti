@@ -8,7 +8,7 @@ from GaugiKernel import file_parallel_job, ComponentAccumulator, LoggingLevel
 from RootStreamBuilder import RootStreamAODReader, recordable, RootStreamNtupleMaker
 
 
-@file_parallel_job(ntuple_name="physics", output_replace=(".AOD.", ".NTUPLE."))
+@file_parallel_job(ntuple_name="physics", output_replace=(".AOD", ".NTUPLE"))
 def main(
     input_file: Annotated[str | Path, typer.Option("-i", "--input-file", help="The input file or folder to run the job.")],
     output_file: Annotated[str | Path, typer.Option("-o", "--output-file", help="The output file or folder.")],

@@ -48,28 +48,27 @@ def main(
 
     pu_list = resolve_files(pileup_files)
 
-    acc = ComponentAccumulator("ComponentAccumulator", output_file)
-
     reader = RootStreamHITReader(
         "HITReader",
         InputFile=input_file,
-        OutputHitsKey=recordable("Hits"),
-        OutputEventKey=recordable("Events"),
+        OutputHitsKey="Hits_Signal",
+        OutputEventKey="Events_Signal",
         OutputTruthKey=recordable("Particles"),
         OutputSeedsKey=recordable("Seeds"),
         OutputLevel=outputLevel,
     )
-    reader.merge(acc)
+
+    acc = ComponentAccumulator("ComponentAccumulator", output_file, reader)
 
     pileup = CaloHitPileupMergeCfg(
         "CaloHitPileupMerge",
         PileupFiles=pu_list,
         PileupAvg=pileup_avg,
         PileupSigma=pileup_sigma,
-        InputHitsKey=recordable("Hits"),
-        InputEventKey=recordable("Events"),
-        OutputHitsKey="Hits_Merged",
-        OutputEventKey="Events_Merged",
+        InputHitsKey="Hits_Signal",
+        InputEventKey="Events_Signal",
+        OutputHitsKey=recordable("Hits"),
+        OutputEventKey=recordable("Events"),
         OutputLevel=outputLevel,
     )
     acc += pileup
@@ -77,8 +76,8 @@ def main(
     HIT = RootStreamHITMaker(
         "RootStreamHITMaker",
         ItemList=[
-            "EventInfoContainer#Events_Merged",
-            "CaloHitContainer#Hits_Merged",
+            "EventInfoContainer#Events",
+            "CaloHitContainer#Hits",
             "TruthParticleContainer#Particles",
             "SeedContainer#Seeds",
         ],

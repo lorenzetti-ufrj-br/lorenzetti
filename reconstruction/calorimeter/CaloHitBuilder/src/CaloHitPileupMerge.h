@@ -55,6 +55,7 @@ class CaloHitPileupMerge : public Gaugi::Algorithm
 
     std::string m_inputHitsKey;
     std::string m_outputHitsKey;
+    std::string m_pileupHitsKey;
     std::string m_inputEventKey;
     std::string m_outputEventKey;
 

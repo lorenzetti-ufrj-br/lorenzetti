@@ -10,7 +10,7 @@ from RootStreamBuilder import RootStreamHITReader, recordable, clear_recorded_it
 from geometry import DetectorConstruction_v1
 
 
-@file_parallel_job(ntuple_name="CollectionTree", output_replace=(".HIT.", ".ESD."))
+@file_parallel_job(ntuple_name="CollectionTree", output_replace=(".HIT", ".ESD"))
 def main(
     input_file: Annotated[str | Path, typer.Option("-i", "--input-file", help="Path to input HIT file or directory")],
     output_file: Annotated[str | Path, typer.Option("-o", "--output-file", help="Path to output ESD file or directory")],

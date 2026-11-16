@@ -12,7 +12,7 @@ from CaloRingsBuilder import CaloRingsBuilderCfg
 from EgammaBuilder import ElectronBuilderCfg
 
 
-@file_parallel_job(ntuple_name="CollectionTree", output_replace=(".ESD.", ".AOD."))
+@file_parallel_job(ntuple_name="CollectionTree", output_replace=(".ESD", ".AOD"))
 def main(
     input_file: Annotated[str | Path, typer.Option("-i", "--input-file", help="Path to input ESD file or directory")],
     output_file: Annotated[str | Path, typer.Option("-o", "--output-file", help="Path to output AOD file or directory")],

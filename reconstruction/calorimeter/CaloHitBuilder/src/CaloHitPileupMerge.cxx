@@ -31,6 +31,7 @@ CaloHitPileupMerge::CaloHitPileupMerge( std::string name ) :
 {
   declareProperty( "InputHitsKey"        , m_inputHitsKey="Hits"                 );
   declareProperty( "OutputHitsKey"       , m_outputHitsKey="Hits_Merged"         );
+  declareProperty( "PileupHitsKey"       , m_pileupHitsKey="Hits"                );
   declareProperty( "InputEventKey"       , m_inputEventKey="Events"              );
   declareProperty( "OutputEventKey"      , m_outputEventKey="Events_Merged"      );
   declareProperty( "OutputLevel"         , m_outputLevel=1                       );
@@ -201,7 +202,10 @@ float CaloHitPileupMerge::merge( EventContext &ctx, std::vector<xAOD::CaloHit*> 
 
   // 1. Activate only the branches needed for CaloHitContainer
   chain->SetBranchStatus("*", 0);
-  std::string branch_name = "CaloHitContainer_" + m_inputHitsKey;
+  std::string branch_name = "CaloHitContainer_" + (m_pileupHitsKey.empty() ? "Hits" : m_pileupHitsKey);
+  if (!chain->FindBranch(branch_name.c_str()) && chain->FindBranch("CaloHitContainer_Hits")) {
+    branch_name = "CaloHitContainer_Hits";
+  }
   chain->SetBranchStatus(branch_name.c_str(), 1);
   chain->SetBranchStatus((branch_name + ".*").c_str(), 1);
 

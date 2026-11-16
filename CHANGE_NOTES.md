@@ -17,6 +17,7 @@ This document details the major architectural enhancements, modernization effort
 9. [Active Persistence Registry & Stream Auto-Configuration (`recordable()`)](#9-active-persistence-registry--stream-auto-configuration-recordable)
 10. [Declarative Output Schema & Streamlined Reconstruction Stack](#10-declarative-output-schema--streamlined-reconstruction-stack)
 11. [Component Modernization: `Gaugi::Tool`, Pileup Migration & `CaloCellBuilder` Electronics](#11-component-modernization-gaugitool-pileup-migration--calocellbuilder-electronics)
+12. [End-to-End Simulation & Reconstruction Pipeline (`examples/run_reco_sequence.py`)](#12-end-to-end-simulation--reconstruction-pipeline-examplesrun_reco_sequencepy)
 
 ---
 
@@ -582,6 +583,29 @@ In legacy `master`:
 
 ---
 
+## 12. End-to-End Simulation & Reconstruction Pipeline (`examples/run_reco_sequence.py`)
+
+### Context & Implementation
+To demonstrate and validate the complete simulation, pileup overlay, and reconstruction lifecycle across all data tiers, an automated workflow runner was introduced in [`examples/run_reco_sequence.py`](file:///home/joao.pinto/git_repos/lorenzetti/examples/run_reco_sequence.py).
+
+The runner coordinates 3 execution phases:
+1. **Phase 1: MinBias Pileup Library**
+   - Event Generation (`gen_minbias.py`) producing 10 events split across 2 chunks (`minbias.EVT.0.root`, `minbias.EVT.1.root`).
+   - Calorimeter Simulation (`simu_trf.py`) with Geant4 multi-threading producing `minbias.HIT.0.root` and `minbias.HIT.1.root`.
+2. **Phase 2: Clean Hard-Scatter Signal**
+   - Full chain execution: `EVT -> HIT -> ESD -> AOD -> NTUPLE -> PARQUET` for clean $Z \to ee$ events across 2 parallel workers.
+3. **Phase 3: Pileup Superposition & Full Reconstruction**
+   - Overlaying MinBias pileup ($\langle \mu \rangle = 10$) onto Zee HITs (`merge_trf.py`).
+   - Digitization (`digit_trf.py`), Offline Reconstruction (`reco_trf.py`), Analysis Ntuple (`ntuple_trf.py`), and Columnar ML export (`parquet_trf.py`).
+
+### Key Enhancements & Interoperability Fixes
+- **Branch Decoupling in `CaloHitPileupMerge`:** Added `PileupHitsKey` property and automatic branch fallback (`CaloHitContainer_Hits`) so signal hit keys in `EventContext` (`Hits_Signal`) are decoupled from library branch names.
+- **`RootStreamHITReaderCfg` Key Forwarding:** Extended `RootStreamHITReaderCfg` in [`RootStreamReader.py`](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/io/RootStreamBuilder/python/RootStreamReader.py) to forward `OutputHitsKey`, `OutputEventKey`, `OutputTruthKey`, and `OutputSeedsKey` directly to `RootStreamReaderCfg`.
+- **Merged Filename Pattern Matching:** Updated `output_replace` rules in `digit_trf.py` (`.HIT` -> `.ESD`), `reco_trf.py` (`.ESD` -> `.AOD`), `ntuple_trf.py` (`.AOD` -> `.NTUPLE`), and `parquet_trf.py` (`.root` -> `.parquet`) to cleanly match both clean (`.HIT.`) and merged (`.HIT_Merged.`) files without breaking naming schemes.
+- **Pipeline Introspection & Resuming:** Added `--skip-existing` option to `run_reco_sequence.py` to bypass already-computed data tiers, plus Rich summary tables showing event counts and file sizes across all 13 output directories.
+
+---
+
 ## Summary of Benefits
 
 | Feature | `master` | `python_refactory` | Benefit |
@@ -597,4 +621,5 @@ In legacy `master`:
 | **Analysis Schema & Reco Stack** | Hardcoded branches, duplicate `RingsL0` & truth reco algs | Declarative `RootStreamSchema`, single-stack reco + MC matching, `print(acc)` tree | >60% faster reconstruction, flexible custom schemas, instant pipeline introspection |
 | **Simulation Hit Filtering** | Specialized `CaloHitBranchHandler` in I/O tier | Upstream in `CaloHitBuilder` (`CaloHitMerge`) | Removed `CaloHitBranchHandler.h` & `G4Kernel` dependency from I/O; reduced event RAM; ROOT & Parquet parity |
 | **Component Hierarchy & Pileup** | Legacy `AlgTool`, `PileupMerge` in `CaloCellBuilder`, dual low/high files, random I/O | Modern `Gaugi::Tool`, `CaloHitPileupMerge` with unified MinBias, `CaloHit::copy()`, RoI filter, sequential circular stream | Idiomatic C++ terminology; unified single-library pileup; fast RoI overlay; 10x-30x faster sequential prefetch streaming |
+| **End-to-End Workflow** | Fragmented manual shell commands | Executable `examples/run_reco_sequence.py` | Automated multi-worker, multi-threaded pipeline from EVT to Parquet with pileup overlay |
 
