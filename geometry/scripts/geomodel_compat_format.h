@@ -1,1 +1,0 @@
-../v2/scripts/geomodel_compat_format.h

@@ -27,7 +27,10 @@ def getTileBarrelCfg():
         List[Calorimeter]: A list of configured Calorimeter detector objects for the Tile Barrel.
     """
 
-    basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+    basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V1_DATA_DIR'),
+                                os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                                os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                     if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
 
     # TileCal 
     endcap_start = 3704.*mm
@@ -161,7 +164,10 @@ def getTileExtendedCfg(left_side=False):
     endcap_start = 3.704*m
     extended_barrel_start = endcap_start
     extended_barrel_zsize = 2.83*m
-    basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+    basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V1_DATA_DIR'),
+                                os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                                os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                     if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
     sign = -1 if left_side else 1
     side_name = 'B' if left_side else 'A'
 

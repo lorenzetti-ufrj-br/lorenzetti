@@ -18,7 +18,10 @@ def getLArEMECCfg(left_side=False):
 
     sign = -1 if left_side else 1
     side_name = 'B' if left_side else 'A'
-    basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+    basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V1_DATA_DIR'),
+                                os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                                os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                     if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
 
     endcap_start    = 3704.*mm
     ps_endcap_start = endcap_start + 31*mm

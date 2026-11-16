@@ -1,1 +1,0 @@
-../v2/scripts/atlas_run4_check_cells.py

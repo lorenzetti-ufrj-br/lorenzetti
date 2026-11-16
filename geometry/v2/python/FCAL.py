@@ -144,7 +144,12 @@ class AtlasFcalModule:
     OFWeightsEnergy = [-0.0000853580,    0.265132,    0.594162,     0.389505,     0.124353]
     OFWeightsTime   = [-0.0000853580,   -12.870312690734863, -27.39136505126953, 8.075883865356445, 13.768877029418945]
     @property
-    def Shaper( self ): return os.environ['LORENZETTI_GEOMETRY_DATA_DIR'] + "/pulseLar.dat"
+    def Shaper( self ):
+        basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR'),
+                                    os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                                    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                         if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+        return os.path.join(basepath, "pulseLar.dat")
     # the simulation keeps no noise in the time of flight selection of the hits (CaloHitMaker SamplingNoiseStd)
     Noise = 0
     # for CaloCellMaker.py: the z of the module

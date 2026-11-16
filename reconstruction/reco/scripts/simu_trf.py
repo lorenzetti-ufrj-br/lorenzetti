@@ -17,7 +17,8 @@ from GaugiKernel.constants import MINUTES
 from G4Kernel import EventReader, ComponentAccumulator
 from RootStreamBuilder import recordable, clear_recorded_items, RootStreamHITMaker
 from CaloHitBuilder import CaloHitBuilder
-from geometry import DetectorConstruction_v1, DetectorConstruction_v2
+from geometry.v1 import DetectorConstruction_v1
+from geometry.v2 import DetectorConstruction_v2
 
 
 @file_parallel_job(ntuple_name="CollectionTree", output_replace=(".EVT.", ".HIT."))

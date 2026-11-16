@@ -198,17 +198,32 @@ class DetectorConstruction_v2( Cpp ):
       self.volumes.extend( getAtlasFcalCfg(cells=AtlasFcalCells) )
     if AtlasFcalCells:
       if not AtlasFcalElectrodes:
-        raise ValueError("AtlasFcalCells needs the file of the FCal electrodes (AtlasFcalElectrodes).")
+        _local_v2_data = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+        for _candidate_dir in (os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR'),
+                               os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                               _local_v2_data):
+          if _candidate_dir and os.path.exists(os.path.join(_candidate_dir, 'LArFCalElectrodes-06.csv')):
+            AtlasFcalElectrodes = os.path.join(_candidate_dir, 'LArFCalElectrodes-06.csv')
+            break
+        if not AtlasFcalElectrodes:
+          raise ValueError("AtlasFcalCells needs the file of the FCal electrodes (AtlasFcalElectrodes).")
       self.mixtures.update( ATLAS_FCAL_CELL_MATERIALS )
       self.fcal_modules = getAtlasFcalCellsCfg( AtlasFcalElectrodes )
     # Frozen showers of the ATLAS FCal (needs AtlasFcalCells; geometry/src/FCalFrozenShowerModel.h; F41 conserto 23), with the libraries
-    # of the directory AtlasFcalShowerLibDir (default geometry/data/LArG4ShowerLibData/MC23_v1, those of the Athena release 23.0.14)
+    # of the directory AtlasFcalShowerLibDir (default geometry/v2/data/LArG4ShowerLibData/MC23_v1, those of the Athena release 23.0.14)
     if AtlasFcalFrozenShowers and not AtlasFcalCells:
       raise ValueError("AtlasFcalFrozenShowers needs AtlasFcalCells.")
     self.setProperty( "FCalFrozenShowers", AtlasFcalFrozenShowers )
     if AtlasFcalFrozenShowers:
       import os
-      libdir = AtlasFcalShowerLibDir or os.path.join( os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR', ''), 'LArG4ShowerLibData', 'MC23_v1' )
+      _local_v2_data = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+      _default_libdir = os.path.join(_local_v2_data, 'LArG4ShowerLibData', 'MC23_v1')
+      for _candidate_dir in (os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR'),
+                             os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR')):
+        if _candidate_dir and os.path.exists(os.path.join(_candidate_dir, 'LArG4ShowerLibData', 'MC23_v1')):
+          _default_libdir = os.path.join(_candidate_dir, 'LArG4ShowerLibData', 'MC23_v1')
+          break
+      libdir = AtlasFcalShowerLibDir or _default_libdir
       self.setProperty( "FCalShowerLibDir", libdir )
     # Volumes of the ATLAS-like EMEC (radial bands and steps of the two wheels); their cells come from the samplings.
     if AtlasEmec:

@@ -34,7 +34,10 @@ def getHECCfg(left_side=False, atlas_hec=False):
     sign = -1 if left_side else 1
     side_name = 'B' if left_side else 'A'
     
-    basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+    basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR'),
+                                os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                                os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                     if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
     hec_start = 4262*mm
 
     #
@@ -382,7 +385,10 @@ def getAtlasHecPassiveCfg(left_side=False):
 def _getAtlasHecCfg(left_side=False):
     sign = -1 if left_side else 1
     side_name = 'B' if left_side else 'A'
-    basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+    basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR'),
+                                os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                                os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                     if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
     zb = atlasHecBlockZ()
     # front-end parameters (HEC0 takes those of HEC1, see above)
     noise = [250*MeV, 250*MeV, 400*MeV, 250*MeV]

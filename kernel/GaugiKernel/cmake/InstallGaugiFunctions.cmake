@@ -9,20 +9,32 @@ endfunction(gaugi_initialize)
 
 
 function(gaugi_install_python_modules filepath module)
+  get_filename_component(module_dir ${module} DIRECTORY)
+  if(module_dir)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/python/${module_dir})
+  endif()
   message(STATUS "${filepath} -> ${CMAKE_BINARY_DIR}/python/${module}")
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${CMAKE_BINARY_DIR}/python/${module})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${CMAKE_BINARY_DIR}/python/${module})
 endfunction(gaugi_install_python_modules)
 
 
 function(gaugi_install_scripts_modules filepath module)
+  get_filename_component(module_dir ${module} DIRECTORY)
+  if(module_dir)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/scripts/${module_dir})
+  endif()
   message(STATUS "${filepath} -> ${CMAKE_BINARY_DIR}/scripts/${module}")
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${CMAKE_BINARY_DIR}/scripts/${module})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${CMAKE_BINARY_DIR}/scripts/${module})
 endfunction(gaugi_install_scripts_modules)
 
 
 function(gaugi_install_data_modules filepath module)
+  get_filename_component(module_dir ${module} DIRECTORY)
+  if(module_dir)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/data/${module_dir})
+  endif()
   message(STATUS "${filepath} -> ${CMAKE_BINARY_DIR}/data/${module}")
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${CMAKE_BINARY_DIR}/data/${module})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${CMAKE_BINARY_DIR}/data/${module})
 endfunction(gaugi_install_data_modules)
 
 

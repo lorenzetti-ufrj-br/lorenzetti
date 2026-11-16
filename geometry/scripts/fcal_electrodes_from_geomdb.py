@@ -1,1 +1,0 @@
-../v2/scripts/fcal_electrodes_from_geomdb.py

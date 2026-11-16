@@ -11,43 +11,32 @@ The `geometry/` package manages detector geometries for the **Lorenzetti** simul
 
 ```text
 geometry/
-├── CMakeLists.txt              # Top-level geometry orchestrator
+├── CMakeLists.txt              # Top-level geometry orchestrator (add_subdirectory v1 & v2)
 ├── README.md                   # This overview file
-├── python/                     # Unified facade for backward compatibility
-│   ├── __init__.py             # Re-exports DetectorConstruction_v1 and v2
-│   ├── v1 -> ../v1/python      # Symlink to v1 Python package
-│   └── v2 -> ../v2/python      # Symlink to v2 Python package
-├── data/                       # Unified symlinks for data resolution
-├── scripts/                    # Unified symlinks for scripts
 ├── v1/                         # Self-contained Classical Detector Package
-│   ├── README.md
-│   ├── CMakeLists.txt
-│   ├── v1/
-│   ├── src/
-│   ├── python/
-│   ├── data/
-│   ├── scripts/
-│   └── doc/
+│   ├── README.md               # v1 comprehensive documentation
+│   ├── CMakeLists.txt          # Library geometry_v1
+│   ├── v1/                     # Public C++ headers
+│   ├── src/                    # C++ implementations & LinkDef.h
+│   ├── python/                 # geometry.v1 Python modules
+│   ├── data/                   # Pulse files (pulseLar.dat, pulseTile.dat)
+│   ├── scripts/                # Visualization scripts (run_vis.py)
+│   └── doc/                    # Visual diagrams and views
 └── v2/                         # Self-contained ATLAS Run 4 Package
-    ├── README.md
-    ├── CMakeLists.txt
-    ├── v2/
-    ├── src/
-    ├── python/
-    ├── data/
-    └── scripts/
+    ├── README.md               # v2 comprehensive documentation
+    ├── CMakeLists.txt          # Library geometry_v2
+    ├── v2/                     # Public C++ headers
+    ├── src/                    # C++ implementations & LinkDef.h
+    ├── python/                 # geometry.v2 Python modules
+    ├── data/                   # FCal electrodes, ShowerLib, and pulse files
+    └── scripts/                # GeoModel and cell check scripts
 ```
 
 ---
 
 ## Python API Usage
 
-You can import either from the top-level facade:
-```python
-from geometry import DetectorConstruction_v1, DetectorConstruction_v2
-```
-
-Or directly from the respective version submodule:
+Import directly from the respective version subpackage:
 ```python
 from geometry.v1 import DetectorConstruction_v1
 from geometry.v2 import DetectorConstruction_v2

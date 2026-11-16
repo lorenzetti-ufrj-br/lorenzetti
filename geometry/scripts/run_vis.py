@@ -1,1 +1,0 @@
-../v1/scripts/run_vis.py

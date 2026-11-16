@@ -5,16 +5,16 @@ the shift of its subsystem (ATLAS_ENDCAP_SIM_SHIFT), away from the interaction p
 Usage (inside the Lorenzetti environment): python3 atlas_run4_check_cells.py <GeoModel dump of the Run 4 simulation> <field map>
 Exit code 0 when all checks pass.
 """
-import os, sys, math
-from geometry import DetectorConstruction_v1
-from geometry.v1.AtlasRun4 import ATLAS_ENDCAP_SIM_SHIFT
+from geometry.v2 import DetectorConstruction_v2
+from geometry.v2.AtlasRun4 import ATLAS_ENDCAP_SIM_SHIFT
 
+_data_dir = os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR') or os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR') or os.path.join(os.path.dirname(__file__), '..', 'data')
 kw = dict( UseSolenoidField=True, TileAtlasGeometry=True, TileAtlasCells=True, AtlasMaterialInFront=True, TileAtlasItc=True,
            AtlasEmb=True, AtlasEmbCells=True, AtlasHec=True, AtlasEmec=True, AtlasFcal=True, AtlasFcalCells=True,
-           AtlasFcalElectrodes=os.path.join( os.environ['LORENZETTI_GEOMETRY_DATA_DIR'], 'LArFCalElectrodes-06.csv' ),
+           AtlasFcalElectrodes=os.path.join( _data_dir, 'LArFCalElectrodes-06.csv' ),
            AtlasFcalFrozenShowers=True, AtlasG4=True, TileAtlasGap=True, AtlasEndcapCryostat=True, AtlasBarrelCryostat=True )
-nominal = DetectorConstruction_v1( "ATLAS", **kw )
-run4    = DetectorConstruction_v1( "ATLAS", **kw, AtlasRun4=True, AtlasRun4Geometry=sys.argv[1], AtlasFieldMap=sys.argv[2] )
+nominal = DetectorConstruction_v2( "ATLAS", **kw )
+run4    = DetectorConstruction_v2( "ATLAS", **kw, AtlasRun4=True, AtlasRun4Geometry=sys.argv[1], AtlasFieldMap=sys.argv[2] )
 
 def shift_of( name ):
     for prefix, shift in ATLAS_ENDCAP_SIM_SHIFT.items():

@@ -23,7 +23,10 @@ def getLArBarrelCfg():
   """
 
 
-  basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+  basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V1_DATA_DIR'),
+                              os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                              os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                   if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
 
   # ECal
   ecal_barrel_start = 0*m

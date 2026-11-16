@@ -37,7 +37,10 @@ def getLArBarrelCfg(atlas_emb=False, atlas_emb_cells=False):
   if atlas_emb_cells and not atlas_emb:
     raise ValueError("atlas_emb_cells needs atlas_emb.")
 
-  basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+  basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR'),
+                              os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                              os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                   if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
 
   # ECal
   ecal_barrel_start = 0*m
@@ -313,7 +316,10 @@ def atlasEmbCells(sampling, region, side=1):
 
 def _getAtlasEmbCellsCfg():
     """Hit makers of the ATLAS-like barrel: [emb1, emb2, emb3], lists of Calorimeter, two sides each (see above)."""
-    basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+    basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR'),
+                                os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                                os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                     if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
     noise = {1: 26*MeV, 2: 60*MeV, 3: 40*MeV}           # those of the default EMB1-3
     sampling_enum = {1: CaloSampling.EMB1, 2: CaloSampling.EMB2, 3: CaloSampling.EMB3}
     abso153 = (1.53 + 0.4 + 0.832)*mm
@@ -428,7 +434,10 @@ def _slab(name, plates, material, rmin, rmax, z0, z1, color='gray', dead=True):
 
 
 def _presamplerCalorimeter(pv, sign, side_name, sampling, eta0, ncells, emb_mode, key, noise):
-    basepath = os.environ['LORENZETTI_GEOMETRY_DATA_DIR']
+    basepath = next((p for p in (os.environ.get('LORENZETTI_GEOMETRY_V2_DATA_DIR'),
+                                os.environ.get('LORENZETTI_GEOMETRY_DATA_DIR'),
+                                os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
+                     if p and os.path.isdir(p)), os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
     deta = 0.025
     # ATLAS identifier (F41 conserto 19): barrel presampler = LArEM barrel_ec +-1, end-cap presampler = +-2; sampling 0,
     # region 0, eta index 0 to ncells - 1
