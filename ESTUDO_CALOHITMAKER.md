@@ -353,36 +353,352 @@ Essa separação garante que o `GeoV1` funcione como um modelo rápido, idealiza
 
 ---
 
-## 6. Diagnóstico Arquitetural e Recomendações Futuras
+## 6. Diagnóstico Arquitetural: O Problema da Classe Monolítica
 
-### O Problema da Classe Monolítica
-Embora a unificação em `CaloHitMaker` tenha sido conveniente para consolidar os desenvolvimentos dos PRs #18 e #19, o algoritmo assumiu uma densidade excessiva de responsabilidades:
-- Conhece a geometria interna e contornos de 5 detectores completamente distintos (Tile, EMB, EMEC, HEC e FCAL).
-- Executa integração de hits regulares, leitura dupla, temporização óptica, simulação rápida (frozen showers), transporte de carga eletrostática e serialização de ntuplas do Athena.
-- Possui 1.700 linhas de C++ com ramos condicionais complexos em `execute()`.
+A incorporação dos desenvolvimentos dos PRs #18 e #19 no `CaloHitMaker` consolidou simulações de alta fidelidade física, mas ao custo de introduzir forte débito técnico:
 
-### Recomendações de Refatoração (Próximas Etapas)
-1. **Padrão Strategy / Tool para Identificação de Células**:
-   Extrair a lógica de mapeamento espacial para AlgTools especializadas:
-   - `TileCellIdentifierTool`
-   - `LArAccordionIdentifierTool`
-   - `EmecCompartmentIdentifierTool`
-   - `FCalTubeIdentifierTool`
-2. **Separação de Algoritmos por Tecnologia**:
-   Criar algoritmos específicos derivados de uma classe base comum:
-   - `CaloHitMaker` (geral / GeoV1)
-   - `TileHitMaker` (leitura dupla, atrasos de PMT)
-   - `FCalHitMaker` (eletrodos e chuveiros congelados)
-3. **Isolamento da Coleção de Carga**:
-   Manter a integração com o `EnergyCalculator` do EMEC encapsulada em uma ferramenta de física dedicada, despoluindo o loop principal de processamento de passos do Geant4.
+1. **Violação do Princípio da Responsabilidade Única (SRP)**:
+   O algoritmo acumula atualmente:
+   - Seleção geométrica e envelopes para 5 subsistemas distintos (Tile, EMB, EMEC, HEC, FCAL).
+   - Modelagem de física de ionização e recombinação (Lei de Birks).
+   - Eletrostática e cálculo de corrente de choque/deriva (coleção de carga portada do Athena via `LArG4EC`).
+   - Óptica de cintiladores e propagação em fibras ópticas com matrizes empíricas U-shape (`TileUShape.h`).
+   - Simulação rápida parametrizada (*frozen showers* do FCAL sem geometria Geant4).
+   - Formatação e escrita de identificadores compactos de 64 bits para o formato do Athena (*free-running hits*).
+2. **Violação do Princípio Aberto/Fechado (OCP)**:
+   Qualquer alteração em um subsistema específico (ex.: atualizar tabelas de alta tensão do EMEC ou mudar a partição do Tile) obriga a reabrir e recompilar o arquivo central `CaloHitMaker.cxx` de 1.700 linhas.
+3. **Acoplamento Indesejado de Dependências**:
+   O `CaloHitMaker` (que deveria pertencer puramente à camada de reconstrução/digitalização genérica) passou a depender diretamente de cabeçalhos de simulação detalhada do ATLAS, mapas estáticos de campos e dados de calibração do `GeoV2`.
 
 ---
 
-## 7. Conclusão
+## 7. Proposta de Arquitetura Modular Baseada em `GAUGI::Tool`
 
-O `CaloHitMaker` passou de um simples registrador de energia em grade cilíndrica uniforme para um sofisticado motor de digitalização de calorimetria.
+Para tornar o `CaloHitMaker` limpo, altamente desacoplado e extensível, propõe-se uma arquitetura baseada no padrão **Strategy / Injeção de Dependência** utilizando componentes nativos **`Gaugi::Tool`** (disponíveis em `GaugiKernel/Tool.h`).
 
-- As funcionalidades de **correção física universal** (verificação no ponto médio do passo, saturação pela Lei de Birks, filtro de materiais ativos e tempo de voo básico) aplicam-se a **`GeoV1` e `GeoV2`**.
-- As funcionalidades de **alta fidelidade geométrica** (células Tile em caixas $(r, z)$, U-shape dual readout, segmentação do acordeão EMB, compartimentos do EMEC, eletrodos do FCAL, chuveiros congelados, mapas de campo eletrostático e hits free-running) são de uso **exclusivo do `GeoV2`**.
+### 7.1. Visão Geral da Arquitetura
 
-O estudo confirma que a refatoração recente dos pacotes em `GeoBase`, `GeoV1` e `GeoV2` preserva a compatibilidade do `CaloHitMaker`, permitindo que simulações rápidas em `GeoV1` continuem operando de forma limpa enquanto simulações de alta precisão em `GeoV2` usufruem do suporte analítico completo do ATLAS.
+Nesta abordagem:
+1. O **`CaloHitMaker`** atua estritamente como um **algoritmo orquestrador enxuto** (menos de 200 linhas de código C++).
+2. **Todas as adaptações de energia e mapeamentos espaciais exclusivos do `GeoV2` (ou compartilhados com `GeoV1`) são encapsulados em `Gaugi::Tool` especializadas**.
+3. A configuração em Python (`CaloHitBuilder.py`) monta o pipeline de ferramentas de forma dinâmica conforme o detector e a versão (`v1` ou `v2`).
+
+```mermaid
+flowchart TD
+    Step["G4Step (Passo do Geant4)"] --> Maker["CaloHitMaker (Gaugi::Algorithm Enxuto)"]
+    
+    subgraph S1 ["1. Identificação Geométrica"]
+        Maker --> ToolGeom["ICaloCellIdentifierTool"]
+        ToolGeom -.-> GridTool["CaloGridCellTool (GeoV1/V2 simples)"]
+        ToolGeom -.-> TileBoxTool["TileBoxCellTool (GeoV2 Tile)"]
+        ToolGeom -.-> EmbAccTool["LArAccordionTool (GeoV2 EMB)"]
+        ToolGeom -.-> EmecCompTool["LArEmecCompartmentTool (GeoV2 EMEC)"]
+        ToolGeom -.-> FcalElecTool["LArFCalElectrodeTool (GeoV2 FCAL)"]
+    end
+
+    subgraph S2 ["2. Adaptação / Modificação de Energia"]
+        Maker --> ToolEnergy["ICaloEnergyModifierTool"]
+        ToolEnergy -.-> BirksTool["CaloBirksLawTool (GeoV1/V2)"]
+        ToolEnergy -.-> EmecChargeTool["LArEmecChargeCollectionTool (GeoV2 EMEC)"]
+        ToolEnergy -.-> TileSplitTool["TileDualReadoutSplitTool (GeoV2 Tile)"]
+    end
+
+    subgraph S3 ["3. Temporização & TOF"]
+        Maker --> ToolTime["ICaloTimeCorrectionTool"]
+        ToolTime -.-> TofTool["CaloTofCorrectionTool (GeoV1/V2)"]
+        ToolTime -.-> TilePropTool["TilePmtPropagationTimeTool (GeoV2 Tile)"]
+    end
+
+    subgraph S4 ["4. Registro & Persistência"]
+        Maker --> ToolRec["ICaloHitRecorderTool"]
+        ToolRec -.-> StdHitRec["CaloStandardHitRecorderTool (xAOD::CaloHit)"]
+        ToolRec -.-> FreeRunRec["CaloFreeRunningHitRecorderTool (Athena Tree)"]
+    end
+```
+
+---
+
+### 7.2. Definição das Interfaces das Ferramentas (`ITool`)
+
+As ferramentas implementam interfaces C++ claras derivadas de `Gaugi::Tool`:
+
+#### A. Interface de Identificação de Células (`ICaloCellIdentifierTool`)
+Responsável por determinar a célula sensível a partir da posição espacial ou de volumes do Geant4.
+
+```cpp
+// reconstruction/calorimeter/CaloHitBuilder/CaloHitBuilder/ICaloCellIdentifierTool.h
+#ifndef ICaloCellIdentifierTool_h
+#define ICaloCellIdentifierTool_h
+
+#include "GaugiKernel/Tool.h"
+#include "G4Step.hh"
+
+struct CellIdentification {
+  bool isValid = false;
+  int etaBin = -1;
+  int phiBin = -1;
+  unsigned long int hash = 0;
+  float cellEta = 0.0f;
+  float cellPhi = 0.0f;
+  int specialNPmt = 2;       // Para módulos especiais do Tile (C10, E1-E4, D4->D5)
+  bool isReplaced = false;    // Redirecionamento de célula (ex: D4 -> D5)
+};
+
+class ICaloCellIdentifierTool : public Gaugi::Tool {
+public:
+  virtual StatusCode preExecute( SG::EventContext &ctx, xAOD::CaloHitCollection *collection ) const = 0;
+  virtual CellIdentification identify( const G4Step *step ) const = 0;
+};
+
+#endif
+```
+
+#### B. Interface de Adaptação de Energia (`ICaloEnergyModifierTool`)
+Responsável por aplicar correções de física de ionização, atenuação óptica ou eletrostática na energia depositada.
+
+```cpp
+// reconstruction/calorimeter/CaloHitBuilder/CaloHitBuilder/ICaloEnergyModifierTool.h
+#ifndef ICaloEnergyModifierTool_h
+#define ICaloEnergyModifierTool_h
+
+#include "GaugiKernel/Tool.h"
+#include "G4Step.hh"
+
+class ICaloEnergyModifierTool : public Gaugi::Tool {
+public:
+  /*! Modifica a energia depositada com base no passo e na identificação da célula */
+  virtual float modifyEnergy( const G4Step *step, const CellIdentification &cell, float currentEnergy ) const = 0;
+};
+
+#endif
+```
+
+#### C. Interface de Correção Temporal (`ICaloTimeCorrectionTool`)
+Calcula os tempos de resposta física e atrasos de canais (ex.: PMTs).
+
+```cpp
+// reconstruction/calorimeter/CaloHitBuilder/CaloHitBuilder/ICaloTimeCorrectionTool.h
+#ifndef ICaloTimeCorrectionTool_h
+#define ICaloTimeCorrectionTool_h
+
+#include "GaugiKernel/Tool.h"
+#include "G4Step.hh"
+
+struct CellTiming {
+  float tHit = 0.0f;       // Tempo representativo para bunch crossing
+  float tPmt0 = 0.0f;      // Tempo do PMT 0 (com atraso óptico)
+  float tPmt1 = 0.0f;      // Tempo do PMT 1 (com atraso óptico)
+  double tGlobal = 0.0;    // Tempo global absoluto (Geant4)
+};
+
+class ICaloTimeCorrectionTool : public Gaugi::Tool {
+public:
+  virtual CellTiming computeTime( const G4Step *step, const CellIdentification &cell ) const = 0;
+};
+
+#endif
+```
+
+#### D. Interface de Registro de Hits (`ICaloHitRecorderTool`)
+Gerencia o acúmulo no hit padrão `xAOD::CaloHit` e/ou a formatação para o ntupla de HITS do Athena.
+
+```cpp
+// reconstruction/calorimeter/CaloHitBuilder/CaloHitBuilder/ICaloHitRecorderTool.h
+#ifndef ICaloHitRecorderTool_h
+#define ICaloHitRecorderTool_h
+
+#include "GaugiKernel/Tool.h"
+#include "G4Step.hh"
+
+class ICaloHitRecorderTool : public Gaugi::Tool {
+public:
+  virtual StatusCode record( SG::EventContext &ctx, const G4Step *step,
+                             const CellIdentification &cell, float energy,
+                             const CellTiming &timing ) const = 0;
+};
+
+#endif
+```
+
+---
+
+### 7.3. Catálogo de Ferramentas: Alocação e Escopo
+
+Com esta estrutura, as implementações são desacopladas por responsabilidade e empacotadas de forma limpa:
+
+| Ferramenta Proposta | Interface Base | Pacote Sugerido | Escopo | Descrição da Responsabilidade |
+| :--- | :--- | :--- | :---: | :--- |
+| **`CaloGridCellTool`** | `ICaloCellIdentifierTool` | `CaloHitBuilder` | **GeoV1 e GeoV2** | Mapeamento padrão em grade uniforme $(\eta, \phi)$ por busca binária (`find`). |
+| **`TileBoxCellTool`** | `ICaloCellIdentifierTool` | `GeoV2` / `CaloHitBuilder` | **Exclusivo GeoV2** | Mapeamento em caixas $(r, z)$, tratamento de módulos especiais (C10, E1-E4) e reposição D4 $\rightarrow$ D5. |
+| **`LArAccordionTool`** | `ICaloCellIdentifierTool` | `GeoV2` / `CaloHitBuilder` | **Exclusivo GeoV2** | Segmentação do acordeão do EMB (`SampSeg`), corte de fiducialidade e presampler (`psbGapCell`). |
+| **`LArEmecCompartmentTool`** | `ICaloCellIdentifierTool` | `GeoV2` / `CaloHitBuilder` | **Exclusivo GeoV2** | Segmentação das rodas interna/externa do EMEC em 11 compartimentos com planos $Z$ e foco elétrico. |
+| **`LArHecModuleTool`** | `ICaloCellIdentifierTool` | `GeoV2` / `CaloHitBuilder` | **Exclusivo GeoV2** | Projeção em módulos em cunha do HEC ($r \cos(\phi - \phi_c)$). |
+| **`LArFCalElectrodeTool`** | `ICaloCellIdentifierTool` | `GeoV2` / `CaloHitBuilder` | **Exclusivo GeoV2** | Associação por número de cópia do gap de eletrodos e matriz 2D de tubos para *frozen showers*. |
+| **`CaloBirksLawTool`** | `ICaloEnergyModifierTool` | `CaloHitBuilder` | **GeoV1 e GeoV2** | Aplica saturação de Birks para cintilador plástico e LAr (com correção HIP). |
+| **`LArEmecChargeCollectionTool`** | `ICaloEnergyModifierTool` | `GeoV2` | **Exclusivo GeoV2** | Encapsula `LArG4::EC::EnergyCalculator`, mapa de campo `ec.fieldzv03`, mapa HV e bisseção azimutal. |
+| **`TileDualReadoutSplitTool`** | `ICaloEnergyModifierTool` | `GeoV2` | **Exclusivo GeoV2** | Calcula partição de energia $w_0$ e $w_1$ entre PMTs usando perfis U-shape ou linear. |
+| **`CaloTofCorrectionTool`** | `ICaloTimeCorrectionTool` | `CaloHitBuilder` | **GeoV1 e GeoV2** | Subtração padrão do tempo de voo $r/c$ do tempo global do Geant4. |
+| **`TilePmtPropagationTimeTool`** | `ICaloTimeCorrectionTool` | `GeoV2` | **Exclusivo GeoV2** | Calcula a propagação óptica nas telhas e fibras ($n = 1{,}59$) e atrasos $dt_{\text{Up}}$ e $dt_{\text{Down}}$. |
+| **`CaloStandardHitRecorderTool`**| `ICaloHitRecorderTool` | `CaloHitBuilder` | **GeoV1 e GeoV2** | Recupera o `xAOD::CaloHit` da coleção do StoreGate e acumula a energia no bunch crossing correspondente. |
+| **`CaloFreeRunningHitRecorderTool`**| `ICaloHitRecorderTool`| `GeoV2` | **Exclusivo GeoV2** | Empacota identificadores ATLAS de 64 bits e alimenta a lista `CaloFreeRunningHitList`. |
+
+> [!NOTE]
+> Observa-se que ferramentas pesadas que dependem de bibliotecas de simulação do ATLAS (como `LArEmecChargeCollectionTool`, que requer `LArG4EC`) podem residir **diretamente no pacote `GeoV2`**, eliminando qualquer dependência desnecessária entre `CaloHitBuilder` e `GeoV2`.
+
+---
+
+### 7.4. O Novo `CaloHitMaker` Enxuto (Código C++ Ilustrativo)
+
+Com a delegação de responsabilidades para as `Gaugi::Tool`, a classe `CaloHitMaker` passa a ter a seguinte estrutura limpa e direta:
+
+```cpp
+// reconstruction/calorimeter/CaloHitBuilder/CaloHitBuilder/CaloHitMaker.h (Proposta Refatorada)
+#ifndef CaloHitMaker_h
+#define CaloHitMaker_h
+
+#include "GaugiKernel/Algorithm.h"
+#include "CaloHitBuilder/ICaloCellIdentifierTool.h"
+#include "CaloHitBuilder/ICaloEnergyModifierTool.h"
+#include "CaloHitBuilder/ICaloTimeCorrectionTool.h"
+#include "CaloHitBuilder/ICaloHitRecorderTool.h"
+
+class CaloHitMaker : public Gaugi::Algorithm {
+public:
+  CaloHitMaker( std::string name );
+  virtual ~CaloHitMaker() = default;
+
+  virtual StatusCode initialize() override;
+  virtual StatusCode pre_execute( SG::EventContext &ctx ) const override;
+  virtual StatusCode execute( SG::EventContext &ctx, const G4Step *step ) const override;
+  virtual StatusCode post_execute( SG::EventContext &ctx ) const override;
+  virtual StatusCode finalize() override;
+
+private:
+  bool passFilter( const G4Step *step ) const;
+
+  // Propriedades básicas de envelope
+  float m_rMin, m_rMax, m_zMin, m_zMax;
+  bool  m_activeEnergyOnly;
+  std::string m_collectionKey;
+
+  // Ferramentas plugáveis via Gaugi::Tool
+  Gaugi::ToolHandle<ICaloCellIdentifierTool>             m_cellIdentifier;
+  std::vector<Gaugi::ToolHandle<ICaloEnergyModifierTool>> m_energyModifiers;
+  Gaugi::ToolHandle<ICaloTimeCorrectionTool>             m_timeCorrection;
+  std::vector<Gaugi::ToolHandle<ICaloHitRecorderTool>>    m_hitRecorders;
+};
+
+#endif
+```
+
+E o método central de execução reduz-se a:
+
+```cpp
+// reconstruction/calorimeter/CaloHitBuilder/src/CaloHitMaker.cxx (Proposta Refatorada)
+StatusCode CaloHitMaker::execute( SG::EventContext &ctx, const G4Step *step ) const
+{
+  // 1. Filtro rápido de material e envelope no ponto médio do passo
+  if( !passFilter(step) ) return StatusCode::SUCCESS;
+
+  // 2. Mapeamento da célula sensível (resolvido pela Tool de geometria)
+  CellIdentification cell = m_cellIdentifier->identify(step);
+  if( !cell.isValid ) return StatusCode::SUCCESS;
+
+  // 3. Aplicação em cadeia de modificações de energia (Birks, Charge Collection, Partição)
+  float edep = step->GetTotalEnergyDeposit() * (step->GetTrack() ? step->GetTrack()->GetWeight() : 1.0);
+  for( const auto &modTool : m_energyModifiers ){
+    edep = modTool->modifyEnergy(step, cell, edep);
+  }
+  if( edep <= 0.0f ) return StatusCode::SUCCESS;
+
+  // 4. Temporização e Bunch Crossing (resolvido pela Tool de tempo)
+  CellTiming timing = m_timeCorrection ? m_timeCorrection->computeTime(step, cell)
+                                       : CellTiming{ (float)(step->GetPreStepPoint()->GetGlobalTime()/ns) };
+
+  // 5. Gravação em Hits (Hit padrão xAOD e/ou Free-Running ntuple)
+  for( const auto &recTool : m_hitRecorders ){
+    recTool->record(ctx, step, cell, edep, timing);
+  }
+
+  return StatusCode::SUCCESS;
+}
+```
+
+---
+
+### 7.5. Configuração em Python Modular (`CaloHitBuilder.py`)
+
+A injeção de dependência torna a configuração em Python limpa e autoexplicativa:
+
+```python
+# Trecho ilustrativo do CaloHitBuilder.py refatorado
+def configure_hit_maker(sampling, flags):
+    maker = Configurable(ROOT.CaloHitMaker, f"CaloHitMaker_{sampling.name()}")
+    
+    # 1. Ferramenta de Identificação Geométrica
+    if hasattr(sampling.sensitive(), "Cells") and "BoxRMin" in sampling.sensitive().Cells:
+        # GeoV2: Células Tile em caixas (r, z)
+        maker.CellIdentifier = Configurable(ROOT.TileBoxCellTool, "TileBoxTool", Cells=sampling.sensitive().Cells)
+    elif hasattr(sampling.sensitive(), "Cells") and "EmbSampling" in sampling.sensitive().Cells:
+        # GeoV2: Acordeão EMB
+        maker.CellIdentifier = Configurable(ROOT.LArAccordionTool, "EmbAccTool", Cells=sampling.sensitive().Cells)
+    else:
+        # GeoV1 ou amostragem cilíndrica simples
+        maker.CellIdentifier = Configurable(ROOT.CaloGridCellTool, "GridTool",
+                                            EtaBins=sampling.sensitive().EtaBins,
+                                            PhiBins=sampling.sensitive().PhiBins)
+
+    # 2. Modificadores de Energia (Cadeia de Tools)
+    if flags.BirksLaw:
+        maker.EnergyModifiers.append(Configurable(ROOT.CaloBirksLawTool, "BirksTool",
+                                                  BirksLArK=getattr(sampling.sensitive(), "BirksLArK", 0.05832)))
+    if flags.EmecChargeCollection and is_emec(sampling):
+        maker.EnergyModifiers.append(Configurable(ROOT.LArEmecChargeCollectionTool, "EmecChargeTool",
+                                                  Tables=flags.EmecTables, FieldMap=flags.EmecFieldMap))
+
+    # 3. Ferramenta de Temporização
+    if flags.AtlasHitTime and is_tile(sampling):
+        maker.TimeCorrection = Configurable(ROOT.TilePmtPropagationTimeTool, "TileTimeTool")
+    elif flags.AtlasHitTime:
+        maker.TimeCorrection = Configurable(ROOT.CaloTofCorrectionTool, "TofTool")
+
+    # 4. Ferramentas de Registro
+    maker.HitRecorders.append(Configurable(ROOT.CaloStandardHitRecorderTool, "StandardHitRec",
+                                           CollectionKey=sampling.CollectionKey))
+    if flags.FreeRunningHits:
+        maker.HitRecorders.append(Configurable(ROOT.CaloFreeRunningHitRecorderTool, "FreeRunHitRec"))
+
+    return maker
+```
+
+---
+
+### 7.6. Comparativo: Arquitetura Atual vs. Proposta Modular
+
+| Aspecto | Arquitetura Atual (`HEAD`) | Proposta com `GAUGI::Tool` |
+| :--- | :--- | :--- |
+| **Linhas em `CaloHitMaker.cxx`** | ~1.700 linhas | ~180 linhas |
+| **Acoplamento de Dependências** | Monolítico: depende de `LArG4EC`, `GeoSpecialShapes`, tabelas estáticas de Tile, FCAL e EMB. | Desacoplado: depende apenas de interfaces puras `ITool`. |
+| **Isolamento de GeoV1** | O executável do GeoV1 carrega todo o código e tabelas do V2 em memória. | O `GeoV1` carrega somente `CaloGridCellTool` e filtros simples, sem carregar código do ATLAS. |
+| **Extensibilidade** | Adicionar um novo modelo físico ou novo detector exige editar o algoritmo central. | Adicionar um novo modelo requer apenas criar uma nova `Gaugi::Tool` sem tocar no algoritmo existente. |
+| **Testabilidade de Unidade** | Praticamente impossível testar a Lei de Birks ou o U-shape sem rodar a simulação inteira. | Cada `Gaugi::Tool` pode ser testada individualmente via C++ ou Python com passos sintéticos. |
+
+---
+
+## 8. Conclusão e Roteiro de Implementação
+
+A transformação das funcionalidades exclusivas do `GeoV2` e das adaptações de energia em **`GAUGI::Tool`** resolve definitivamente o problema do crescimento desordenado do `CaloHitMaker`, alinhando a arquitetura do Lorenzetti com as melhores práticas de frameworks modernos de altas energias (como o Gaudi do ATLAS/LHCb).
+
+### Roteiro Sugerido para Implementação:
+1. **Fase 1 (Interfaces e Ferramentas de Energia)**:
+   - Definir `ICaloEnergyModifierTool` em `CaloHitBuilder`.
+   - Extrair a Lei de Birks para `CaloBirksLawTool` (comum a V1 e V2).
+   - Extrair a coleção de carga do EMEC para `LArEmecChargeCollectionTool` (em `geometry/GeoV2/`).
+2. **Fase 2 (Identificação Geométrica de Células)**:
+   - Definir `ICaloCellIdentifierTool`.
+   - Implementar `CaloGridCellTool` (para `GeoV1`) e as ferramentas específicas de detectores do `GeoV2` (`TileBoxCellTool`, `LArAccordionTool`, `LArEmecCompartmentTool`, `LArFCalElectrodeTool`).
+3. **Fase 3 (Temporização e Hits Free-Running)**:
+   - Extrair `TilePmtPropagationTimeTool` e `CaloFreeRunningHitRecorderTool`.
+4. **Fase 4 (Limpeza do `CaloHitMaker`)**:
+   - Refatorar o `CaloHitMaker` para executar apenas o loop de orquestração via tools.
+   - Atualizar `CaloHitBuilder.py` para instanciar e conectar as ferramentas via injeção de dependência.
