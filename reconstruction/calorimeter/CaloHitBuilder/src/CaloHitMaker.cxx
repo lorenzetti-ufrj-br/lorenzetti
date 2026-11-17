@@ -32,8 +32,8 @@
 #include <stdexcept>
 
 // the ported ATLAS charge collection of the EM end-cap (F41 conserto 29)
-#include "LArG4EC/EnergyCalculator.h"
-#include "LArG4EC/EMECDataCSV.h"
+#include "GeoV2/EnergyCalculator.h"
+#include "GeoV2/EMECDataCSV.h"
 #include "G4AffineTransform.hh"
 #include "G4RotationMatrix.hh"
 

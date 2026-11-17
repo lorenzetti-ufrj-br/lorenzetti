@@ -4,6 +4,6 @@
 #ifndef LARG4EC_EMECDATACSV_H
 #define LARG4EC_EMECDATACSV_H
 #include <string>
-#include "GeoSpecialShapes/EMECData.h"
+#include "GeoV2/EMECData.h"
 EMECData readEMECDataCSV(const std::string &path);
 #endif

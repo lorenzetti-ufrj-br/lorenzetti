@@ -4,9 +4,9 @@
 // Ported to Lorenzetti from Athena release 23.0.14 (DetectorDescription/GeoModel/GeoSpecialShapes/src) for --atlas-emec-charge-collection (F41 conserto 29); changes: include paths; GeoModel units from GeoSpecialShapes/GeoModelKernelUnits.h (same values). Compiled with -DNDEBUG -O2 as in the Athena release.
 
 
-#include "GeoSpecialShapes/LArWheelCalculator_Impl/FanCalculatorFactory.h"
-#include "GeoSpecialShapes/LArWheelCalculator_Impl/ModuleFanCalculator.h"
-#include "GeoSpecialShapes/LArWheelCalculator_Impl/WheelFanCalculator.h"
+#include "GeoV2/LArWheelCalculator_Impl/FanCalculatorFactory.h"
+#include "GeoV2/LArWheelCalculator_Impl/ModuleFanCalculator.h"
+#include "GeoV2/LArWheelCalculator_Impl/WheelFanCalculator.h"
 
 namespace LArWheelCalculator_Impl
 {

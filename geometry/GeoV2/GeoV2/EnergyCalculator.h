@@ -18,13 +18,13 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "GeoSpecialShapes/LArWheelCalculator.h"
-#include "GeoSpecialShapes/LArWheelCalculatorEnums.h"
-#include "GeoSpecialShapes/EMECData.h"
+#include "GeoV2/LArWheelCalculator.h"
+#include "GeoV2/LArWheelCalculatorEnums.h"
+#include "GeoV2/EMECData.h"
 
 #include "G4ThreeVector.hh"
-#include "LArG4EC/HVHelper.h"
-#include "LArG4EC/LArG4BirksLaw.h"
+#include "GeoV2/HVHelper.h"
+#include "GeoV2/LArG4BirksLaw.h"
 #include "globals.hh"
 
 namespace LArG4 {

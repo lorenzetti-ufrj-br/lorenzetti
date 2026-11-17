@@ -3,7 +3,7 @@
 */
 // Ported to Lorenzetti from Athena release 23.0.14 (LArCalorimeter/LArG4/LArG4Code/src/LArG4BirksLaw.cc) for --atlas-emec-charge-collection (F41 conserto 29); changes: include path. Compiled with -DNDEBUG -O2 as in the Athena release.
 
-#include "LArG4EC/LArG4BirksLaw.h"
+#include "GeoV2/LArG4BirksLaw.h"
 
 double LArG4BirksLaw::operator () (double dE, double dX, double EField) const {
   if (dX<1e-5) return dE;

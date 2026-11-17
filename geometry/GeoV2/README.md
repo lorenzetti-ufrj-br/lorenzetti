@@ -37,13 +37,20 @@ Common primitives (`PhysicalVolume`, `SensitiveDetector`, `Calorimeter`, `Tracki
 geometry/GeoV2/
 ├── CMakeLists.txt              # Builds GeoV2 OBJECT library (with C++20 GeoModel support)
 ├── README.md                   # This specification file
-├── GeoV2/                      # C++ Public headers
+├── GeoV2/                      # C++ Public headers (unified)
 │   ├── DetectorConstruction_v2.h
 │   ├── AtlasGeoModelImport.h
 │   ├── AtlasDeadMaterialShower.h
 │   ├── FCalFrozenShowerModel.h
 │   ├── FCalShowerLib.h
-│   └── SimpleFastKiller.h
+│   ├── SimpleFastKiller.h
+│   ├── EnergyCalculator.h      # Athena EMEC energy calculation & charge collection
+│   ├── EMECData.h, EMECDataCSV.h
+│   ├── HVHelper.h, LArG4BirksLaw.h
+│   ├── LArWheelCalculator.h, LArWheelCalculatorEnums.h
+│   ├── LArWheelCalculator_Impl/ # Accordion fan & distance implementations
+│   ├── GeoModelKernelUnits.h, vec_parametrized_sincos.h
+│   └── PortableMsgStream.h, PortMsg.h
 ├── src/                        # C++ Implementation and ROOT LinkDef
 │   ├── DetectorConstruction_v2.cxx
 │   ├── AtlasGeoModelImport.cxx
@@ -51,10 +58,9 @@ geometry/GeoV2/
 │   ├── FCalFrozenShowerModel.cxx
 │   ├── FCalShowerLib.cxx
 │   ├── SimpleFastKiller.cxx
+│   ├── GeoSpecialShapes_*.cxx  # Accordion wheel calculators
+│   ├── LArG4EC_*.cxx           # EMEC charge collection & HV helper
 │   └── LinkDef.h
-├── GeoSpecialShapes/           # LAr wheel accordion calculators
-├── LArG4EC/                    # Athena-ported EMEC charge collection
-├── PortableMsgStream/          # Standalone Athena messaging wrapper
 ├── python/                     # GeoV2 Python module
 │   ├── __init__.py             # Exports DetectorConstruction_v2, AtlasGeometryFlags, detectors
 │   ├── DetectorConstruction_v2.py # Top-level Python builder

@@ -7,7 +7,7 @@
 #define LARWHEELCALCULATOR_IMPL_WHEELFANCALCULATOR_H
 
 #include "IFanCalculator.h"
-#include "GeoSpecialShapes/LArWheelCalculator.h"
+#include "GeoV2/LArWheelCalculator.h"
 
 #ifdef HARDDEBUG
 #undef HARDDEBUG

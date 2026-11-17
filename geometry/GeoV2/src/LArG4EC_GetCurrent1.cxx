@@ -8,8 +8,8 @@
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 
-#include "LArG4EC/EnergyCalculator.h"
-#include "LArG4EC/HVHelper.h"
+#include "GeoV2/EnergyCalculator.h"
+#include "GeoV2/HVHelper.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 

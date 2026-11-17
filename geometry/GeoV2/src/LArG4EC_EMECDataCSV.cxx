@@ -1,6 +1,6 @@
 // Lorenzetti port (F41 conserto 29): see LArG4EC/EMECDataCSV.h. The numbers are read with strtod from the text that
 // emec_tables_from_geomdb.py writes (Python repr, the shortest decimal that gives back the same double).
-#include "LArG4EC/EMECDataCSV.h"
+#include "GeoV2/EMECDataCSV.h"
 #include <cstdlib>
 #include <fstream>
 #include <sstream>

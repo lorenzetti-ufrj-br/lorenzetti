@@ -15,7 +15,7 @@
 #include <string>
 #include <memory>
 
-#include "GeoSpecialShapes/LArWheelCalculator.h"
+#include "GeoV2/LArWheelCalculator.h"
 
 #include "G4ThreeVector.hh"
 #include "globals.hh"

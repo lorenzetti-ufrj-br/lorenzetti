@@ -801,11 +801,12 @@ geometry/
 │   └── scripts/
 └── GeoV2/
     ├── CMakeLists.txt
-    ├── GeoSpecialShapes/
     ├── GeoV2/
-    │   └── DetectorConstruction_v2.h
-    ├── LArG4EC/
-    ├── PortableMsgStream/
+    │   ├── DetectorConstruction_v2.h
+    │   ├── EnergyCalculator.h
+    │   ├── LArWheelCalculator.h
+    │   └── ...
+    ├── src/
     ├── python/
     │   ├── __init__.py
     │   ├── AtlasGeometryFlags.py

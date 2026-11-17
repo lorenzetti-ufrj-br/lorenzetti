@@ -20,8 +20,7 @@ include_directories(${CMAKE_SOURCE_DIR}/magfield)
 
 ROOT_GENERATE_DICTIONARY(GeoV2Dict ${DICT_HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h MODULE GeoV2)
 add_library(GeoV2 OBJECT ${SOURCES} GeoV2Dict.cxx)
-install(FILES ${HEADERS} DESTINATION geometry/GeoV2)
-install(DIRECTORY GeoSpecialShapes LArG4EC PortableMsgStream DESTINATION geometry/GeoV2)
+install(DIRECTORY GeoV2/ DESTINATION geometry/GeoV2)
 
 gaugi_install_python_modules( ${CMAKE_CURRENT_SOURCE_DIR}/python GeoV2)
 gaugi_install_data_modules( ${CMAKE_CURRENT_SOURCE_DIR}/data GeoV2)

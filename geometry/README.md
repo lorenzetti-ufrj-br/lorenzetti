@@ -30,10 +30,8 @@ geometry/
 └── GeoV2/                      # ATLAS Run 4 Package
     ├── CMakeLists.txt          # Target GeoV2
     ├── README.md               # GeoV2 documentation & external prerequisites
-    ├── GeoV2/                  # Public C++ headers (DetectorConstruction_v2.h, etc.)
+    ├── GeoV2/                  # Public C++ headers (unified: DetectorConstruction, EMEC, FCal, etc.)
     ├── src/                    # C++ implementations & LinkDef.h
-    ├── GeoSpecialShapes/       # EMEC accordion shapes
-    ├── LArG4EC/                # Athena ported charge collection
     ├── python/                 # GeoV2 Python module (DetectorConstruction_v2, AtlasGeometryFlags, detectors/)
     ├── data/                   # FCal electrodes, EMEC tables, and ShowerLib
     └── scripts/                # GeoModel and cell check scripts

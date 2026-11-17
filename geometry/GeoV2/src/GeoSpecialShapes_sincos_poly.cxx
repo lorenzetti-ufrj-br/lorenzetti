@@ -3,7 +3,7 @@
 */
 // Ported to Lorenzetti from Athena release 23.0.14 (DetectorDescription/GeoModel/GeoSpecialShapes/src) for --atlas-emec-charge-collection (F41 conserto 29); changes: the outer wheel takes the coefficients computed by Athena 23.0.14, recorded (see outer_params); include paths; GeoModel units from GeoSpecialShapes/GeoModelKernelUnits.h (same values). Compiled with -DNDEBUG -O2 as in the Athena release.
 
-#include "GeoSpecialShapes/LArWheelCalculator.h"
+#include "GeoV2/LArWheelCalculator.h"
 
 #include "GaugiKernel/sincos.h"
 
@@ -37,7 +37,7 @@ typedef Eigen::MatrixXd  SYMMATRIX;
 #include <mutex>
 
 #define DEBUGPRINT 0
-#include "GeoSpecialShapes/GeoModelKernelUnits.h" // Lorenzetti port: same units, without GeoModel
+#include "GeoV2/GeoModelKernelUnits.h" // Lorenzetti port: same units, without GeoModel
 using namespace GeoModelKernelUnits;
 
 #ifndef SINCOSPOLY_USE_EIGEN
