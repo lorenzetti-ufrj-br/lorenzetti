@@ -1,7 +1,7 @@
 """
 AtlasGeometryFlags module.
 
-Provides the dataclass-based configuration flags for the ATLAS (v2) detector geometry,
+Provides dataclass-based configuration flags for the ATLAS (v2) detector geometry,
 replacing individual CLI parameters in simulation and digitization transforms.
 """
 
@@ -19,69 +19,94 @@ __all__ = ["AtlasGeometryFlags"]
 class AtlasGeometryFlags(JobFlags):
     """
     Configuration flags for ATLAS DetectorConstruction_v2.
-
-    Sub-detectors:
-        TileAtlasGeometry: Build tile calorimeter with ATLAS periodic geometry.
-        TileAtlasCells: Use ATLAS tile cell segmentation (A1-A16, BC1-BC8, B9, D0-D6).
-        TileAtlasItc: Intermediate tile calorimeter gap with plugs/services.
-        TileAtlasGap: E1-E4 scintillators and active ITC cells (C10, D4).
-        TileAtlasRun4: Position tile extended barrel and gap at Run 4 positions.
-        AtlasEmb: Barrel EM calorimeter with ATLAS lead/LAr absorber composition.
-        AtlasEmbCells: EMB layers ending at |z| = 3165 mm with ATLAS strip/middle/back cells.
-        AtlasEmec: EM endcap with two accordion wheels.
-        AtlasEmecArgonFraction: LAr accordion gap fraction in radial bands.
-        AtlasHec: Hadronic endcap calorimeter (HEC0-HEC3) with nominal ATLAS cells.
-        AtlasFcal: Forward calorimeter passive material modules (copper/tungsten).
-        AtlasFcalCells: FCal electrode tubes and readout cells.
-        AtlasFcalFrozenShowers: Fast simulation frozen shower parametrization in FCal.
-
-    Passive Media & Services:
-        AtlasMaterialInFront: Solenoid and cryostat front walls in radiation lengths.
-        AtlasEndcapCryostat: Warm/cold vessels of endcap cryostats.
-        AtlasBarrelCryostat: Outer cylinders and dead LAr of barrel cryostat.
-        AtlasForwardShielding: Muon system shielding, toroids, and outer framework.
-        AtlasBarrelGapServices: Dead material in the gap between barrel and extended barrel.
-
-    Physics & Geometry DB:
-        AtlasRun4: Import ITk, HGTD, beam pipe from ATLAS Run 4 GeoModel dump.
-        AtlasG4: Geant4 physics settings from ATLAS production (FTFP_BERT_ATL, cuts).
-        AtlasFullField: Full world magnetic field map and calo muon switching field.
-        AtlasRun4Geometry: Path to SQLite GeoModel dump of Run 4.
-        AtlasFieldMap: Path to ATLAS ROOT magnetic field map.
-        AtlasFcalElectrodes: Path to CSV electrodes table for FCal.
     """
 
-    # Subdetectors
+    # =========================================================================
+    # Calorimeter Sub-detectors
+    # =========================================================================
+
+    # Build Tile calorimeter with ATLAS periodic geometry (14 mm steel, 3 mm tile, 1 mm clearance)
     TileAtlasGeometry: Optional[bool] = None
+
+    # Use ATLAS Tile cells (A1-A16, BC1-BC8, B9, D0-D6) so that every volume point belongs to a cell
     TileAtlasCells: Optional[bool] = None
+
+    # Intermediate Tile gap (ITC) with aluminium plug (passive D4/C10) and cables
     TileAtlasItc: Optional[bool] = None
+
+    # Active gap/crack scintillators E1-E4 and active ITC cells C10 and D4 (Run 3/4 geometry)
     TileAtlasGap: Optional[bool] = None
+
+    # Position Tile extended barrel and crack at the ATLAS Run 4 simulation coordinates (+40 mm side A, -30 mm C)
     TileAtlasRun4: Optional[bool] = None
 
+    # Barrel EM calorimeter (EMB) with ATLAS lead/LAr composition (1.53 mm lead below |eta|=0.8, 1.13 mm above)
     AtlasEmb: Optional[bool] = None
+
+    # EMB layers ending at |z| = 3165 mm with ATLAS cell granularity (0.003125 strips in EMB1)
     AtlasEmbCells: Optional[bool] = None
+
+    # EM endcap (EMEC) with two concentric accordion wheels (1.375 < |eta| < 3.2)
     AtlasEmec: Optional[bool] = None
+
+    # Liquid argon gap in radial bands computed from the volume fraction of the ATLAS accordion
     AtlasEmecArgonFraction: Optional[bool] = None
+
+    # Hadronic endcap (HEC) with 4 samplings (copper plates 25/50 mm) and nominal ATLAS cells
     AtlasHec: Optional[bool] = None
+
+    # Forward calorimeter (FCal) as homogeneous passive mixture of copper/tungsten and liquid argon
     AtlasFcal: Optional[bool] = None
+
+    # FCal with detailed electrode tubes and readout cells mapped to ATLAS tiles
     AtlasFcalCells: Optional[bool] = None
+
+    # Replace low-energy showers in FCal electrodes with pre-simulated frozen shower libraries (MC23_v1)
     AtlasFcalFrozenShowers: Optional[bool] = None
 
-    # Passive media, cryostats & services
+    # =========================================================================
+    # Passive Media, Cryostats & Shielding
+    # =========================================================================
+
+    # Material in front of barrel EM in radiation lengths X0 (solenoid 0.66 X0, cryostat wall 0.76 X0)
     AtlasMaterialInFront: Optional[bool] = None
+
+    # Outer warm (20 mm) and cold (35 mm) aluminium vessels of the endcap cryostats with dead LAr
     AtlasEndcapCryostat: Optional[bool] = None
+
+    # Barrel cryostat outer aluminium vessels (30 mm) and dead liquid argon surrounding EMB
     AtlasBarrelCryostat: Optional[bool] = None
+
+    # Outer material from Run 4 GeoModel dump: MuonSys, toroids, and JD/JT/JF borated polyethylene shielding
     AtlasForwardShielding: Optional[bool] = None
+
+    # Dead material in the barrel-to-extended barrel gap (pedestals, front-end crates, feedthrough cables)
     AtlasBarrelGapServices: Optional[bool] = None
 
-    # Physics & GeoModel import
+    # =========================================================================
+    # Geant4 Simulation, Run 4 & Field
+    # =========================================================================
+
+    # Import ITk, HGTD, beam pipe, and 45 mm endcap shift from the ATLAS Run 4 GeoModel SQLite dump
     AtlasRun4: Optional[bool] = None
+
+    # ATLAS Geant4 production settings (FTFP_BERT_ATL, region production cuts, Russian roulette)
     AtlasG4: Optional[bool] = None
+
+    # Apply full 3D magnetic field map in the world and muon switching field in barrel EM
     AtlasFullField: Optional[bool] = None
 
-    # External database & map paths
+    # =========================================================================
+    # External Database & Map File Paths
+    # =========================================================================
+
+    # Path to ATLAS Run 4 SQLite GeoModel geometry dump (or LORENZETTI_ATLAS_RUN4_GEOMETRY)
     AtlasRun4Geometry: str = ""
+
+    # Path to ATLAS 3D magnetic field map ROOT file (or LORENZETTI_FIELD_MAP)
     AtlasFieldMap: str = ""
+
+    # Path to CSV file containing ATLAS FCal electrode coordinates (or LORENZETTI_FCAL_ELECTRODES)
     AtlasFcalElectrodes: str = ""
 
     @classmethod

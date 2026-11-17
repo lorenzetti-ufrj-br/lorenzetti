@@ -14,12 +14,13 @@ __all__ = ["MagFieldFlags"]
 @dataclass(init=False)
 class MagFieldFlags(JobFlags):
     """
-    Steering flags for detector magnetic field:
-        EnableField: Enable general detector magnetic field (solenoid + toroids if available).
-        EnableSolenoidOnly: Restrict uniform 2 T field strictly inside ATLAS solenoid (r < 1.23 m, |z| < 2.9 m).
+    Steering flags for detector magnetic field.
     """
 
+    # Enable general detector magnetic field (solenoid and toroid field map)
     EnableField: bool = False
+
+    # Restrict uniform 2 T magnetic field strictly inside the ATLAS solenoid volume (r < 1.23 m, |z| < 2.9 m)
     EnableSolenoidOnly: Optional[bool] = None
 
     @classmethod

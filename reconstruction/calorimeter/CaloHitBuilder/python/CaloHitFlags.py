@@ -18,22 +18,28 @@ __all__ = ["CaloHitFlags", "FreeRunningFlags"]
 @dataclass(init=False)
 class CaloHitFlags(JobFlags):
     """
-    Steering flags for hit creation and energy response:
-        ActiveEnergyOnly: Keep only energy in active medium (LAr / Scintillator).
-        BirksLaw: Apply Birks' law in scintillator and liquid argon.
-        AtlasHitTime: TOF-corrected global time for bunch-crossing assignment.
-        TileDualReadout: Two PMTs per tile cell (dual readout).
-        TilePmtSplit: Energy sharing between PMTs ('ushape' or 'linear').
-        NeutronTimeCut: Kill neutrons after this elapsed time in ns (default: 150 ns for v2).
-        SaveAllHits: Save all hits regardless of RoI.
+    Steering flags for hit creation and energy response.
     """
 
+    # Keep only energy deposited in active media (Liquid Argon and Tile Scintillator)
     ActiveEnergyOnly: Optional[bool] = None
+
+    # Apply Birks' law saturation correction to scintillator and liquid argon energy deposits
     BirksLaw: Optional[bool] = None
+
+    # Use time-of-flight (TOF) corrected global time for bunch-crossing assignment
     AtlasHitTime: Optional[bool] = None
+
+    # Simulate two photomultiplier tubes (PMTs) per Tile calorimeter cell (dual readout)
     TileDualReadout: Optional[bool] = None
+
+    # Energy sharing model between Tile PMTs ('ushape' for realistic light guide response or 'linear')
     TilePmtSplit: str = "ushape"
+
+    # Maximum time in nanoseconds to track slow neutrons before killing them (default 150 ns for detector v2)
     NeutronTimeCut: Optional[float] = None
+
+    # Save all calorimeter hits regardless of Region of Interest (RoI) bounds
     SaveAllHits: bool = False
 
     @classmethod
@@ -54,26 +60,31 @@ class CaloHitFlags(JobFlags):
 @dataclass(init=False)
 class FreeRunningFlags(JobFlags):
     """
-    Steering flags for ATLAS free-running hit generation:
-        Enable: Write calorimeter hits in ATLAS HITS ntuple layout (Tree CollectionTree).
-        AtlasFormat: Compress and filter LAr hits exactly as FilterHit_tf without tglobal branches.
-        KeepHits: Keep standard HIT stream and write free-running hits to FreeRunningTree.
-        NoBinning: Record one entry per Geant4 step without ATLAS time bins.
-        EmecChargeCollection: Ported Athena 23.0.14 charge collection and electric field for EMEC.
-        EmecTables: Path to EMEC tables CSV.
-        EmecFieldMap: Path to EMEC electric field map file (ec.fieldzv03).
-        EmecHVMap: Path to EMEC high-voltage map file (HVEMECMap_v02.dat).
+    Steering flags for ATLAS free-running hit generation.
     """
 
+    # Write calorimeter hits in ATLAS HITS ntuple layout (CollectionTree)
     Enable: bool = False
+
+    # Compress and filter LAr hits exactly as Athena FilterHit_tf without tglobal branches
     AtlasFormat: bool = False
+
+    # Retain standard HIT stream and write free-running hits alongside in FreeRunningTree
     KeepHits: bool = False
+
+    # Record raw energy per Geant4 step without grouping into ATLAS time bins
     NoBinning: bool = False
 
-    # EMEC charge collection
+    # Enable ported Athena 23.0.14 charge collection and electric field model for EMEC
     EmecChargeCollection: bool = False
+
+    # Path to EMEC calibration tables CSV file
     EmecTables: str = ""
+
+    # Path to EMEC electric field map file (ec.fieldzv03)
     EmecFieldMap: str = ""
+
+    # Path to EMEC high-voltage map file (HVEMECMap_v02.dat)
     EmecHVMap: str = ""
 
     @classmethod
