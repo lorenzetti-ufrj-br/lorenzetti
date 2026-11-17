@@ -61,7 +61,8 @@ else()
 endif()
 include_directories(${CMAKE_SOURCE_DIR} ${Geant4_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/kernel/GaugiKernel)
-include_directories(${CMAKE_SOURCE_DIR}/magfield)
+include_directories(${CMAKE_SOURCE_DIR}/magfield/MagField)
+include_directories(${CMAKE_SOURCE_DIR}/magfield/MagFieldElements)
 
 
 #----------------------------------------------------------------------------
@@ -123,7 +124,8 @@ add_subdirectory( events/TruthParticle )
 add_subdirectory( events/CaloRings )
 add_subdirectory( events/Egamma)
 # magnetic field service
-add_subdirectory( magfield )
+add_subdirectory( magfield/MagFieldElements )
+add_subdirectory( magfield/MagField )
 # detector definitions
 add_subdirectory( geometry )
 
@@ -150,6 +152,7 @@ add_subdirectory( generator/filters )
 add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:GaugiKernel>
   $<TARGET_OBJECTS:G4Kernel>
+  $<TARGET_OBJECTS:MagFieldElements>
   $<TARGET_OBJECTS:MagField>
   $<TARGET_OBJECTS:GeoV1>
   $<TARGET_OBJECTS:GeoV2>

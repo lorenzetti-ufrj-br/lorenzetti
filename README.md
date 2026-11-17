@@ -174,7 +174,7 @@ lorenzetti/
 │   ├── GeoBase/             # Shared primitives, pulse data & DetectorConstructionCfg factory
 │   ├── GeoV1/               # Classical 4π cylindrical calorimeter model
 │   └── GeoV2/               # High-fidelity ATLAS Run 4 geometry (GeoModel SQLite, FCal)
-├── magfield/                # Standalone magnetic field service (2D/3D ATLAS field maps)
+├── magfield/                # Magnetic field subsystem (MagField, MagFieldElements)
 ├── events/                  # Relational EDM (CaloHit, CaloCell, CaloCluster, CaloRings, Egamma)
 ├── reconstruction/          # Digitization, clustering, Ringer extraction & CLI transforms
 ├── generator/               # Primary event generation (Pythia8, minbias, kinematic filters)

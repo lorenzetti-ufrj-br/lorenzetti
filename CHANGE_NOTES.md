@@ -23,6 +23,7 @@ This document details the major architectural enhancements, modernization effort
 15. [Event Generation, Physics Modeling & Core Geometry Bug Fixes (PR #15, PR #16, PR #20)](#15-event-generation-physics-modeling--core-geometry-bug-fixes-pr-15-pr-16-pr-20)
 16. [Unified Dataclass Job Steering System (`JobFlags`) & CLI Decoupling](#16-unified-dataclass-job-steering-system-jobflags--cli-decoupling)
 17. [Decoupled 3-Package Geometry Architecture & Unified Factory (`GeoBase`, `GeoV1`, `GeoV2`)](#17-decoupled-3-package-geometry-architecture--unified-factory-geobase-geov1-geov2)
+18. [Decoupled Magnetic Field Packages (`MagField`, `MagFieldElements`)](#18-decoupled-magnetic-field-packages-magfield-magfieldelements)
 
 ---
 
@@ -719,7 +720,7 @@ To resolve this without sacrificing flexibility, the configuration layer was ref
    - Implements dynamic attribute retrieval: instance initialization queries `getattr(self.__class__, f.name, f.default)` so that class-level attribute mutations dynamically propagate to object instances and serialization dictionaries.
 2. **Domain-Specific Flag Dataclasses with Full English Comments:**
    - **`AtlasGeometryFlags`** ([AtlasGeometryFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV2/python/AtlasGeometryFlags.py)): 24 flags governing Tile, EMB, EMEC, HEC, FCal, cryostats, gap services, GeoModel Run 4 database paths, and field maps.
-   - **`MagFieldFlags`** ([MagFieldFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/magfield/python/MagFieldFlags.py)): Steering for `EnableField` and `EnableSolenoidOnly`.
+   - **`MagFieldFlags`** ([MagFieldFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/magfield/MagField/python/MagFieldFlags.py)): Steering for `EnableField` and `EnableSolenoidOnly`.
    - **`CaloHitFlags` & `FreeRunningFlags`** ([CaloHitFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloHitBuilder/python/CaloHitFlags.py)): Active energy response, Birks' law, dual readout, neutron time cut, and free-running ATLAS HITS generation.
    - **`CaloFlags`, `CrossTalkFlags`, `AnomalyFlags`** ([CaloFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloCellBuilder/python/CaloFlags.py)): Electronic noise, cell cross-talk coupling, and dead-channel masking.
    - **`CaloClusterFlags`** ([CaloClusterFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloClusterBuilder/python/CaloClusterFlags.py)): Cluster seed thresholds, window dimensions, and forward shower moments.
@@ -852,6 +853,40 @@ geometry/
 
 ---
 
+## 18. Decoupled Magnetic Field Packages (`MagField`, `MagFieldElements`)
+
+### Context & Architectural Challenge
+In earlier versions, the `magfield/` subsystem bundled low-level ROOT-based magnetic field mesh parsers, spatial zone partitioning, and SIMD caches together with high-level Geant4 simulation classes (`G4MagneticField`, `G4AtlasRK4`, field managers) into a single monolithic CMake target and folder. This prevented downstream algorithms (e.g. offline tracking or standalone reconstruction) from reusing the magnetic field maps without dragging in Geant4 dependencies.
+
+### The Refactored Solution: Two Dedicated First-Class Packages
+The magnetic field subsystem was decoupled into two distinct packages without an intermediate orchestrator `magfield/CMakeLists.txt` (the root `CMakeLists.txt` registers them directly):
+
+```
+magfield/
+├── README.md                   # High-level overview
+├── MagFieldElements/           # Pure ROOT/math field map & mesh caching package
+│   ├── CMakeLists.txt          # Target: MagFieldElements (OBJECT library)
+│   ├── README.md               # MagFieldElements documentation
+│   ├── MagFieldElements/       # Public C++ headers & .icc templates
+│   └── src/                    # C++ Implementations (AtlasFieldMap, AtlasFieldCache, BFieldMeshZR, etc.)
+└── MagField/                   # Geant4 tracking integration & Python steering package
+    ├── CMakeLists.txt          # Target: MagField (OBJECT library)
+    ├── README.md               # MagField documentation
+    ├── MagField/               # Public Geant4 C++ headers (AtlasMagneticField, G4AtlasRK4, etc.)
+    ├── src/                    # C++ Implementations
+    └── python/                 # Python module 'magfield' (MagFieldFlags)
+```
+
+1. **`MagFieldElements`:**
+   - Completely independent of Geant4.
+   - Provides `AtlasFieldMap` (reading binary ROOT field maps), `AtlasFieldCache` (thread-local SIMD cache), and spatial meshes (`BFieldMesh`, `BFieldMeshZR`, `BFieldZone`, `BFieldCond`).
+2. **`MagField`:**
+   - Adapts `AtlasFieldMap` into Geant4's tracking interface via `AtlasMagneticField` (`G4MagneticField`).
+   - Houses the ATLAS-optimized 4th-order Runge-Kutta stepper `G4AtlasRK4` and specialized field managers (`SwitchingFieldManager`, `TightMuonSteppingFieldManager`).
+   - Installs the `magfield` Python module containing typed steering dataclass `MagFieldFlags`.
+
+---
+
 ## Summary of Benefits
 
 | Feature | `master` | `python_refactory` | Benefit |
@@ -873,4 +908,5 @@ geometry/
 | **Generator & Physics Modeling (PR #15, #16, #20)** | Sign-based charge check, divided $\sigma$, volume dups, preStep hit tagging | `TDatabasePDG` charge lookup, true Gaussian spread, step midpoint regioning, single volume placement, vertex/pT options | Elimination of physical bugs, zero cross-event seed leakage, accurate kinematics |
 | **Unified Dataclass Job Steering** | 35+ bloated CLI flags per transform | Centralized `@dataclass(init=False)` `JobFlags`, `--pre-init` Python steering, `--job-file` JSON | Clean 10-argument CLIs, typed configuration, full serializability, and automated testing |
 | **Decoupled 3-Package Geometry & Factory** | Monolithic v1/v2 folders with duplicated files & manual if/else imports | Clean 3-package hierarchy (`GeoBase`, `GeoV1`, `GeoV2`), `detectors/` submodules, `DetectorConstructionCfg` | Modular architecture, zero file duplication, 1-line transform instantiation |
+| **Decoupled Magnetic Field Packages** | Monolithic `magfield` library mixing Geant4 and ROOT mesh data structures | Two distinct packages (`MagFieldElements` & `MagField`) added directly to root CMake | Clean architectural separation: Geant4-independent mesh math vs tracking stepper service |
 

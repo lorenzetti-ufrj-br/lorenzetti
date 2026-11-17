@@ -92,7 +92,7 @@ Controls the high-fidelity ATLAS Run 4 geometry, sub-detectors, cryostats, and e
 
 ---
 
-### 3. `MagFieldFlags` (`magfield/python/MagFieldFlags.py`)
+### 3. `MagFieldFlags` (`magfield/MagField/python/MagFieldFlags.py`)
 Controls detector magnetic fields.
 
 | Flag | Type | Default | Description |
