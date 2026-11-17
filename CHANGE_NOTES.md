@@ -18,6 +18,10 @@ This document details the major architectural enhancements, modernization effort
 10. [Declarative Output Schema & Streamlined Reconstruction Stack](#10-declarative-output-schema--streamlined-reconstruction-stack)
 11. [Component Modernization: `Gaugi::Tool`, Pileup Migration & `CaloCellBuilder` Electronics](#11-component-modernization-gaugitool-pileup-migration--calocellbuilder-electronics)
 12. [End-to-End Simulation & Reconstruction Pipeline (`examples/run_reco_sequence.py`)](#12-end-to-end-simulation--reconstruction-pipeline-examplesrun_reco_sequencepy)
+13. [ATLAS Run 4 High-Fidelity Geometry & Detector Construction v2 (PR #18)](#13-atlas-run-4-high-fidelity-geometry--detector-construction-v2-pr-18)
+14. [Free-Running Calorimeter Hits & Athena EMEC Charge Collection (PR #19)](#14-free-running-calorimeter-hits--athena-emec-charge-collection-pr-19)
+15. [Event Generation, Physics Modeling & Core Geometry Bug Fixes (PR #15, PR #16, PR #20)](#15-event-generation-physics-modeling--core-geometry-bug-fixes-pr-15-pr-16-pr-20)
+16. [Unified Dataclass Job Steering System (`JobFlags`) & CLI Decoupling](#16-unified-dataclass-job-steering-system-jobflags--cli-decoupling)
 
 ---
 
@@ -606,6 +610,140 @@ The runner coordinates 3 execution phases:
 
 ---
 
+## 13. ATLAS Run 4 High-Fidelity Geometry & Detector Construction v2 (PR #18)
+
+### Context & Motivation
+In legacy `master`, detector simulation relied on `DetectorConstruction_v1`, which implemented a simplified, schematic calorimeter model consisting of idealized cylindrical shells. While useful for rapid software validation, it lacked realistic absorber thicknesses, accurate cell segmentation, cryostats, dead materials, and the geometry specifications of the ATLAS experiment.
+
+In PR #18 (`feat/detector-construction-v2`), Luciano introduced **`DetectorConstruction_v2`** ([DetectorConstruction_v2.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/v2/src/DetectorConstruction_v2.cxx)), establishing an authentic ATLAS Run 4 calorimeter, magnetic field, and Geant4 physics environment derived directly from official ATLAS sources (GeoModel SQLite dumps and Athena code).
+
+### Sub-detectors & Active Calorimeter Layout
+1. **Tile Calorimeter (`AtlasTile`):**
+   - Built with periodic ATLAS Run 4 geometry (14 mm steel absorber plates, 3 mm plastic scintillator tiles, and 1 mm clearance).
+   - Authentic Tile cell segmentation (`A1-A16`, `BC1-BC8`, `B9`, `D0-D6`) mapping every volume point directly to a readout cell.
+   - Intermediate Tile Calorimeter (ITC) gap with aluminium plug (passive D4/C10) and service cabling.
+   - Active gap and crack scintillators (E1-E4) and active ITC cells (C10, D4) placed at Run 4 coordinates (+40 mm side A, -30 mm side C).
+   - Dual-readout PMT simulation (two PMTs per Tile cell) with configurable energy splitting: `"ushape"` (realistic light-guide attenuation model) or `"linear"`.
+2. **Liquid Argon (LAr) Calorimeters:**
+   - **Barrel EM Calorimeter (EMB) (`AtlasEmb`):** Lead-LAr accordion structure with ATLAS lead absorber thicknesses (1.53 mm below $|\eta| = 0.8$, 1.13 mm above). Precise cell boundaries ending at $|z| = 3165$ mm with fine strip granularity ($\Delta\eta = 0.003125$ in EMB1).
+   - **Endcap EM Calorimeter (EMEC) (`AtlasEmec`):** Concentric inner and outer accordion wheels covering $1.375 < |\eta| < 3.2$, with dynamic LAr gap fractions computed across radial bands to reflect accordion geometry expansion.
+   - **Hadronic Endcap (HEC) (`AtlasHec`):** 4 longitudinal samplings (HEC0-HEC3) with 25 mm (HEC0/HEC1) and 50 mm (HEC2/HEC3) copper plates and nominal cell mapping.
+   - **Forward Calorimeter (FCal) (`AtlasFcal`):** Homogeneous passive metal modules (copper for FCal1, tungsten for FCal2/FCal3) embedded in liquid argon, detailed electrode tube readout cell mapping, and optional fast simulation frozen shower library parameterization (`MC23_v1`).
+
+### Cryostats, Dead Materials & Services
+- Solenoid and front cryostat walls modeled in radiation lengths ($X_0$).
+- Barrel cryostat outer cylinders, cold vessel walls, and dead liquid argon buffers.
+- Endcap cryostats with warm and cold vessels.
+- Forward shielding (muon system shielding, toroid magnets, and framework).
+- Crack and gap services simulating dead material between barrel and extended barrel calorimeters.
+
+### External GeoModel Run 4 Database Integration
+- Added optional GeoModel 6.29.0 loader ([AtlasGeoModelImport.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/v2/src/AtlasGeoModelImport.cxx)) reading the Run 4 SQLite database dump (`geometry-ATLAS-P2-RUN4-01-01-00-sim.db`).
+- Imports the ITk (Inner Tracker), HGTD (High Granularity Timing Detector), and beam pipe geometry directly into the Geant4 simulation world.
+
+### Magnetic Field & Geant4 Production Settings
+- Uniform 2 T solenoid-only field ($R < 1.23\text{ m}$, $|z| < 2.9\text{ m}$) or full 3D ATLAS magnetic field map (`bfieldmap_7730_20400_14m.root`) with calo muon switching field.
+- Geant4 production settings: `FTFP_BERT_ATL` physics list, tuned production cuts, and Russian roulette optimizations for low-energy particles.
+- Birks' law saturation correction applied to scintillators and liquid argon.
+- Time-of-flight (TOF) corrected global hit times and neutron time termination cut ($150\text{ ns}$ for v2).
+
+---
+
+## 14. Free-Running Calorimeter Hits & Athena EMEC Charge Collection (PR #19)
+
+### Context & Motivation
+Standard simulation in Lorenzetti aggregates energy deposits into fixed bunch-crossing windows within the internal EDM (`CaloHitContainer`). However, benchmarking against Athena or feeding external digitization workflows requires saving raw calorimeter hits in the exact layout of the ATLAS simulation `HITS` ntuple without Lorenzetti's internal time binning.
+
+In PR #19 (`feat/free-running-hits`), Luciano introduced the free-running hit generation framework alongside a C++ port of Athena's EMEC charge collection model.
+
+### Free-Running Hit Stream (`CollectionTree`)
+- Implemented in [CaloFreeRunningHitWriter.cxx](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloHitBuilder/src/CaloFreeRunningHitWriter.cxx) and [CaloFreeRunningHitList.h](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloHitBuilder/src/CaloFreeRunningHitList.h).
+- Writes calorimeter hits directly into the ATLAS `CollectionTree` layout:
+  - `TileCalHit_*`: recorded per PMT (dual readout).
+  - `LArHitEMB_*`, `LArHitEMEC_*`, `LArHitHEC_*`, `LArHitFCAL_*`: recorded per calorimeter cell.
+- **Athena `FilterHit_tf` Format:** Compresses and filters LAr hit energy and timing matching Athena's `FilterHit_tf`, omitting extra `tglobal` auxiliary branches.
+- **Multi-Tree Flexibility:**
+  - Option to retain the standard Lorenzetti HIT stream alongside free-running hits in `FreeRunningTree` (`FreeRunningFlags.KeepHits`).
+  - Option to record raw Geant4 steps without ATLAS time binning (`FreeRunningFlags.NoBinning`).
+
+### Ported Athena 23.0.14 EMEC Charge Collection
+- Implemented in [LArG4EC_LArEMECChargeCollection.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/v2/src/LArG4EC_LArEMECChargeCollection.cxx), ported directly from Athena 23.0.14 `LArG4::EC::EnergyCalculator`.
+- Models the non-uniform electric field in the accordion liquid argon folds using:
+  - Electric field map: `ec.fieldzv03` (24 MB).
+  - High-voltage map: `HVEMECMap_v02.dat`.
+  - Radial calibration tables: `EmecTables-ATLAS-P2-RUN4-01-01-00.csv`.
+- Accurately computes electron drift velocities and field-dependent charge collection efficiencies across the accordion fold geometry.
+
+---
+
+## 15. Event Generation, Physics Modeling & Core Geometry Bug Fixes (PR #15, PR #16, PR #20)
+
+### Physics & Geometry Defects Resolved
+Luciano addressed several numerical and physical defects across event generation, geometry construction, and hit extraction:
+
+1. **Physical Charge Determination from PDG Table (PR #15):**
+   - In `master`, particle charge in [helper.cxx](file:///home/joao.pinto/git_repos/lorenzetti/generator/filters/src/helper.cxx) was inferred simply from the sign of the PDG ID (`pdg_id > 0`), erroneously classifying neutral particles ($K_L^0$, $n$, $\pi^0$) as charged and inverting antiparticle charges.
+   - Fixed by querying `TDatabasePDG::Instance()->GetParticle(pdg_id)->Charge() / 3.0` for true physical electric charges.
+2. **Gaussian Vertex Spread in `Pythia8Gen` (PR #15):**
+   - In `master`, the Gaussian generator in `Pythia8Gen.cxx` mistakenly divided the random variable by $\sqrt{2\pi}$, skewing spatial and temporal vertex smearing ($\sigma / \sqrt{2\pi}$ instead of $\sigma$). Removed this division.
+3. **Cross-Event Seed ID Isolation (PR #15):**
+   - Explicitly cleared `p_seed_id` in `EventTape.cxx` between events, preventing seed association leaks during multi-event generation.
+4. **Sensitive Detector Regioning at Step Midpoint (PR #16):**
+   - `CaloHitMaker` previously tested detector volumes at `preStepPoint`. Steps traversing boundaries into active calorimeter media were misclassified or dropped. Fixed to evaluate sensitive volumes at the step midpoint:
+     $$\vec{r}_{\text{mid}} = \frac{1}{2}\left(\vec{r}_{\text{pre}} + \vec{r}_{\text{post}}\right)$$
+5. **Geometry Placement Dedup (PR #16):**
+   - Fixed duplicate volume placement in `DetectorConstruction_v1.compile()`, eliminating overlapping geometry warnings and memory bloating.
+6. **Kinematics & Generation Robustness (PR #16):**
+   - Safe evaluation of $E_T = E$ at $\eta = 0$ in `ParticleHelper::et()`.
+   - Identified antiparticles of invisible particles as invisible.
+   - Wrapped azimuthal separation $\Delta\phi$ to $[-\pi, \pi]$ in JF17 jet filter constituents.
+   - Preserved fractional pileup mean ($\langle\mu\rangle$) in `Pileup`.
+   - Added automatic event regeneration when Pythia8 or an algorithm fails to generate a valid event.
+7. **Generator Options in `gen_minbias` & `Pileup` (PR #20):**
+   - Configurable collision vertex Gaussian spread: `--sigma-z` (in mm) and `--sigma-t` (in ps) in `gen_minbias.py`.
+   - Configurable particle transverse momentum thresholds in `Pileup`: `--pt-min-charged` and `--pt-min-neutral`.
+
+---
+
+## 16. Unified Dataclass Job Steering System (`JobFlags`) & CLI Decoupling
+
+### Context & Architectural Challenge
+The integration of PR #18, PR #19, and PR #20 introduced over 35 fine-grained parameters for geometry, sub-detectors, cryostats, magnetic field, hit response, and digitization. Originally, exposing these options bloated `simu_trf.py` and `digit_trf.py` into monolithic scripts with 40+ CLI arguments, breaking the declarative simplicity established in Section 6.
+
+### The Refactored Solution: Centralized `JobFlags` Hierarchy
+To resolve this without sacrificing flexibility, the configuration layer was refactored around a centralized, typed, serializable system using Python standard library `@dataclass(init=False)` in [JobFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/kernel/GaugiKernel/python/JobFlags.py):
+
+1. **`JobFlags` Base Class:**
+   - Provides `to_dict()`, `from_dict()`, `to_json()`, `from_json()`, `reset()`, and structured `__repr__()`.
+   - Implements dynamic attribute retrieval: instance initialization queries `getattr(self.__class__, f.name, f.default)` so that class-level attribute mutations dynamically propagate to object instances and serialization dictionaries.
+2. **Domain-Specific Flag Dataclasses with Full English Comments:**
+   - **`AtlasGeometryFlags`** ([AtlasGeometryFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/geometry/v2/python/AtlasGeometryFlags.py)): 24 flags governing Tile, EMB, EMEC, HEC, FCal, cryostats, gap services, GeoModel Run 4 database paths, and field maps.
+   - **`MagFieldFlags`** ([MagFieldFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/magfield/python/MagFieldFlags.py)): Steering for `EnableField` and `EnableSolenoidOnly`.
+   - **`CaloHitFlags` & `FreeRunningFlags`** ([CaloHitFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloHitBuilder/python/CaloHitFlags.py)): Active energy response, Birks' law, dual readout, neutron time cut, and free-running ATLAS HITS generation.
+   - **`CaloFlags`, `CrossTalkFlags`, `AnomalyFlags`** ([CaloFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloCellBuilder/python/CaloFlags.py)): Electronic noise, cell cross-talk coupling, and dead-channel masking.
+   - **`CaloClusterFlags`** ([CaloClusterFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloClusterBuilder/python/CaloClusterFlags.py)): Cluster seed thresholds, window dimensions, and forward shower moments.
+   - **`RootStreamESDFlags` & `RootStreamAODFlags`** ([RootStreamFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/io/RootStreamBuilder/python/RootStreamFlags.py)): RoI windowing, full cell streaming, and Ringer concentric, corner, asymmetric, and strip ring topologies.
+3. **Decoupled CLI Transforms:**
+   - Pruned `simu_trf.py` and `digit_trf.py` down to 10-11 orthogonal, essential options (`-i`, `-o`, `-nt`, `-nw`, `--detector`, `--nov`, `--timeout`, `--job-file`, `--pre-init`, `--pre-exec`).
+4. **Flexible Steering Paradigms:**
+   - **Python `--pre-init` Overrides:**
+     ```bash
+     simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
+       --pre-init "from geometry.v2 import AtlasGeometryFlags as Geo; Geo.AtlasEmb = False; Geo.AtlasEmbCells = False"
+     ```
+   - **Batch JSON Profiles via `--job-file`:**
+     ```json
+     {
+       "AtlasGeometryFlags": { "AtlasRun4": false },
+       "CaloHitFlags": { "BirksLaw": true, "NeutronTimeCut": 150.0 }
+     }
+     ```
+5. **Quality Assurance & Reference Manual:**
+   - Comprehensive test suite in [test_job_flags.py](file:///home/joao.pinto/git_repos/lorenzetti/kernel/GaugiKernel/tests/test_job_flags.py) (15 passing tests).
+   - Dedicated reference documentation in [doc/flags.md](file:///home/joao.pinto/git_repos/lorenzetti/doc/flags.md).
+
+---
+
 ## Summary of Benefits
 
 | Feature | `master` | `python_refactory` | Benefit |
@@ -622,4 +760,8 @@ The runner coordinates 3 execution phases:
 | **Simulation Hit Filtering** | Specialized `CaloHitBranchHandler` in I/O tier | Upstream in `CaloHitBuilder` (`CaloHitMerge`) | Removed `CaloHitBranchHandler.h` & `G4Kernel` dependency from I/O; reduced event RAM; ROOT & Parquet parity |
 | **Component Hierarchy & Pileup** | Legacy `AlgTool`, `PileupMerge` in `CaloCellBuilder`, dual low/high files, random I/O | Modern `Gaugi::Tool`, `CaloHitPileupMerge` with unified MinBias, `CaloHit::copy()`, RoI filter, sequential circular stream | Idiomatic C++ terminology; unified single-library pileup; fast RoI overlay; 10x-30x faster sequential prefetch streaming |
 | **End-to-End Workflow** | Fragmented manual shell commands | Executable `examples/run_reco_sequence.py` | Automated multi-worker, multi-threaded pipeline from EVT to Parquet with pileup overlay |
+| **ATLAS Run 4 Geometry (PR #18)** | Stylized concentric cylinders (`v1`) | Full-fidelity `DetectorConstruction_v2`: Tile periodic cells, EMB/EMEC/HEC/FCal, cryostats, GeoModel SQLite import, FTFP_BERT_ATL | Authentic ATLAS Run 4 material budget, cell granularities, and simulation physics |
+| **Free-Running Hits & EMEC Charge (PR #19)** | Fixed bunch-crossing binning only | Exact ATLAS `CollectionTree` HITS ntuple layout, Athena `FilterHit_tf` format, ported 23.0.14 EMEC charge collection | Direct compatibility with external Athena digitization and detector response validation |
+| **Generator & Physics Modeling (PR #15, #16, #20)** | Sign-based charge check, divided $\sigma$, volume dups, preStep hit tagging | `TDatabasePDG` charge lookup, true Gaussian spread, step midpoint regioning, single volume placement, vertex/pT options | Elimination of physical bugs, zero cross-event seed leakage, accurate kinematics |
+| **Unified Dataclass Job Steering** | 35+ bloated CLI flags per transform | Centralized `@dataclass(init=False)` `JobFlags`, `--pre-init` Python steering, `--job-file` JSON | Clean 10-argument CLIs, typed configuration, full serializability, and automated testing |
 
