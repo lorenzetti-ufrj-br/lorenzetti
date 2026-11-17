@@ -72,8 +72,8 @@ A typed `@dataclass(init=False)` inheriting from `JobFlags` that steers the dete
 from GeoBase import DetectorFlags
 
 # Inspect or configure default version
-print(DetectorFlags.Version)  # Default: "v2"
-DetectorFlags.Version = "v1"  # Steer to Classical geometry
+print(DetectorFlags.Version)  # Default: "v1"
+DetectorFlags.Version = "v2"  # Steer to ATLAS Run 4 geometry
 ```
 
 ### `DetectorConstructionCfg`

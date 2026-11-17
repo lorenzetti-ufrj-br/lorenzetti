@@ -148,6 +148,16 @@ class TestMagFieldFlags(unittest.TestCase):
         self.assertFalse(MagFieldFlags.EnableSolenoidOnly)
 
 
+class TestDetectorFlags(unittest.TestCase):
+    def test_detector_flags_default_v1(self):
+        DetectorFlags.reset()
+        self.assertEqual(DetectorFlags.Version, "v1")
+        DetectorFlags.Version = "v2"
+        self.assertEqual(DetectorFlags.to_dict()["Version"], "v2")
+        DetectorFlags.reset()
+        self.assertEqual(DetectorFlags.Version, "v1")
+
+
 class TestReconstructionFlags(unittest.TestCase):
     def test_calo_flags(self):
         CaloFlags.reset()

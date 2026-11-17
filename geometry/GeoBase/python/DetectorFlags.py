@@ -17,4 +17,4 @@ class DetectorFlags(JobFlags):
     """
 
     # Active detector version: "v1" (simplified) or "v2" (ATLAS Run 4)
-    Version: str = "v2"
+    Version: str = "v1"

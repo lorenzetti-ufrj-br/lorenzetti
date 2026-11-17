@@ -31,18 +31,18 @@ class TestDetectorConstructionCfg(unittest.TestCase):
         MagFieldFlags.reset()
 
     def test_detector_flags_defaults(self):
-        self.assertEqual(DetectorFlags.Version, "v2")
-        flags = DetectorFlags()
-        self.assertEqual(flags.Version, "v2")
-        self.assertEqual(flags.to_dict(), {"Version": "v2"})
-
-    def test_detector_flags_override_and_reset(self):
-        DetectorFlags.Version = "v1"
         self.assertEqual(DetectorFlags.Version, "v1")
         flags = DetectorFlags()
         self.assertEqual(flags.Version, "v1")
-        DetectorFlags.reset()
+        self.assertEqual(flags.to_dict(), {"Version": "v1"})
+
+    def test_detector_flags_override_and_reset(self):
+        DetectorFlags.Version = "v2"
         self.assertEqual(DetectorFlags.Version, "v2")
+        flags = DetectorFlags()
+        self.assertEqual(flags.Version, "v2")
+        DetectorFlags.reset()
+        self.assertEqual(DetectorFlags.Version, "v1")
 
     def test_construct_v1(self):
         MagFieldFlags.EnableField = True
@@ -66,10 +66,11 @@ class TestDetectorConstructionCfg(unittest.TestCase):
         self.assertTrue(MagFieldFlags.EnableSolenoidOnly)
 
     def test_construct_default_uses_detector_flags(self):
-        DetectorFlags.Version = "v1"
+        # Default is v1 without explicit flag setting:
         det = DetectorConstructionCfg("TestDefault")
         self.assertIsInstance(det, DetectorConstruction_v1)
 
+        # Switch to v2:
         DetectorFlags.Version = "v2"
         self._disable_external_atlas_v2()
         det2 = DetectorConstructionCfg("TestDefaultV2")

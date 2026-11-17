@@ -47,7 +47,7 @@ geometry/
 ```python
 from GeoBase import DetectorConstructionCfg
 
-# Automatically resolves target version from DetectorFlags.Version (default: "v2"):
+# Automatically resolves target version from DetectorFlags.Version (default: "v1"):
 det = DetectorConstructionCfg("ATLAS")
 
 # Or explicitly select version:

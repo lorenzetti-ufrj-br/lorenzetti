@@ -832,7 +832,7 @@ geometry/
 
 1. **`geometry/GeoBase` (Common Primitives & Factory):**
    - **Zero Redundancy:** Single source of truth for volume construction (`PhysicalVolume`), sensitive detector setup (`SensitiveDetector`), calorimeter utilities (`Calorimeter`), tracking configurations (`Tracking`), and pulse shapes (`pulseLar.dat`, `pulseTile.dat`).
-   - **`DetectorFlags`:** Centralized `@dataclass(init=False)` tracking `DetectorFlags.Version` (defaulting to `"v2"`).
+   - **`DetectorFlags`:** Centralized `@dataclass(init=False)` tracking `DetectorFlags.Version` (defaulting to `"v1"`).
    - **Unified Factory `DetectorConstructionCfg`:** Factory function that inspects flags, dynamically resolves version (`v1` or `v2`), applies relevant subsystem defaults (`MagFieldFlags`, `AtlasGeometryFlags`), resolves kwargs, and instantiates the detector:
      ```python
      from GeoBase import DetectorConstructionCfg

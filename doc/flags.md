@@ -56,7 +56,7 @@ Controls top-level detector version resolution across simulation and digitizatio
 
 | Flag | Type | Default | Description |
 | :--- | :---: | :---: | :--- |
-| `Version` | `str` | `"v2"` | Target detector model version (`"v1"` for Classical cylindrical model, `"v2"` for ATLAS Run 4). |
+| `Version` | `str` | `"v1"` | Target detector model version (`"v1"` for Classical cylindrical model, `"v2"` for ATLAS Run 4). |
 
 ---
 
