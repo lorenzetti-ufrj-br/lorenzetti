@@ -188,7 +188,7 @@ class CaloHitBuilder(Logger):
             self.RecoAlgs.append(alg)
             self.OutputCollectionKeys.append(samp.CollectionKey)
 
-        # ATLAS FCal with its cells (geometry/v2/python/FCAL.py): one maker per module and side
+        # ATLAS FCal with its cells (GeoV2/python/detectors/FCAL.py): one maker per module and side
         for fm in getattr(detector_construction, "fcal_modules", []):
             MSG_INFO(
                 self,

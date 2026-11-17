@@ -102,9 +102,10 @@ class FreeRunningFlags(JobFlags):
     def get_data_dir(cls) -> str:
         """Finds the geometry v2 data directory containing EMEC tables and maps."""
         for p in (
+            os.environ.get("LORENZETTI_GEOV2_DATA_DIR"),
             os.environ.get("LORENZETTI_GEOMETRY_V2_DATA_DIR"),
             os.environ.get("LORENZETTI_GEOMETRY_DATA_DIR"),
-            str(Path(__file__).resolve().parents[4] / "geometry" / "v2" / "data"),
+            str(Path(__file__).resolve().parents[4] / "geometry" / "GeoV2" / "data"),
         ):
             if p and os.path.isdir(p):
                 return p

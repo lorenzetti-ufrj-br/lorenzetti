@@ -160,7 +160,7 @@ Lorenzetti provides a streamlined CLI interface and delegates fine-grained confi
 ```bash
 # Example: Disable EMB and set custom neutron time cut in simulation
 simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
-  --pre-init "from geometry.v2 import AtlasGeometryFlags as Geo; from CaloHitBuilder import CaloHitFlags; Geo.AtlasEmb = False; CaloHitFlags.NeutronTimeCut = 200.0"
+  --pre-init "from GeoV2 import AtlasGeometryFlags as Geo; from CaloHitBuilder import CaloHitFlags; Geo.AtlasEmb = False; CaloHitFlags.NeutronTimeCut = 200.0"
 
 # Example: Enable electronic cross-talk and defect simulation in digitization
 digit_trf.py -i input.HIT.root -o output.ESD.root --detector v2 \

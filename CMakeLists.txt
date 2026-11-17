@@ -151,8 +151,8 @@ add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:GaugiKernel>
   $<TARGET_OBJECTS:G4Kernel>
   $<TARGET_OBJECTS:MagField>
-  $<TARGET_OBJECTS:geometry_v1>
-  $<TARGET_OBJECTS:geometry_v2>
+  $<TARGET_OBJECTS:GeoV1>
+  $<TARGET_OBJECTS:GeoV2>
   $<TARGET_OBJECTS:CaloHit>
   $<TARGET_OBJECTS:CaloCell>
   $<TARGET_OBJECTS:CaloCluster>

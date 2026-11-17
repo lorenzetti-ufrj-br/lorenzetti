@@ -1,9 +1,10 @@
-# Detector Geometry Package (`geometry/`)
+# Detector Geometry Packages (`geometry/`)
 
-The `geometry/` package manages detector geometries for the **Lorenzetti** simulation framework. It is modularized into two distinct versions:
+The `geometry/` directory manages detector geometries for the **Lorenzetti** simulation framework. It is modularized into three first-class packages:
 
-- **[v1 (Classical Lorenzetti Geometry)](v1/README.md)**: Standard cylindrical $4\pi$ calorimeter model implemented with Geant4 primitives. Lightweight, fast, and self-contained.
-- **[v2 (ATLAS Run 4 Geometry)](v2/README.md)**: High-fidelity ATLAS Run 4 geometry imported from official GeoModel SQLite dumps, featuring realistic FCal forward calorimetry, frozen shower models, and integration with the standalone [`magfield/`](../magfield/README.md) package.
+- **[GeoBase](GeoBase/)**: Shared geometry building blocks (`PhysicalVolume`, `SensitiveDetector`, `Calorimeter`, `Tracking`), common pulse data (`pulseTile.dat`, `pulseLar.dat`), and the centralized factory **`DetectorConstructionCfg`**.
+- **[GeoV1](GeoV1/)**: Classical cylindrical $4\pi$ calorimeter model implemented with Geant4 primitives. Lightweight, fast, and self-contained. Sub-detectors reside in `GeoV1.detectors`.
+- **[GeoV2](GeoV2/)**: High-fidelity ATLAS Run 4 geometry imported from official GeoModel SQLite dumps, featuring realistic FCal forward calorimetry, frozen shower models, and integration with the standalone [`magfield/`](../magfield/README.md) package. Sub-detectors reside in `GeoV2.detectors`.
 
 ---
 
@@ -11,24 +12,26 @@ The `geometry/` package manages detector geometries for the **Lorenzetti** simul
 
 ```text
 geometry/
-├── CMakeLists.txt              # Top-level geometry orchestrator (add_subdirectory v1 & v2)
+├── CMakeLists.txt              # Orchestrator (add_subdirectory GeoBase, GeoV1, GeoV2)
 ├── README.md                   # This overview file
-├── v1/                         # Self-contained Classical Detector Package
-│   ├── README.md               # v1 comprehensive documentation
-│   ├── CMakeLists.txt          # Library geometry_v1
-│   ├── v1/                     # Public C++ headers
+├── GeoBase/                    # Shared Primitives, Common Data & Factory
+│   ├── CMakeLists.txt          # Installs GeoBase Python module and shared data
+│   ├── python/                 # GeoBase modules (DetectorConstructionCfg, DetectorFlags, PhysicalVolume, etc.)
+│   └── data/                   # Shared pulse files (pulseLar.dat, pulseTile.dat)
+├── GeoV1/                      # Classical Detector Package
+│   ├── CMakeLists.txt          # Library GeoV1
+│   ├── GeoV1/                  # Public C++ headers
 │   ├── src/                    # C++ implementations & LinkDef.h
-│   ├── python/                 # geometry.v1 Python modules
-│   ├── data/                   # Pulse files (pulseLar.dat, pulseTile.dat)
-│   ├── scripts/                # Visualization scripts (run_vis.py)
-│   └── doc/                    # Visual diagrams and views
-└── v2/                         # Self-contained ATLAS Run 4 Package
-    ├── README.md               # v2 comprehensive documentation
-    ├── CMakeLists.txt          # Library geometry_v2
-    ├── v2/                     # Public C++ headers
+│   ├── python/                 # GeoV1 Python module (DetectorConstruction_v1, detectors/)
+│   └── scripts/                # Visualization scripts (run_vis.py)
+└── GeoV2/                      # ATLAS Run 4 Package
+    ├── CMakeLists.txt          # Library GeoV2
+    ├── GeoV2/                  # Public C++ headers
     ├── src/                    # C++ implementations & LinkDef.h
-    ├── python/                 # geometry.v2 Python modules
-    ├── data/                   # FCal electrodes, ShowerLib, and pulse files
+    ├── GeoSpecialShapes/       # EMEC accordion shapes
+    ├── LArG4EC/                # Athena ported charge collection
+    ├── python/                 # GeoV2 Python module (DetectorConstruction_v2, AtlasGeometryFlags, detectors/)
+    ├── data/                   # FCal electrodes, EMEC tables, and ShowerLib
     └── scripts/                # GeoModel and cell check scripts
 ```
 
@@ -36,13 +39,17 @@ geometry/
 
 ## Python API Usage
 
-Import directly from the respective version subpackage:
+### Recommended: Unified Factory (`DetectorConstructionCfg`)
 ```python
-from geometry.v1 import DetectorConstruction_v1
-from geometry.v2 import DetectorConstruction_v2
+from GeoBase import DetectorConstructionCfg
+
+# Automatically detects version or uses flags:
+det = DetectorConstructionCfg("ATLAS", version="v2")
 ```
 
-For detailed subdetector specifications and parameters, consult:
-- **[geometry/v1 Documentation](v1/README.md)**
-- **[geometry/v2 Documentation](v2/README.md)**
-- **[magfield Documentation](../magfield/README.md)**
+### Direct Package Usage:
+```python
+from GeoV1 import DetectorConstruction_v1
+# or
+from GeoV2 import DetectorConstruction_v2, AtlasGeometryFlags
+```

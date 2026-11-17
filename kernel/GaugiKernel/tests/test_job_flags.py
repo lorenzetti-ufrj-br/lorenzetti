@@ -18,7 +18,8 @@ except ImportError:
     sys.modules["ROOT"] = unittest.mock.MagicMock()
 
 from GaugiKernel import JobFlags
-from geometry.v2 import AtlasGeometryFlags
+from GeoBase import DetectorFlags
+from GeoV2 import AtlasGeometryFlags
 from magfield import MagFieldFlags
 from CaloHitBuilder import CaloHitFlags, FreeRunningFlags
 from CaloCellBuilder import CaloFlags, CrossTalkFlags, AnomalyFlags

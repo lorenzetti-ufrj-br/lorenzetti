@@ -59,12 +59,12 @@ class ComponentAccumulator(Configurable):
     #### Example Usage
     ```python
     from G4Kernel import ComponentAccumulator, EventReader
-    from geometry.v1 import DetectorConstruction_v1
+    from GeoBase import DetectorConstructionCfg
     from CaloHitBuilder import CaloHitBuilder
     from RootStreamBuilder import RootStreamHITMaker
 
     # 1. Initialize detector geometry and event reader
-    detector = DetectorConstruction_v1("ATLAS", UseMagneticField=True)
+    detector = DetectorConstructionCfg("ATLAS")
     reader = EventReader("EventReader", "input.EVT.root")
 
     # 2. Instantiate accumulator

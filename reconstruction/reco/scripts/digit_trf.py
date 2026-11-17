@@ -22,8 +22,7 @@ from RootStreamBuilder import (
     RootStreamESDMaker,
     RootStreamESDFlags,
 )
-from geometry.v1 import DetectorConstruction_v1
-from geometry.v2 import DetectorConstruction_v2, AtlasGeometryFlags
+from GeoBase import DetectorConstructionCfg
 
 
 @file_parallel_job(ntuple_name="CollectionTree", output_replace=(".HIT", ".ESD"))
@@ -63,11 +62,7 @@ def main(
 
     acc = ComponentAccumulator("ComponentAccumulator", output_file, HIT)
 
-    if detector == "v2":
-        AtlasGeometryFlags.apply_defaults(is_v2=True)
-        det = DetectorConstruction_v2("ATLAS", **AtlasGeometryFlags.to_dict())
-    else:
-        det = DetectorConstruction_v1("ATLAS")
+    det = DetectorConstructionCfg("ATLAS", version=detector)
 
     calorimeter = CaloCellBuilder(
         "CaloCellBuilder",

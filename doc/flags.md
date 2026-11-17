@@ -14,7 +14,7 @@ Instead of bloating command-line interfaces (`simu_trf.py`, `digit_trf.py`, `rec
 ```bash
 # Example: Run simulation with detector v2, but disable EMB and EMB cells
 simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
-  --pre-init "from geometry.v2 import AtlasGeometryFlags as Geo; Geo.AtlasEmb = False; Geo.AtlasEmbCells = False"
+  --pre-init "from GeoV2 import AtlasGeometryFlags as Geo; Geo.AtlasEmb = False; Geo.AtlasEmbCells = False"
 ```
 
 ```bash
@@ -51,7 +51,7 @@ simu_trf.py -i /data/*.EVT.root -o /output/ --job-file config.json -nt 4
 
 ## 📦 Domain Flag Reference
 
-### 1. `AtlasGeometryFlags` (`geometry/v2/python/AtlasGeometryFlags.py`)
+### 1. `AtlasGeometryFlags` (`GeoV2/python/AtlasGeometryFlags.py`)
 Controls the high-fidelity ATLAS Run 4 geometry, sub-detectors, cryostats, and external database maps.
 
 | Flag | Type | Default (v2) | Description |

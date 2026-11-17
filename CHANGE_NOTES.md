@@ -22,6 +22,7 @@ This document details the major architectural enhancements, modernization effort
 14. [Free-Running Calorimeter Hits & Athena EMEC Charge Collection (PR #19)](#14-free-running-calorimeter-hits--athena-emec-charge-collection-pr-19)
 15. [Event Generation, Physics Modeling & Core Geometry Bug Fixes (PR #15, PR #16, PR #20)](#15-event-generation-physics-modeling--core-geometry-bug-fixes-pr-15-pr-16-pr-20)
 16. [Unified Dataclass Job Steering System (`JobFlags`) & CLI Decoupling](#16-unified-dataclass-job-steering-system-jobflags--cli-decoupling)
+17. [Decoupled 3-Package Geometry Architecture & Unified Factory (`GeoBase`, `GeoV1`, `GeoV2`)](#17-decoupled-3-package-geometry-architecture--unified-factory-geobase-geov1-geov2)
 
 ---
 
@@ -717,7 +718,7 @@ To resolve this without sacrificing flexibility, the configuration layer was ref
    - Provides `to_dict()`, `from_dict()`, `to_json()`, `from_json()`, `reset()`, and structured `__repr__()`.
    - Implements dynamic attribute retrieval: instance initialization queries `getattr(self.__class__, f.name, f.default)` so that class-level attribute mutations dynamically propagate to object instances and serialization dictionaries.
 2. **Domain-Specific Flag Dataclasses with Full English Comments:**
-   - **`AtlasGeometryFlags`** ([AtlasGeometryFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/geometry/v2/python/AtlasGeometryFlags.py)): 24 flags governing Tile, EMB, EMEC, HEC, FCal, cryostats, gap services, GeoModel Run 4 database paths, and field maps.
+   - **`AtlasGeometryFlags`** ([AtlasGeometryFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV2/python/AtlasGeometryFlags.py)): 24 flags governing Tile, EMB, EMEC, HEC, FCal, cryostats, gap services, GeoModel Run 4 database paths, and field maps.
    - **`MagFieldFlags`** ([MagFieldFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/magfield/python/MagFieldFlags.py)): Steering for `EnableField` and `EnableSolenoidOnly`.
    - **`CaloHitFlags` & `FreeRunningFlags`** ([CaloHitFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloHitBuilder/python/CaloHitFlags.py)): Active energy response, Birks' law, dual readout, neutron time cut, and free-running ATLAS HITS generation.
    - **`CaloFlags`, `CrossTalkFlags`, `AnomalyFlags`** ([CaloFlags.py](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloCellBuilder/python/CaloFlags.py)): Electronic noise, cell cross-talk coupling, and dead-channel masking.
@@ -729,7 +730,7 @@ To resolve this without sacrificing flexibility, the configuration layer was ref
    - **Python `--pre-init` Overrides:**
      ```bash
      simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
-       --pre-init "from geometry.v2 import AtlasGeometryFlags as Geo; Geo.AtlasEmb = False; Geo.AtlasEmbCells = False"
+       --pre-init "from GeoV2 import AtlasGeometryFlags as Geo; Geo.AtlasEmb = False; Geo.AtlasEmbCells = False"
      ```
    - **Batch JSON Profiles via `--job-file`:**
      ```json
@@ -741,6 +742,112 @@ To resolve this without sacrificing flexibility, the configuration layer was ref
 5. **Quality Assurance & Reference Manual:**
    - Comprehensive test suite in [test_job_flags.py](file:///home/joao.pinto/git_repos/lorenzetti/kernel/GaugiKernel/tests/test_job_flags.py) (15 passing tests).
    - Dedicated reference documentation in [doc/flags.md](file:///home/joao.pinto/git_repos/lorenzetti/doc/flags.md).
+
+---
+
+## 17. Decoupled 3-Package Geometry Architecture & Unified Factory (`GeoBase`, `GeoV1`, `GeoV2`)
+
+### Context & Architectural Challenge
+In earlier versions and initial refactoring stages, the `geometry/` subsystem was structured into monolithic, semi-duplicated directories `geometry/v1` and `geometry/v2`. This created several architectural drawbacks:
+- **Massive Code Duplication:** Foundational primitives (`PhysicalVolume.py`, `SensitiveDetector.py`, `Calorimeter.py`, `Tracking.py`) and pulse shape data files (`pulseTile.dat`, `pulseLar.dat`) were copy-pasted identically across both version trees.
+- **Tight Coupling & Manual Branching:** High-level transforms (`simu_trf.py`, `digit_trf.py`) were forced to perform manual `if/else` branching to import and instantiate either `v1` or `v2`:
+  ```python
+  # Old pattern: manual branching in transforms
+  if detector == "v1":
+      from geometry.v1 import DetectorConstruction_v1 as ATLAS
+      det = ATLAS("ATLAS")
+  elif detector == "v2":
+      from geometry.v2 import DetectorConstruction_v2 as ATLAS
+      det = ATLAS("ATLAS")
+  ```
+- **Cluttered Subdetector Namespaces:** Subdetectors (`ECAL`, `TILE`, `EMEC`, `HEC`, `FCAL`, `DeadMaterials`) resided directly in the package's top-level Python folder alongside the main `DetectorConstruction` classes and primitives.
+
+### The Refactored Solution: 3 First-Class Packages & `DetectorConstructionCfg`
+The geometry subsystem was redesigned into three distinct, specialized packages without backward compatibility baggage:
+
+```
+geometry/
+├── CMakeLists.txt
+├── GeoBase/
+│   ├── CMakeLists.txt
+│   ├── data/
+│   │   ├── pulseLar.dat
+│   │   └── pulseTile.dat
+│   ├── python/
+│   │   ├── __init__.py
+│   │   ├── Calorimeter.py
+│   │   ├── DetectorConstructionCfg.py
+│   │   ├── DetectorFlags.py
+│   │   ├── PhysicalVolume.py
+│   │   ├── SensitiveDetector.py
+│   │   └── Tracking.py
+│   └── tests/
+│       └── test_detector_construction_cfg.py
+├── GeoV1/
+│   ├── CMakeLists.txt
+│   ├── GeoV1/
+│   │   └── DetectorConstruction_v1.h
+│   ├── python/
+│   │   ├── __init__.py
+│   │   ├── DetectorConstruction_v1.py
+│   │   └── detectors/
+│   │       ├── DeadMaterials.py
+│   │       ├── ECAL.py
+│   │       ├── EMEC.py
+│   │       ├── HEC.py
+│   │       ├── TILE.py
+│   │       └── __init__.py
+│   ├── src/
+│   └── scripts/
+└── GeoV2/
+    ├── CMakeLists.txt
+    ├── GeoSpecialShapes/
+    ├── GeoV2/
+    │   └── DetectorConstruction_v2.h
+    ├── LArG4EC/
+    ├── PortableMsgStream/
+    ├── python/
+    │   ├── __init__.py
+    │   ├── AtlasGeometryFlags.py
+    │   ├── DetectorConstruction_v2.py
+    │   └── detectors/
+    │       ├── AtlasBarrelCryostat.py
+    │       ├── AtlasBarrelFront.py
+    │       ├── AtlasEmb.py
+    │       ├── AtlasEmec.py
+    │       ├── AtlasFCal.py
+    │       ├── AtlasHec.py
+    │       ├── AtlasRun4.py
+    │       ├── AtlasTile.py
+    │       ├── DeadMaterials.py
+    │       ├── ECAL.py
+    │       ├── EMEC.py
+    │       ├── FCAL.py
+    │       ├── HEC.py
+    │       ├── TILE.py
+    │       └── __init__.py
+    ├── src/
+    └── scripts/
+```
+
+1. **`geometry/GeoBase` (Common Primitives & Factory):**
+   - **Zero Redundancy:** Single source of truth for volume construction (`PhysicalVolume`), sensitive detector setup (`SensitiveDetector`), calorimeter utilities (`Calorimeter`), tracking configurations (`Tracking`), and pulse shapes (`pulseLar.dat`, `pulseTile.dat`).
+   - **`DetectorFlags`:** Centralized `@dataclass(init=False)` tracking `DetectorFlags.Version` (defaulting to `"v2"`).
+   - **Unified Factory `DetectorConstructionCfg`:** Factory function that inspects flags, dynamically resolves version (`v1` or `v2`), applies relevant subsystem defaults (`MagFieldFlags`, `AtlasGeometryFlags`), resolves kwargs, and instantiates the detector:
+     ```python
+     from GeoBase import DetectorConstructionCfg
+
+     # 1-line instantiation with automatic version resolution
+     det = DetectorConstructionCfg("ATLAS", version=detector)
+     ```
+2. **`geometry/GeoV1` & `geometry/GeoV2` (Dedicated Subsystem Packages):**
+   - **Clean Subdetector Organization:** Subdetectors are cleanly quarantined in `detectors/` (`from GeoV1.detectors import ECAL` / `from GeoV2.detectors import AtlasEmb, AtlasTile`), leaving root package namespaces clean.
+   - **Decoupled C++ Modules:** Dedicated CMake targets `GeoV1` and `GeoV2` with canonical include headers (`#include "GeoV1/DetectorConstruction_v1.h"` and `#include "GeoV2/DetectorConstruction_v2.h"`).
+   - **Direct Data Resolution:** Pulse data paths resolve dynamically via `GeoBase.get_data_dir()` without hardcoding filesystem paths.
+3. **Streamlined Transforms:**
+   - Both `simu_trf.py` and `digit_trf.py` import `DetectorConstructionCfg` directly from `GeoBase`, reducing detector instantiation boilerplate to a single declarative line.
+4. **Comprehensive Test Suite:**
+   - [test_detector_construction_cfg.py](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoBase/tests/test_detector_construction_cfg.py) covers V1/V2 instantiation, fallback logic, kwargs overrides, and pulse file discovery without requiring a full ROOT installation.
 
 ---
 
@@ -764,4 +871,5 @@ To resolve this without sacrificing flexibility, the configuration layer was ref
 | **Free-Running Hits & EMEC Charge (PR #19)** | Fixed bunch-crossing binning only | Exact ATLAS `CollectionTree` HITS ntuple layout, Athena `FilterHit_tf` format, ported 23.0.14 EMEC charge collection | Direct compatibility with external Athena digitization and detector response validation |
 | **Generator & Physics Modeling (PR #15, #16, #20)** | Sign-based charge check, divided $\sigma$, volume dups, preStep hit tagging | `TDatabasePDG` charge lookup, true Gaussian spread, step midpoint regioning, single volume placement, vertex/pT options | Elimination of physical bugs, zero cross-event seed leakage, accurate kinematics |
 | **Unified Dataclass Job Steering** | 35+ bloated CLI flags per transform | Centralized `@dataclass(init=False)` `JobFlags`, `--pre-init` Python steering, `--job-file` JSON | Clean 10-argument CLIs, typed configuration, full serializability, and automated testing |
+| **Decoupled 3-Package Geometry & Factory** | Monolithic v1/v2 folders with duplicated files & manual if/else imports | Clean 3-package hierarchy (`GeoBase`, `GeoV1`, `GeoV2`), `detectors/` submodules, `DetectorConstructionCfg` | Modular architecture, zero file duplication, 1-line transform instantiation |
 

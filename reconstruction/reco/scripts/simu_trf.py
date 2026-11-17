@@ -18,8 +18,8 @@ from GaugiKernel.constants import MINUTES
 from G4Kernel import EventReader, ComponentAccumulator
 from RootStreamBuilder import recordable, clear_recorded_items, RootStreamHITMaker
 from CaloHitBuilder import CaloHitBuilder, CaloHitFlags, FreeRunningFlags
-from geometry.v1 import DetectorConstruction_v1
-from geometry.v2 import DetectorConstruction_v2, AtlasGeometryFlags
+from GeoBase import DetectorConstructionCfg, DetectorFlags
+from GeoV2 import AtlasGeometryFlags
 from magfield import MagFieldFlags
 
 
@@ -130,14 +130,8 @@ def main(
         CaloHitFlags.TilePmtSplit = "ushape"
         CaloHitFlags.NeutronTimeCut = 150.0
 
-    # 5. Instancia a geometria correspondente
-    if is_v2:
-        geo_dict = AtlasGeometryFlags.to_dict()
-        geo_dict["UseMagneticField"] = MagFieldFlags.EnableField
-        geo_dict["UseSolenoidField"] = MagFieldFlags.EnableSolenoidOnly
-        det = DetectorConstruction_v2("ATLAS", **geo_dict)
-    else:
-        det = DetectorConstruction_v1("ATLAS", UseMagneticField=MagFieldFlags.EnableField)
+    # 5. Instancia a geometria via Factory Cfg
+    det = DetectorConstructionCfg("ATLAS", version=detector)
 
     gun = EventReader(
         "EventReader",
