@@ -616,7 +616,7 @@ The runner coordinates 3 execution phases:
 ### Context & Motivation
 In legacy `master`, detector simulation relied on `DetectorConstruction_v1`, which implemented a simplified, schematic calorimeter model consisting of idealized cylindrical shells. While useful for rapid software validation, it lacked realistic absorber thicknesses, accurate cell segmentation, cryostats, dead materials, and the geometry specifications of the ATLAS experiment.
 
-In PR #18 (`feat/detector-construction-v2`), Luciano introduced **`DetectorConstruction_v2`** ([DetectorConstruction_v2.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/v2/src/DetectorConstruction_v2.cxx)), establishing an authentic ATLAS Run 4 calorimeter, magnetic field, and Geant4 physics environment derived directly from official ATLAS sources (GeoModel SQLite dumps and Athena code).
+In PR #18 (`feat/detector-construction-v2`), Luciano introduced **`DetectorConstruction_v2`** ([DetectorConstruction_v2.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV2/src/DetectorConstruction_v2.cxx)), establishing an authentic ATLAS Run 4 calorimeter, magnetic field, and Geant4 physics environment derived directly from official ATLAS sources (GeoModel SQLite dumps and Athena code).
 
 ### Sub-detectors & Active Calorimeter Layout
 1. **Tile Calorimeter (`AtlasTile`):**
@@ -639,7 +639,7 @@ In PR #18 (`feat/detector-construction-v2`), Luciano introduced **`DetectorConst
 - Crack and gap services simulating dead material between barrel and extended barrel calorimeters.
 
 ### External GeoModel Run 4 Database Integration
-- Added optional GeoModel 6.29.0 loader ([AtlasGeoModelImport.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/v2/src/AtlasGeoModelImport.cxx)) reading the Run 4 SQLite database dump (`geometry-ATLAS-P2-RUN4-01-01-00-sim.db`).
+- Added optional GeoModel 6.29.0 loader ([AtlasGeoModelImport.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV2/src/AtlasGeoModelImport.cxx)) reading the Run 4 SQLite database dump (`geometry-ATLAS-P2-RUN4-01-01-00-sim.db`).
 - Imports the ITk (Inner Tracker), HGTD (High Granularity Timing Detector), and beam pipe geometry directly into the Geant4 simulation world.
 
 ### Magnetic Field & Geant4 Production Settings
@@ -668,7 +668,7 @@ In PR #19 (`feat/free-running-hits`), Luciano introduced the free-running hit ge
   - Option to record raw Geant4 steps without ATLAS time binning (`FreeRunningFlags.NoBinning`).
 
 ### Ported Athena 23.0.14 EMEC Charge Collection
-- Implemented in [LArG4EC_LArEMECChargeCollection.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/v2/src/LArG4EC_LArEMECChargeCollection.cxx), ported directly from Athena 23.0.14 `LArG4::EC::EnergyCalculator`.
+- Implemented in [LArG4EC_LArEMECChargeCollection.cxx](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV2/src/LArG4EC_LArEMECChargeCollection.cxx), ported directly from Athena 23.0.14 `LArG4::EC::EnergyCalculator`.
 - Models the non-uniform electric field in the accordion liquid argon folds using:
   - Electric field map: `ec.fieldzv03` (24 MB).
   - High-voltage map: `HVEMECMap_v02.dat`.

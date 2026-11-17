@@ -210,7 +210,7 @@ class DetectorConstruction_v2( Cpp ):
       self.mixtures.update( ATLAS_FCAL_CELL_MATERIALS )
       self.fcal_modules = getAtlasFcalCellsCfg( AtlasFcalElectrodes )
     # Frozen showers of the ATLAS FCal (needs AtlasFcalCells; geometry/src/FCalFrozenShowerModel.h; F41 conserto 23), with the libraries
-    # of the directory AtlasFcalShowerLibDir (default geometry/v2/data/LArG4ShowerLibData/MC23_v1, those of the Athena release 23.0.14)
+    # of the directory AtlasFcalShowerLibDir (default geometry/GeoV2/data/LArG4ShowerLibData/MC23_v1, those of the Athena release 23.0.14)
     if AtlasFcalFrozenShowers and not AtlasFcalCells:
       raise ValueError("AtlasFcalFrozenShowers needs AtlasFcalCells.")
     self.setProperty( "FCalFrozenShowers", AtlasFcalFrozenShowers )

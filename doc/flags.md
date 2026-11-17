@@ -51,7 +51,16 @@ simu_trf.py -i /data/*.EVT.root -o /output/ --job-file config.json -nt 4
 
 ## 📦 Domain Flag Reference
 
-### 1. `AtlasGeometryFlags` (`GeoV2/python/AtlasGeometryFlags.py`)
+### 1. `DetectorFlags` (`geometry/GeoBase/python/DetectorFlags.py`)
+Controls top-level detector version resolution across simulation and digitization transforms.
+
+| Flag | Type | Default | Description |
+| :--- | :---: | :---: | :--- |
+| `Version` | `str` | `"v2"` | Target detector model version (`"v1"` for Classical cylindrical model, `"v2"` for ATLAS Run 4). |
+
+---
+
+### 2. `AtlasGeometryFlags` (`geometry/GeoV2/python/AtlasGeometryFlags.py`)
 Controls the high-fidelity ATLAS Run 4 geometry, sub-detectors, cryostats, and external database maps.
 
 | Flag | Type | Default (v2) | Description |
@@ -83,7 +92,7 @@ Controls the high-fidelity ATLAS Run 4 geometry, sub-detectors, cryostats, and e
 
 ---
 
-### 2. `MagFieldFlags` (`magfield/python/MagFieldFlags.py`)
+### 3. `MagFieldFlags` (`magfield/python/MagFieldFlags.py`)
 Controls detector magnetic fields.
 
 | Flag | Type | Default | Description |
@@ -93,7 +102,7 @@ Controls detector magnetic fields.
 
 ---
 
-### 3. `CaloHitFlags` (`reconstruction/calorimeter/CaloHitBuilder/python/CaloHitFlags.py`)
+### 4. `CaloHitFlags` (`reconstruction/calorimeter/CaloHitBuilder/python/CaloHitFlags.py`)
 Controls hit response, birks law, time of flight, and dual readout.
 
 | Flag | Type | Default (v2) | Description |
@@ -108,7 +117,7 @@ Controls hit response, birks law, time of flight, and dual readout.
 
 ---
 
-### 4. `FreeRunningFlags` (`reconstruction/calorimeter/CaloHitBuilder/python/CaloHitFlags.py`)
+### 5. `FreeRunningFlags` (`reconstruction/calorimeter/CaloHitBuilder/python/CaloHitFlags.py`)
 Controls free-running calorimeter hits in the exact layout of the ATLAS HITS ntuple.
 
 | Flag | Type | Default | Description |
@@ -124,7 +133,7 @@ Controls free-running calorimeter hits in the exact layout of the ATLAS HITS ntu
 
 ---
 
-### 5. `CaloFlags`, `CrossTalkFlags`, `AnomalyFlags` (`reconstruction/calorimeter/CaloCellBuilder/python/CaloFlags.py`)
+### 6. `CaloFlags`, `CrossTalkFlags`, `AnomalyFlags` (`reconstruction/calorimeter/CaloCellBuilder/python/CaloFlags.py`)
 Controls pulse generation, optimal filtering, electronic cross-talk, and cell defect simulation.
 
 | Class | Flag | Type | Default | Description |
@@ -143,7 +152,7 @@ Controls pulse generation, optimal filtering, electronic cross-talk, and cell de
 
 ---
 
-### 6. `CaloClusterFlags` (`reconstruction/calorimeter/CaloClusterBuilder/python/CaloClusterFlags.py`)
+### 7. `CaloClusterFlags` (`reconstruction/calorimeter/CaloClusterBuilder/python/CaloClusterFlags.py`)
 Controls seeded calorimeter cluster reconstruction.
 
 | Flag | Type | Default | Description |
@@ -155,7 +164,7 @@ Controls seeded calorimeter cluster reconstruction.
 
 ---
 
-### 7. `RootStreamESDFlags` & `RootStreamAODFlags` (`reconstruction/io/RootStreamBuilder/python/RootStreamFlags.py`)
+### 8. `RootStreamESDFlags` & `RootStreamAODFlags` (`reconstruction/io/RootStreamBuilder/python/RootStreamFlags.py`)
 Controls persistification and Ringer feature extraction.
 
 | Class | Flag | Type | Default | Description |

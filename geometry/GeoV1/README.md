@@ -1,6 +1,8 @@
-# Classical Detector Geometry (`geometry/v1/`)
+# Classical Detector Geometry (`GeoV1`)
 
-The `geometry/v1/` package implements the classical full-acceptance $4\pi$ calorimeter detector description for the **Lorenzetti** simulation framework. It pairs a modular Geant4 C++ construction engine (`DetectorConstruction_v1`) with Python-configurable volume builders, ideal for fast simulation and algorithmic benchmarks.
+The `geometry/GeoV1/` package implements the classical full-acceptance $4\pi$ calorimeter detector description for the **Lorenzetti** simulation framework. It pairs a modular Geant4 C++ construction engine (`DetectorConstruction_v1`) with Python-configurable volume builders, ideal for fast simulation and algorithmic benchmarks.
+
+Shared primitives (`PhysicalVolume`, `SensitiveDetector`, `Calorimeter`, `Tracking`) and pulse response data (`pulseLar.dat`, `pulseTile.dat`) are imported from **`GeoBase`**.
 
 ---
 
@@ -25,22 +27,22 @@ flowchart TD
     World["World Volume (Air / Vacuum)"]
     
     subgraph TrackingRegion ["Inner Tracking Region"]
-        Tracker["Beam Pipe &amp; Tracking Cavity<br/>(Silicon Pixel / Strip envelope)"]
+        Tracker["Beam Pipe & Tracking Cavity<br/>(Silicon Pixel / Strip envelope)"]
     end
 
     subgraph CaloSystem ["Calorimeter System"]
-        subgraph BarrelCalo ["Barrel System (|&eta;| &lt; 1.475)"]
+        subgraph BarrelCalo ["Barrel System (|η| < 1.475)"]
             LArBarrel["LAr Electromagnetic Barrel (ECAL)<br/>PreSampler, EM1, EM2, EM3"]
             TileBarrel["Scintillating Tile Calorimeter (TILE)<br/>HAD1, HAD2, HAD3"]
         end
 
-        subgraph EndcapCalo ["Endcap System (1.375 &lt; |&eta;| &lt; 3.2)"]
-            EMEC["LAr EM Endcap (EMEC)<br/>Outer &amp; Inner Wheels"]
+        subgraph EndcapCalo ["Endcap System (1.375 < |η| < 3.2)"]
+            EMEC["LAr EM Endcap (EMEC)<br/>Outer & Inner Wheels"]
             HEC["Hadronic Endcap (HEC)<br/>Copper / Liquid Argon"]
             TileExt["Tile Extended Barrel<br/>Extended HAD1, HAD2, HAD3"]
         end
 
-        subgraph PassiveMaterials ["Dead Material &amp; Structural Support"]
+        subgraph PassiveMaterials ["Dead Material & Structural Support"]
             Cryostats["Cryostat Envelopes (Aluminum / Steel)"]
             Crack["Barrel-Endcap Crack Absorbers"]
         end
@@ -75,27 +77,24 @@ The geometry is partitioned into physical sampling layers matching standard calo
 ## 4. Package Structure
 
 ```text
-geometry/v1/
-├── CMakeLists.txt              # Builds geometry_v1 OBJECT library
+geometry/GeoV1/
+├── CMakeLists.txt              # Builds GeoV1 OBJECT library
 ├── README.md                   # This specification file
-├── v1/                         # C++ Public headers
+├── GeoV1/                      # C++ Public headers
 │   └── DetectorConstruction_v1.h
 ├── src/                        # C++ Implementation and ROOT LinkDef
 │   ├── DetectorConstruction_v1.cxx
 │   └── LinkDef.h
-├── python/                     # Python volume builders
-│   ├── DetectorConstruction_v1.py
-│   ├── Calorimeter.py
-│   ├── ECAL.py
-│   ├── EMEC.py
-│   ├── HEC.py
-│   ├── TILE.py
-│   ├── Tracking.py
-│   ├── DeadMaterials.py
-│   └── PhysicalVolume.py
-├── data/                       # Pulse shaper response shapes
-│   ├── pulseLar.dat
-│   └── pulseTile.dat
+├── python/                     # GeoV1 Python module
+│   ├── __init__.py             # Exports DetectorConstruction_v1 and detectors
+│   ├── DetectorConstruction_v1.py # Top-level Python builder
+│   └── detectors/              # Sub-detector builders
+│       ├── __init__.py
+│       ├── DeadMaterials.py
+│       ├── ECAL.py
+│       ├── EMEC.py
+│       ├── HEC.py
+│       └── TILE.py
 ├── scripts/                    # Interactive tools
 │   └── run_vis.py              # Geant4 Qt/OpenGL visualizer
 └── doc/                        # Ray-traced detector views
@@ -108,12 +107,20 @@ geometry/v1/
 
 ## 5. Usage Examples
 
-### Python Instantiation
+### Instantiation via `DetectorConstructionCfg` (Recommended)
+
+```python
+from GeoBase import DetectorConstructionCfg
+
+# Factory handles defaults and returns DetectorConstruction_v1:
+detector = DetectorConstructionCfg("ATLAS", version="v1")
+```
+
+### Direct Instantiation
 
 ```python
 from GeoV1 import DetectorConstruction_v1
 
-# Configure detector construction
 detector = DetectorConstruction_v1(
     "GenericATLASDetector",
     UseBarrel=True,
@@ -131,5 +138,5 @@ detector = DetectorConstruction_v1(
 To inspect the detector interactively with Geant4 visualization drivers (Qt, OpenGL, RayTracer):
 
 ```bash
-python3 geometry/v1/scripts/run_vis.py
+python3 geometry/GeoV1/scripts/run_vis.py
 ```

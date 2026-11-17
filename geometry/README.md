@@ -16,17 +16,21 @@ geometry/
 ├── README.md                   # This overview file
 ├── GeoBase/                    # Shared Primitives, Common Data & Factory
 │   ├── CMakeLists.txt          # Installs GeoBase Python module and shared data
+│   ├── README.md               # GeoBase documentation
+│   ├── data/                   # Shared pulse files (pulseLar.dat, pulseTile.dat)
 │   ├── python/                 # GeoBase modules (DetectorConstructionCfg, DetectorFlags, PhysicalVolume, etc.)
-│   └── data/                   # Shared pulse files (pulseLar.dat, pulseTile.dat)
+│   └── tests/                  # Unit tests (test_detector_construction_cfg.py)
 ├── GeoV1/                      # Classical Detector Package
-│   ├── CMakeLists.txt          # Library GeoV1
-│   ├── GeoV1/                  # Public C++ headers
+│   ├── CMakeLists.txt          # Target GeoV1
+│   ├── README.md               # GeoV1 documentation & ray-traced views
+│   ├── GeoV1/                  # Public C++ headers (DetectorConstruction_v1.h)
 │   ├── src/                    # C++ implementations & LinkDef.h
 │   ├── python/                 # GeoV1 Python module (DetectorConstruction_v1, detectors/)
 │   └── scripts/                # Visualization scripts (run_vis.py)
 └── GeoV2/                      # ATLAS Run 4 Package
-    ├── CMakeLists.txt          # Library GeoV2
-    ├── GeoV2/                  # Public C++ headers
+    ├── CMakeLists.txt          # Target GeoV2
+    ├── README.md               # GeoV2 documentation & external prerequisites
+    ├── GeoV2/                  # Public C++ headers (DetectorConstruction_v2.h, etc.)
     ├── src/                    # C++ implementations & LinkDef.h
     ├── GeoSpecialShapes/       # EMEC accordion shapes
     ├── LArG4EC/                # Athena ported charge collection
@@ -43,13 +47,30 @@ geometry/
 ```python
 from GeoBase import DetectorConstructionCfg
 
-# Automatically detects version or uses flags:
-det = DetectorConstructionCfg("ATLAS", version="v2")
+# Automatically resolves target version from DetectorFlags.Version (default: "v2"):
+det = DetectorConstructionCfg("ATLAS")
+
+# Or explicitly select version:
+det_v1 = DetectorConstructionCfg("ATLAS", version="v1")
+det_v2 = DetectorConstructionCfg("ATLAS", version="v2")
 ```
 
 ### Direct Package Usage:
 ```python
+# Classical detector:
 from GeoV1 import DetectorConstruction_v1
-# or
+from GeoV1.detectors import ECAL, TILE, EMEC, HEC
+
+# ATLAS Run 4 detector:
 from GeoV2 import DetectorConstruction_v2, AtlasGeometryFlags
+from GeoV2.detectors import AtlasEmb, AtlasTile, AtlasEmec, AtlasHec
 ```
+
+---
+
+## Subsystem Documentation
+
+- [GeoBase Documentation](GeoBase/README.md): Shared primitives, pulse data, and factory implementation.
+- [GeoV1 Documentation](GeoV1/README.md): Classical geometry description, layer specifications, and ray-traced views.
+- [GeoV2 Documentation](GeoV2/README.md): ATLAS Run 4 geometry, GeoModel SQLite import, and frozen showers.
+- [Flags Reference Guide](../doc/flags.md): Complete steering flags manual for `AtlasGeometryFlags` and `DetectorFlags`.

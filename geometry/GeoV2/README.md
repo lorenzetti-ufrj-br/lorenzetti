@@ -1,6 +1,8 @@
-# ATLAS Run 4 Detector Geometry (`geometry/v2/`)
+# ATLAS Run 4 Detector Geometry (`GeoV2`)
 
-The `geometry/v2/` package implements the high-fidelity **ATLAS Run 4** detector geometry description for the **Lorenzetti** simulation framework. It directly imports the full ATLAS geometry volumes from its official GeoModel SQLite dump, couples with the high-precision magnetic field package (`magfield`), and integrates frozen shower models for accelerated forward calorimetry.
+The `geometry/GeoV2/` package implements the high-fidelity **ATLAS Run 4** detector geometry description for the **Lorenzetti** simulation framework. It directly imports the full ATLAS geometry volumes from its official GeoModel SQLite dump, couples with the high-precision magnetic field package ([`magfield/`](../../magfield/README.md)), and integrates frozen shower models for accelerated forward calorimetry.
+
+Common primitives (`PhysicalVolume`, `SensitiveDetector`, `Calorimeter`, `Tracking`) and pulse data are imported directly from **`GeoBase`**.
 
 ---
 
@@ -32,10 +34,10 @@ The `geometry/v2/` package implements the high-fidelity **ATLAS Run 4** detector
 ## 2. Package Structure
 
 ```text
-geometry/v2/
-├── CMakeLists.txt              # Builds geometry_v2 OBJECT library (with C++20 GeoModel support)
+geometry/GeoV2/
+├── CMakeLists.txt              # Builds GeoV2 OBJECT library (with C++20 GeoModel support)
 ├── README.md                   # This specification file
-├── v2/                         # C++ Public headers
+├── GeoV2/                      # C++ Public headers
 │   ├── DetectorConstruction_v2.h
 │   ├── AtlasGeoModelImport.h
 │   ├── AtlasDeadMaterialShower.h
@@ -50,26 +52,34 @@ geometry/v2/
 │   ├── FCalShowerLib.cxx
 │   ├── SimpleFastKiller.cxx
 │   └── LinkDef.h
-├── python/                     # Python volume builders
-│   ├── DetectorConstruction_v2.py
-│   ├── AtlasRun4.py
-│   ├── AtlasFCal.py
-│   ├── AtlasBarrelCryostat.py
-│   ├── AtlasBarrelFront.py
-│   ├── Calorimeter.py
-│   ├── ECAL.py
-│   ├── EMEC.py
-│   ├── FCAL.py
-│   ├── HEC.py
-│   ├── TILE.py
-│   ├── Tracking.py
-│   └── DeadMaterials.py
-├── data/                       # ATLAS geometry calibration data
-│   ├── pulseLar.dat
-│   ├── pulseTile.dat
+├── GeoSpecialShapes/           # LAr wheel accordion calculators
+├── LArG4EC/                    # Athena-ported EMEC charge collection
+├── PortableMsgStream/          # Standalone Athena messaging wrapper
+├── python/                     # GeoV2 Python module
+│   ├── __init__.py             # Exports DetectorConstruction_v2, AtlasGeometryFlags, detectors
+│   ├── DetectorConstruction_v2.py # Top-level Python builder
+│   ├── AtlasGeometryFlags.py   # Dataclass flags for 24 ATLAS geometry switches
+│   └── detectors/              # Sub-detector builders
+│       ├── __init__.py
+│       ├── AtlasBarrelCryostat.py
+│       ├── AtlasBarrelFront.py
+│       ├── AtlasEmb.py
+│       ├── AtlasEmec.py
+│       ├── AtlasFCal.py
+│       ├── AtlasHec.py
+│       ├── AtlasRun4.py
+│       ├── AtlasTile.py
+│       ├── DeadMaterials.py
+│       ├── ECAL.py
+│       ├── EMEC.py
+│       ├── FCAL.py
+│       ├── HEC.py
+│       └── TILE.py
+├── data/                       # Calibration and electrode data
+│   ├── EmecTables-ATLAS-P2-RUN4-01-01-00.csv
+│   ├── HVEMECMap_v02.dat
 │   ├── LArFCalElectrodes-06.csv
-│   └── LArG4ShowerLibData/
-│       └── MC23_v1/
+│   └── LArG4ShowerLibData/MC23_v1/
 └── scripts/                    # Geometry database dump & inspection scripts
     ├── atlas_run4_check_cells.py
     ├── atlas_run4_dumpgeo.sh
@@ -81,9 +91,31 @@ geometry/v2/
 
 ---
 
-## 3. Usage & Configuration via `AtlasGeometryFlags`
+## 3. External Prerequisites for Full ATLAS Run 4 Geometry
 
-The ATLAS geometry options are managed through the [`AtlasGeometryFlags`](../../doc/flags.md#1-atlasgeometryflags-geometryv2pythonatlasgeometryflagspy) dataclass. With `--detector v2`, all ATLAS sub-detectors, cryostats, and physics options are enabled by default.
+The full Run 4 model requires GeoModel libraries and geometry/field assets:
+
+| Asset | Size | How to obtain | Where Lorenzetti looks |
+| :--- | :---: | :--- | :--- |
+| **GeoModel 6.29.0** | | `bash geometry/GeoV2/scripts/build_geomodel.sh ~/geomodel` | `GEOMODEL_DIR` environment variable |
+| **Run 4 Geometry SQLite DB** | 92 MB | `bash geometry/GeoV2/scripts/atlas_run4_dumpgeo.sh` (from Athena lxplus) | `AtlasGeometryFlags.AtlasRun4Geometry` or `LORENZETTI_ATLAS_RUN4_GEOMETRY` |
+| **ATLAS Field Map** | 126 MB | `/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/MagneticFieldMaps/` | `MagFieldFlags.FieldMapFile` or `LORENZETTI_FIELD_MAP` |
+| **FCal Shower Libraries** | 31 MB | `/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/LArG4ShowerLibData/MC23_v1` | `geometry/GeoV2/data/LArG4ShowerLibData/MC23_v1` |
+
+---
+
+## 4. Usage & Configuration via `AtlasGeometryFlags`
+
+The ATLAS geometry options are steered through the [`AtlasGeometryFlags`](../../doc/flags.md#1-atlasgeometryflags-geometrygeov2pythonatlasgeometryflagspy) dataclass. With `--detector v2`, all ATLAS sub-detectors, cryostats, and physics options are enabled by default.
+
+### Factory Instantiation (Recommended)
+
+```python
+from GeoBase import DetectorConstructionCfg
+
+# Standard V2 instantiation with automatic flag application:
+detector = DetectorConstructionCfg("ATLAS", version="v2")
+```
 
 ### Simulation Transform (`simu_trf.py`)
 
@@ -102,16 +134,16 @@ simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
 digit_trf.py -i input.HIT.root -o output.ESD.root --detector v2
 ```
 
-### Python Programmatic Instantiation
+### Programmatic Python Configuration
 
 ```python
-from GeoV2 import DetectorConstruction_v2, AtlasGeometryFlags
+from GeoBase import DetectorConstructionCfg
+from GeoV2 import AtlasGeometryFlags
 
-# Customize flags:
+# Steer geometry flags before instantiation:
 AtlasGeometryFlags.AtlasEmb = True
-AtlasGeometryFlags.AtlasRun4Geometry = "/path/to/geometry.sqlite"
-AtlasGeometryFlags.apply_defaults(is_v2=True)
+AtlasGeometryFlags.TileAtlasRun4 = True
 
-# Instantiate detector from flags:
-detector = DetectorConstruction_v2("ATLAS_Run4", **AtlasGeometryFlags.to_dict())
+# Instantiate with factory:
+det = DetectorConstructionCfg("ATLAS", version="v2")
 ```

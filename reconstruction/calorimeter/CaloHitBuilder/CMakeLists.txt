@@ -11,7 +11,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../events/TruthParticle)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../kernel/GaugiKernel)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../kernel/G4Kernel)
 # the ported ATLAS charge collection of the EM end-cap (F41 conserto 29)
-include_directories(${CMAKE_SOURCE_DIR}/geometry/v2)
+include_directories(${CMAKE_SOURCE_DIR}/geometry/GeoV2)
 
 
 ROOT_GENERATE_DICTIONARY(CaloHitBuilderDict ${HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h  MODULE CaloHitBuilder)
