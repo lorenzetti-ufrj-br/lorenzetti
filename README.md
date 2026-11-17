@@ -126,7 +126,7 @@ Detector geometry parameters (depths, materials, and segmentation) are fully con
 
 ## 🏗️ Detector Construction (Version 2): the ATLAS detector
 
-`simu_trf.py --detector v2` and `digit_trf.py --detector v2` build the calorimeters, field ([`magfield/`](magfield/README.md)) and physics of ATLAS, following the public ATLAS sources (GeoModel geometry database, Athena code). Every part is on by default and can be switched off with `--no-<option>` (see `simu_trf.py --help`). Version 1 stays the default.
+`simu_trf.py --detector v2` and `digit_trf.py --detector v2` build the calorimeters, field ([`magfield/`](magfield/README.md)) and physics of ATLAS, following the public ATLAS sources (GeoModel geometry database, Athena code). Every part is on by default with `--detector v2`. Fine-grained subdetectors, physics options, and cryostats can be tuned via `--pre-init` with [Job Flags](doc/flags.md) or via `--job-file`. Version 1 stays the default.
 
 Version 2 needs three external files, too large for the repository, and the GeoModel libraries:
 
@@ -150,6 +150,24 @@ Without `GEOMODEL_DIR`, Lorenzetti builds as before; version 1 runs, and version
 - **[geometry/v1 Documentation](geometry/v1/README.md)**
 - **[geometry/v2 Documentation](geometry/v2/README.md)**
 - **[magfield Documentation](magfield/README.md)**
+
+---
+
+## 🎛️ Job Steering & Configuration Flags
+
+Lorenzetti provides a streamlined CLI interface and delegates fine-grained configuration to typed Python `@dataclass` objects. Sub-detectors, physics responses, electronic noise, and I/O streams are easily tuned via `--pre-init`:
+
+```bash
+# Example: Disable EMB and set custom neutron time cut in simulation
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
+  --pre-init "from geometry.v2 import AtlasGeometryFlags as Geo; from CaloHitBuilder import CaloHitFlags; Geo.AtlasEmb = False; CaloHitFlags.NeutronTimeCut = 200.0"
+
+# Example: Enable electronic cross-talk and defect simulation in digitization
+digit_trf.py -i input.HIT.root -o output.ESD.root --detector v2 \
+  --pre-init "from CaloCellBuilder import CaloFlags; CaloFlags.DoCrossTalk = True; CaloFlags.DoDefects = True"
+```
+
+📄 **Complete Flags Reference Guide**: [doc/flags.md](doc/flags.md)**
 
 ---
 

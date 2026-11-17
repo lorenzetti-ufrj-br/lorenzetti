@@ -7,3 +7,4 @@ include_directories(${CMAKE_SOURCE_DIR}/kernel/GaugiKernel)
 
 add_library(MagField OBJECT ${SOURCES})
 install(FILES ${HEADERS} DESTINATION MagField)
+gaugi_install_python_modules( ${CMAKE_CURRENT_SOURCE_DIR}/python magfield)

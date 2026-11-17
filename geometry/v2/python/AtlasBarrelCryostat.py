@@ -6,6 +6,8 @@ geometry tables CryoCylinders-09, CryoPcons-18 and CryoEars-00, placed as in LAr
 Not modelled: the iron bolts of the inner wall and the bumpers of the coil (small pieces).
 """
 
+__all__ = ["ATLAS_BARREL_CRYOSTAT_MIXTURES", "ATLAS_BARREL_CRYOSTAT_VOLUMES"]
+
 ATLAS_BARREL_CRYOSTAT_MIXTURES = {
     'ATLAS_CRYO_SUPPORT_2280_2926': (0.781944, {'Al': 1.000000}),
     'ATLAS_CRYO_SUPPORT_2290_2923': (0.137420, {'Al': 1.000000}),

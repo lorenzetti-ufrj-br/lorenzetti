@@ -77,7 +77,7 @@ graph TD
 
 ## 3. Configuration Flags
 
-Global digitization flags are controlled via stringified enums:
+Global digitization flags are controlled via dataclasses inheriting from `JobFlags` (see [Flags Reference](../../../doc/flags.md)):
 
 ### `CaloFlags`
 * `SamplingnoiseStd` (`float`, default `0.0`): Global noise standard deviation.

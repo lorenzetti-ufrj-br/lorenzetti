@@ -11,6 +11,8 @@ electrode gaps and rods, and their position in the end-cap cryostat, without the
 modules is a tube of liquid argon. Not modelled: the cable troughs at the outer radius and the support structure.
 """
 
+__all__ = ["ATLAS_FCAL_MIXTURES", "ATLAS_FCAL_VOLUMES", "ATLAS_FCAL_CELL_MATERIALS", "ATLAS_FCAL_CELL_MODULES"]
+
 # name: (density in g/cm3, {element symbol: mass fraction})
 ATLAS_FCAL_MIXTURES = {
     'ATLAS_FCAL1_MODULE': (8.096758, {'Cu': 0.979824, 'Ar': 0.020176}),

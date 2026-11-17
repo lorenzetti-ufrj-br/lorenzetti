@@ -13,6 +13,7 @@ from GaugiKernel import Logger, LoggingLevel, Configurable
 from GaugiKernel.macros import MSG_INFO
 from CaloHitBuilder.CaloHitMaker import CaloHitMakerCfg
 from CaloHitBuilder.CaloFreeRunningHitWriter import CaloFreeRunningHitWriter
+from CaloHitBuilder.CaloHitFlags import CaloHitFlags, FreeRunningFlags
 from G4Kernel import ComponentAccumulator
 
 __all__ = ["CaloHitBuilder"]
@@ -41,18 +42,18 @@ class CaloHitBuilder(Logger):
         MinEnergy: float = 0.0,
         HistogramPath: str = "Expert",
         OutputLevel: int = LoggingLevel.toC("INFO"),
-        ActiveEnergyOnly: bool = False,
-        BirksLaw: bool = False,
-        AtlasHitTime: bool = False,
-        TileDualReadout: int = 0,
-        FreeRunningHits: bool = False,
-        FreeRunningBinning: bool = True,
+        ActiveEnergyOnly: Optional[bool] = None,
+        BirksLaw: Optional[bool] = None,
+        AtlasHitTime: Optional[bool] = None,
+        TileDualReadout: Optional[int] = None,
+        FreeRunningHits: Optional[bool] = None,
+        FreeRunningBinning: Optional[bool] = None,
         FreeRunningNtupleName: str = "CollectionTree",
-        FreeRunningAtlasFormat: bool = False,
-        EmecChargeCollection: bool = False,
-        EmecChargeTables: str = "",
-        EmecChargeFieldMap: str = "",
-        EmecChargeHVMap: str = "",
+        FreeRunningAtlasFormat: Optional[bool] = None,
+        EmecChargeCollection: Optional[bool] = None,
+        EmecChargeTables: Optional[str] = None,
+        EmecChargeFieldMap: Optional[str] = None,
+        EmecChargeHVMap: Optional[str] = None,
         InputEventKey: str = "Events",
     ) -> None:
         """
@@ -96,18 +97,57 @@ class CaloHitBuilder(Logger):
         self.CellHashes: Optional[List[int]] = CellHashes
         self.FilterEmptyHits: bool = FilterEmptyHits
         self.MinEnergy: float = MinEnergy
-        self.ActiveEnergyOnly: bool = ActiveEnergyOnly
-        self.BirksLaw: bool = BirksLaw
-        self.AtlasHitTime: bool = AtlasHitTime
-        self.TileDualReadout: int = TileDualReadout
-        self.FreeRunningHits: bool = FreeRunningHits
-        self.FreeRunningBinning: bool = FreeRunningBinning
+        self.ActiveEnergyOnly: bool = bool(
+            CaloHitFlags.ActiveEnergyOnly if ActiveEnergyOnly is None else ActiveEnergyOnly
+        )
+        self.BirksLaw: bool = bool(
+            CaloHitFlags.BirksLaw if BirksLaw is None else BirksLaw
+        )
+        self.AtlasHitTime: bool = bool(
+            CaloHitFlags.AtlasHitTime if AtlasHitTime is None else AtlasHitTime
+        )
+        if TileDualReadout is None:
+            if CaloHitFlags.TileDualReadout:
+                self.TileDualReadout: int = 1 if CaloHitFlags.TilePmtSplit == "ushape" else 2
+            else:
+                self.TileDualReadout: int = 0
+        else:
+            self.TileDualReadout: int = TileDualReadout
+
+        self.FreeRunningHits: bool = bool(
+            FreeRunningFlags.Enable if FreeRunningHits is None else FreeRunningHits
+        )
+        self.FreeRunningBinning: bool = bool(
+            (not FreeRunningFlags.NoBinning)
+            if FreeRunningBinning is None
+            else FreeRunningBinning
+        )
         self.FreeRunningNtupleName: str = FreeRunningNtupleName
-        self.FreeRunningAtlasFormat: bool = FreeRunningAtlasFormat
-        self.EmecChargeCollection: bool = EmecChargeCollection
-        self.EmecChargeTables: str = EmecChargeTables
-        self.EmecChargeFieldMap: str = EmecChargeFieldMap
-        self.EmecChargeHVMap: str = EmecChargeHVMap
+        self.FreeRunningAtlasFormat: bool = bool(
+            FreeRunningFlags.AtlasFormat
+            if FreeRunningAtlasFormat is None
+            else FreeRunningAtlasFormat
+        )
+        self.EmecChargeCollection: bool = bool(
+            FreeRunningFlags.EmecChargeCollection
+            if EmecChargeCollection is None
+            else EmecChargeCollection
+        )
+        self.EmecChargeTables: str = (
+            FreeRunningFlags.EmecTables
+            if EmecChargeTables is None
+            else EmecChargeTables
+        )
+        self.EmecChargeFieldMap: str = (
+            FreeRunningFlags.EmecFieldMap
+            if EmecChargeFieldMap is None
+            else EmecChargeFieldMap
+        )
+        self.EmecChargeHVMap: str = (
+            FreeRunningFlags.EmecHVMap
+            if EmecChargeHVMap is None
+            else EmecChargeHVMap
+        )
         self.InputEventKey: str = InputEventKey
         self.OutputCollectionKeys: List[str] = []
 

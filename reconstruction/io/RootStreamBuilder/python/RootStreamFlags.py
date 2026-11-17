@@ -1,20 +1,40 @@
+"""
+RootStreamFlags module.
+
+Provides dataclass-based configuration flags for ROOT streaming and persistence.
+"""
+
+from dataclasses import dataclass, field
+from typing import List
+from GaugiKernel import JobFlags
+
 __all__ = ["RootStreamHITFlags", "RootStreamESDFlags", "RootStreamAODFlags"]
 
-from GaugiKernel import EnumStringification
 
-
-class RootStreamHITFlags(EnumStringification):
+@dataclass(init=False)
+class RootStreamHITFlags(JobFlags):
+    """
+    Steering flags for HIT stream output.
+    """
     pass
 
 
-class RootStreamESDFlags(EnumStringification):
+@dataclass(init=False)
+class RootStreamESDFlags(JobFlags):
+    """
+    Steering flags for ESD stream output.
+    """
     OnlyRoI: bool = True
     EtaWindow: float = 0.4
     PhiWindow: float = 0.4
     SaveAllCells: bool = False
 
 
-class RootStreamAODFlags(EnumStringification):
+@dataclass(init=False)
+class RootStreamAODFlags(JobFlags):
+    """
+    Steering flags for AOD stream output and Ringer extraction.
+    """
     DumpCells: bool = True
 
     doStdRings: bool = True
@@ -28,6 +48,6 @@ class RootStreamAODFlags(EnumStringification):
     SigmaCut: float = 2.0
     CornerShift: int = 3
     CrossShift: int = 3
-    CustomRingsShiftEta: list = [0]
-    CustomRingsShiftPhi: list = [0]
+    CustomRingsShiftEta: List[int] = field(default_factory=lambda: [0])
+    CustomRingsShiftPhi: List[int] = field(default_factory=lambda: [0])
     StripsAxis: int = 0

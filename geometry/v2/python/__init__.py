@@ -59,3 +59,7 @@ from .AtlasBarrelFront import *
 from . import DeadMaterials
 __all__.extend(DeadMaterials.__all__)
 from .DeadMaterials import *
+
+from . import AtlasGeometryFlags
+__all__.extend(AtlasGeometryFlags.__all__)
+from .AtlasGeometryFlags import *

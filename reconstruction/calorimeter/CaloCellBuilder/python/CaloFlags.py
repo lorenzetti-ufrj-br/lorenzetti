@@ -2,13 +2,15 @@
 Digitization configuration flags for calorimeter cell reconstruction.
 """
 
-from GaugiKernel import EnumStringification
+from dataclasses import dataclass
+from GaugiKernel import JobFlags
 from GaugiKernel.constants import GeV
 
 __all__ = ["CaloFlags", "CrossTalkFlags", "AnomalyFlags"]
 
 
-class CaloFlags(EnumStringification):
+@dataclass(init=False)
+class CaloFlags(JobFlags):
     """
     Global steering flags for calorimeter digitization.
     """
@@ -20,7 +22,8 @@ class CaloFlags(EnumStringification):
     SigmaThreshold: float = 2.0
 
 
-class CrossTalkFlags(EnumStringification):
+@dataclass(init=False)
+class CrossTalkFlags(JobFlags):
     """
     Steering flags for cross-talk simulation between neighboring calorimeter cells.
     """
@@ -30,7 +33,8 @@ class CrossTalkFlags(EnumStringification):
     AmpResistive: float = 1.0
 
 
-class AnomalyFlags(EnumStringification):
+@dataclass(init=False)
+class AnomalyFlags(JobFlags):
     """
     Configuration flags for detector defects and anomalies.
     """

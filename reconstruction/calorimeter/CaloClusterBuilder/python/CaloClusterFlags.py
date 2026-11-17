@@ -2,13 +2,15 @@
 Configuration flags for calorimeter cluster reconstruction.
 """
 
-from GaugiKernel import EnumStringification
+from dataclasses import dataclass
+from GaugiKernel import JobFlags
 from GaugiKernel.constants import GeV
 
 __all__ = ["CaloClusterFlags"]
 
 
-class CaloClusterFlags(EnumStringification):
+@dataclass(init=False)
+class CaloClusterFlags(JobFlags):
     """
     Steering flags for seeded calorimeter cluster reconstruction and moments computation.
     """

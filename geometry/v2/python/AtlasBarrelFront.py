@@ -9,6 +9,8 @@ BarrelConstruction.cxx) for the presampler mother. Pieces that do not cover the 
 phi-averaged mixture (the rest is liquid argon, as in the ATLAS cryostat).
 """
 
+__all__ = ["ATLAS_BARREL_FRONT_MIXTURES", "ATLAS_BARREL_FRONT_VOLUMES", "ATLAS_BARREL_FRONT_FIELD_RADIUS"]
+
 # name: (density in g/cm3, {element symbol: mass fraction})
 ATLAS_BARREL_FRONT_MIXTURES = {
     'ATLAS_STD_G10': (2.000003, {'C': 0.235440, 'H': 0.019758, 'F': 0.744802}),

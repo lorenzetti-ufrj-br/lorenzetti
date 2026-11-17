@@ -217,7 +217,35 @@ merge_trf.py \
 
 ---
 
-## 5. Dependencies
+## 5. Configuration via Flags (`CaloHitFlags` & `FreeRunningFlags`)
+
+Fine-grained control over hit responses, Birks' law, Tile dual readout, and ATLAS free-running hit export is steered via the dataclasses in `CaloHitFlags.py`:
+
+```python
+from CaloHitBuilder import CaloHitFlags, FreeRunningFlags
+
+# Customize hit physics:
+CaloHitFlags.BirksLaw = True
+CaloHitFlags.NeutronTimeCut = 150.0  # ns
+
+# Enable ATLAS free-running hit format:
+FreeRunningFlags.Enable = True
+FreeRunningFlags.AtlasFormat = True
+FreeRunningFlags.EmecChargeCollection = True
+```
+
+In transform scripts (`simu_trf.py`), these are modified dynamically using `--pre-init`:
+
+```bash
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
+  --pre-init "from CaloHitBuilder import CaloHitFlags; CaloHitFlags.BirksLaw = False"
+```
+
+For complete specification of available flags, see the [Flags Reference Guide](../../../doc/flags.md).
+
+---
+
+## 6. Dependencies
 - `kernel/GaugiKernel`: Algorithm interfaces, StoreGate `EventContext`, Data Handles, logging.
 - `events/CaloHit`: `xAOD::CaloHit`, `xAOD::CaloHitCollection`, `xAOD::CaloHitContainer`.
 - `events/EventInfo`: `xAOD::EventInfo`, `xAOD::EventInfoContainer`.

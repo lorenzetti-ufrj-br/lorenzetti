@@ -2,14 +2,16 @@
 __all__ = ['list2stdvector', 'stdvector2list', "get_argparser_formatter", "get_attributes", "check_for_unused_vars"]
 
 
-import ROOT
 import inspect
 import argparse
 
-ROOT.gSystem.Load('liblorenzetti')
-# NOTE: RunManager is provided by G4Kernel when available
 try:
-    from ROOT import RunManager
+    import ROOT
+    ROOT.gSystem.Load('liblorenzetti')
+    try:
+        from ROOT import RunManager
+    except ImportError:
+        pass
 except ImportError:
     pass
 
@@ -89,6 +91,10 @@ from . import Configurable
 __all__.extend(Configurable.__all__)
 from .Configurable import *
 
+from . import Cpp
+__all__.extend(Cpp.__all__)
+from .Cpp import *
+
 from . import ComponentAccumulator
 __all__.extend(ComponentAccumulator.__all__)
 from .ComponentAccumulator import *
@@ -96,5 +102,9 @@ from .ComponentAccumulator import *
 from . import Parallel
 __all__.extend(Parallel.__all__)
 from .Parallel import *
+
+from . import JobFlags
+__all__.extend(JobFlags.__all__)
+from .JobFlags import *
 
 

@@ -81,34 +81,37 @@ geometry/v2/
 
 ---
 
-## 3. Usage & CLI Configuration
+## 3. Usage & Configuration via `AtlasGeometryFlags`
+
+The ATLAS geometry options are managed through the [`AtlasGeometryFlags`](../../doc/flags.md#1-atlasgeometryflags-geometryv2pythonatlasgeometryflagspy) dataclass. With `--detector v2`, all ATLAS sub-detectors, cryostats, and physics options are enabled by default.
 
 ### Simulation Transform (`simu_trf.py`)
 
-Run simulation using the ATLAS Run 4 geometry with `--detector v2`:
+```bash
+# Standard ATLAS Run 4 simulation:
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 -nt 4
+
+# Customizing subdetectors via --pre-init:
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
+    --pre-init "from geometry.v2 import AtlasGeometryFlags as Geo; Geo.AtlasEmb = False; Geo.AtlasEmbCells = False"
+```
+
+### Digitization Transform (`digit_trf.py`)
 
 ```bash
-python3 reconstruction/reco/scripts/simu_trf.py \
-    -i generator_output.root \
-    -o simulation_output.root \
-    --detector v2 \
-    --enable-magnetic-field \
-    --atlas-fcal-cells \
-    --atlas-full-field \
-    --atlas-g4
+digit_trf.py -i input.HIT.root -o output.ESD.root --detector v2
 ```
 
 ### Python Programmatic Instantiation
 
 ```python
-from geometry.v2 import DetectorConstruction_v2
+from geometry.v2 import DetectorConstruction_v2, AtlasGeometryFlags
 
-detector = DetectorConstruction_v2(
-    "ATLAS_Run4",
-    UseMagneticField=True,
-    AtlasRun4Geometry="/path/to/geometry.sqlite",
-    AtlasFieldMap="/path/to/bfield_7730_20400.root",
-    AtlasFcalCells=True,
-    FCalShowerLibDir="data/geometry/LArG4ShowerLibData/MC23_v1",
-)
+# Customize flags:
+AtlasGeometryFlags.AtlasEmb = True
+AtlasGeometryFlags.AtlasRun4Geometry = "/path/to/geometry.sqlite"
+AtlasGeometryFlags.apply_defaults(is_v2=True)
+
+# Instantiate detector from flags:
+detector = DetectorConstruction_v2("ATLAS_Run4", **AtlasGeometryFlags.to_dict())
 ```
