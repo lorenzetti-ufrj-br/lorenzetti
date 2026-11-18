@@ -547,7 +547,105 @@ Com esta estrutura, as implementações são desacopladas por responsabilidade e
 
 ---
 
-### 7.4. O Novo `CaloHitMaker` Enxuto (Código C++ Ilustrativo)
+### 7.4. Árvore de Arquivos Proposta
+
+Para garantir alto desacoplamento, separação de conceitos (*separation of concerns*) e facilidade de compilação sem dependências circulares, a distribuição física de arquivos e diretórios proposta é organizada em dois pacotes cooperantes:
+
+#### A. Pacote `reconstruction/calorimeter/CaloHitBuilder`
+Contém o algoritmo orquestrador enxuto, as interfaces abstratas base, as estruturas de dados compartilhadas e as ferramentas universais comuns a `GeoV1` e `GeoV2`:
+
+```
+reconstruction/calorimeter/CaloHitBuilder/
+├── CMakeLists.txt                                  # Compilação do CaloHitBuilder, ROOT dictionaries e instalação Python
+├── src/
+│   ├── CaloHitMaker.h                              # Algoritmo orquestrador enxuto (~180 linhas C++)
+│   ├── CaloHitMaker.cxx                            # Execução do pipeline: filtro -> célula -> energia -> tempo -> gravação
+│   ├── CaloHitMerge.h                              # Merge de coleções de hits em CaloHitContainer
+│   ├── CaloHitMerge.cxx
+│   ├── CaloHitPileupMerge.h                        # Merge e sobreposição de eventos de pileup
+│   ├── CaloHitPileupMerge.cxx
+│   ├── CaloFreeRunningHitWriter.h                  # Gravador de ntuplas ROOT estilo Athena HITS
+│   ├── CaloFreeRunningHitWriter.cxx
+│   ├── CaloFreeRunningHitList.h                    # Container leve de hits free-running (DataHandle)
+│   ├── CaloHitTypes.h                              # Estruturas leves de troca (CellIdentification, CellTiming, caloHitHash)
+│   ├── LinkDef.h                                   # Pragma link C++ para dicionários do ROOT (Maker, Interfaces e Tools)
+│   └── tools/                                      # Interfaces abstratas e ferramentas genéricas/universais
+│       ├── ICaloCellIdentifierTool.h               # Interface: identify(step) -> CellIdentification
+│       ├── ICaloEnergyModifierTool.h               # Interface: modifyEnergy(step, cell, edep) -> float
+│       ├── ICaloTimeCorrectionTool.h               # Interface: computeTime(step, cell) -> CellTiming
+│       ├── ICaloHitRecorderTool.h                  # Interface: record(ctx, step, cell, edep, timing)
+│       ├── CaloGridCellTool.h                      # Mapeamento regular em grade (eta, phi) para GeoV1 e V2 simples
+│       ├── CaloGridCellTool.cxx
+│       ├── CaloBirksLawTool.h                      # Lei de Birks para cintilador plástico e LAr (com correção HIP)
+│       ├── CaloBirksLawTool.cxx
+│       ├── CaloTofCorrectionTool.h                 # Subtração padrão do tempo de voo: t = t_global - |r|/c
+│       ├── CaloTofCorrectionTool.cxx
+│       ├── CaloStandardHitRecorderTool.h           # Gravação padrão em xAOD::CaloHitCollection do StoreGate
+│       └── CaloStandardHitRecorderTool.cxx
+├── python/
+│   ├── __init__.py
+│   ├── CaloHitMaker.py                             # Helper CaloHitMakerCfg para configurar e acoplar Tools
+│   └── CaloHitBuilder.py                           # Montagem das sequências de reconstrução por amostragem
+└── tests/
+    ├── test_calo_grid_tool.py                      # Teste unitário da identificação por grade
+    ├── test_calo_birks_tool.py                     # Teste unitário da saturação de Birks
+    └── test_calo_hit_maker.py                      # Teste de integração do orquestrador via mock tools
+```
+
+#### B. Pacote `geometry/GeoV2` (Ferramentas Específicas do ATLAS)
+Contém as ferramentas que modelam subsistemas com geometrias realistas e física exclusiva do detector ATLAS:
+
+```
+geometry/GeoV2/
+├── CMakeLists.txt
+├── GeoV2/
+│   ├── ...                                         # Cabeçalhos unificados: EnergyCalculator.h, LArWheelCalculator.h, etc.
+│   └── tools/                                      # Cabeçalhos das Gaugi::Tools exclusivas do GeoV2
+│       ├── TileBoxCellTool.h                       # Células Tile em caixas (r, z), módulos especiais e D4 -> D5
+│       ├── LArAccordionTool.h                      # Geometria do acordeão do barril EMB (SampSeg e psbGapCell)
+│       ├── LArEmecCompartmentTool.h                # 11 compartimentos do EMEC com planos Z e foco elétrico
+│       ├── LArHecModuleTool.h                      # Projeção modular de raio nos 32 módulos em cunha do HEC
+│       ├── LArFCalElectrodeTool.h                  # Eletrodos tubulares do FCAL e tubos 2D de frozen showers
+│       ├── TileDualReadoutSplitTool.h              # Partição de energia entre PMT 0 e PMT 1 (U-shape e linear)
+│       ├── LArEmecChargeCollectionTool.h           # Resposta de carga do EMEC via Ramo, mapas HV e ec.fieldzv03
+│       ├── TilePmtPropagationTimeTool.h            # Propagação óptica em telhas/fibras (n = 1.59) e assimetria de PMT
+│       └── CaloFreeRunningHitRecorderTool.h        # Empacotamento de identificadores compactos ATLAS de 64 bits
+├── src/
+│   ├── ...                                         # Fontes existentes da geometria GeoV2
+│   └── tools/                                      # Implementações C++ das Gaugi::Tools do GeoV2
+│       ├── TileBoxCellTool.cxx
+│       ├── LArAccordionTool.cxx
+│       ├── LArEmecCompartmentTool.cxx
+│       ├── LArHecModuleTool.cxx
+│       ├── LArFCalElectrodeTool.cxx
+│       ├── TileDualReadoutSplitTool.cxx
+│       ├── LArEmecChargeCollectionTool.cxx
+│       ├── TilePmtPropagationTimeTool.cxx
+│       ├── CaloFreeRunningHitRecorderTool.cxx
+│       ├── TileUShape.h                            # Movido de CaloHitBuilder para o GeoV2
+│       └── EmbAtlasSampling.h                      # Movido de CaloHitBuilder para o GeoV2
+├── python/
+│   ├── DetectorConstruction_v2.py
+│   ├── detectors/                                  # TILE.py, ECAL.py, EMEC.py, HEC.py, FCAL.py
+│   └── tools/                                      # Helpers Python para configuração rápida das Tools do V2
+│       ├── __init__.py
+│       ├── TileTools.py
+│       ├── LArTools.py
+│       ├── FCalTools.py
+│       └── FreeRunningTools.py
+└── data/                                           # Mapas de campo (ec.fieldzv03), HVEMECMap_v02.dat, tabelas CSV
+```
+
+> [!TIP]
+> **Vantagens Desta Organização em Árvore**:
+> 1. **Isolamento de Compilação**: `CaloHitBuilder` compila independentemente de qualquer detalhe do `GeoV2`, usando apenas as interfaces puras `ICalo*.h`.
+> 2. **Eliminação de Dependências Pesadas no Algoritmo**: Arquivos pesados como `ec.fieldzv03`, `HVEMECMap_v02.dat` e classes de integração de choque elétrico (`LArG4EC`) ficam confinados ao `GeoV2`.
+> 3. **GeoV1 100% Leve**: O `GeoV1` não referencia nem carrega nenhuma classe ou tabela do `GeoV2`.
+> 4. **Testabilidade Modular**: Cada ferramenta em `src/tools/` ganha seu próprio teste de unidade dedicado, com entradas e saídas controladas.
+
+---
+
+### 7.5. O Novo `CaloHitMaker` Enxuto (Código C++ Ilustrativo)
 
 Com a delegação de responsabilidades para as `Gaugi::Tool`, a classe `CaloHitMaker` passa a ter a seguinte estrutura limpa e direta:
 
@@ -626,7 +724,7 @@ StatusCode CaloHitMaker::execute( SG::EventContext &ctx, const G4Step *step ) co
 
 ---
 
-### 7.5. Configuração em Python Modular (`CaloHitBuilder.py`)
+### 7.6. Configuração em Python Modular (`CaloHitBuilder.py`)
 
 A injeção de dependência torna a configuração em Python limpa e autoexplicativa:
 
@@ -673,7 +771,7 @@ def configure_hit_maker(sampling, flags):
 
 ---
 
-### 7.6. Comparativo: Arquitetura Atual vs. Proposta Modular
+### 7.7. Comparativo: Arquitetura Atual vs. Proposta Modular
 
 | Aspecto | Arquitetura Atual (`HEAD`) | Proposta com `GAUGI::Tool` |
 | :--- | :--- | :--- |
