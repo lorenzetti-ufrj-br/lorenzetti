@@ -137,6 +137,8 @@ add_subdirectory( reconstruction/calorimeter/CaloCellBuilder )
 add_subdirectory( reconstruction/calorimeter/CaloClusterBuilder )
 add_subdirectory( reconstruction/calorimeter/CaloRingsBuilder )
 add_subdirectory( reconstruction/calorimeter/CaloHitBuilder )
+add_subdirectory( tools/calorimeter/CaloHitBuilderTools )
+add_subdirectory( tools/calorimeter/AtlasCaloHitBuilderTools )
 add_subdirectory( reconstruction/io/RootStreamBuilder )
 add_subdirectory( reconstruction/physics/EgammaBuilder )
 add_subdirectory( reconstruction/reco )
@@ -165,6 +167,8 @@ add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:Egamma>
   $<TARGET_OBJECTS:SpacePoint>
   $<TARGET_OBJECTS:CaloHitBuilder>
+  $<TARGET_OBJECTS:CaloHitBuilderTools>
+  $<TARGET_OBJECTS:AtlasCaloHitBuilderTools>
   $<TARGET_OBJECTS:CaloCellBuilder>
   $<TARGET_OBJECTS:CaloClusterBuilder>
   $<TARGET_OBJECTS:CaloRingsBuilder>

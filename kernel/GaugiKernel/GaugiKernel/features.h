@@ -48,7 +48,7 @@
 #endif
 
 // Do we have the vector_size attribute for writing explicitly vectorized code?
-#if HAVE_GCC_CLANG_EXTENSIONS
+#if HAVE_GCC_CLANG_EXTENSIONS || defined(__CLING__)
 # define HAVE_VECTOR_SIZE_ATTRIBUTE 1
 #else
 # define HAVE_VECTOR_SIZE_ATTRIBUTE 0

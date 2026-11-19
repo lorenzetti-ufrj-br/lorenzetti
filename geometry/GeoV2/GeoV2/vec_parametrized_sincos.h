@@ -11,8 +11,8 @@
 #ifndef VEC_PARAMETRIZED_SINCOS_H
 #define VEC_PARAMETRIZED_SINCOS_H
 
-#include "CxxUtils/restrict.h"
-#include "CxxUtils/vec.h"
+#include "GaugiKernel/restrict.h"
+#include "GaugiKernel/vec.h"
 struct vsincos_par
 {
 

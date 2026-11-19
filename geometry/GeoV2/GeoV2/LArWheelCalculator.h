@@ -12,7 +12,7 @@
 // FMV and other checks
 #if 1 // Lorenzetti port: the Athena branch (CxxUtils/features.h of geometry/CxxUtils)
 // For athena
-  #include "CxxUtils/features.h"
+  #include "GaugiKernel/features.h"
 #else
 // When run outside of Athena
   #define HAVE_VECTOR_SIZE_ATTRIBUTE 1

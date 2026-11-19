@@ -12,7 +12,6 @@ import ROOT
 from GaugiKernel import Logger, LoggingLevel, Configurable
 from GaugiKernel.macros import MSG_INFO
 from CaloHitBuilder.CaloHitMaker import CaloHitMakerCfg
-from CaloHitBuilder.CaloFreeRunningHitWriter import CaloFreeRunningHitWriter
 from CaloHitBuilder.CaloHitFlags import CaloHitFlags, FreeRunningFlags
 from G4Kernel import ComponentAccumulator
 
@@ -233,6 +232,7 @@ class CaloHitBuilder(Logger):
         self.RecoAlgs.append(mergeAlg)
 
         if self.FreeRunningHits:
+            from AtlasCaloHitBuilderTools import CaloFreeRunningHitWriter
             MSG_INFO(
                 self,
                 f"Create CaloFreeRunningHitWriter (tree {self.FreeRunningNtupleName})",

@@ -185,11 +185,6 @@ def main(
         HIT = RootStreamHITMaker(
             "RootStreamHITMaker",
             OutputLevel=outputLevel,
-            OnlyRoI=not CaloHitFlags.SaveAllHits,
-            InputHitsKey=recordable("Hits"),
-            InputEventKey=recordable("Events"),
-            InputTruthKey=recordable("Particles"),
-            InputSeedsKey=recordable("Seeds"),
         )
         acc += HIT
 

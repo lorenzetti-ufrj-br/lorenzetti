@@ -75,6 +75,10 @@ class CaloFreeRunningHitList : public SG::DataHandle
     }
 
     size_t size() const { return m_cellID.size(); }
+    auto begin() const { return m_cellID.begin(); }
+    auto end()   const { return m_cellID.end(); }
+    auto begin()       { return m_cellID.begin(); }
+    auto end()         { return m_cellID.end(); }
     /*! 0 = tile, 1 = EMB, 2 = EMEC, 3 = HEC, 4 = FCAL */
     const std::vector<int>&       det()      const { return m_det;      }
     /*! sensitive detector that made the entry (addLAr): 0 = Geant4 steps, 1 = frozen shower spots */

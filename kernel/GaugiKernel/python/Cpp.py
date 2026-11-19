@@ -36,6 +36,9 @@ class Cpp(Logger):
     def core(self):
         return self._core
 
+    def c_ptr(self):
+        return self._core
+
     def setProperty(self, key, value):
         if self._core.hasProperty(key):
             setattr(self, key, value)
