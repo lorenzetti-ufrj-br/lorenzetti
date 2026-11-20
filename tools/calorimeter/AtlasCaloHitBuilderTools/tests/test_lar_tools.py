@@ -108,7 +108,6 @@ class TestLArTools(unittest.TestCase):
     def test_lar_emec_charge_collection_tool(self):
         tool_cfg = LArEmecChargeCollectionToolCfg(
             "TestLArEmecChargeTool",
-            EmecChargeCollection=False,  # Keep calculator uninstantiated in unit test without data files
             EmecCompartment=1,
             EmecFocalShift=3689.5,
         )

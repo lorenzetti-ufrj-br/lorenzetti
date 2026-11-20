@@ -98,6 +98,13 @@ class FreeRunningFlags(JobFlags):
         if not cls.EmecHVMap:
             cls.EmecHVMap = os.path.join(data_dir, "HVEMECMap_v02.dat") if data_dir else ""
 
+        if cls.Enable and is_v2:
+            CaloHitFlags.ActiveEnergyOnly = True
+            CaloHitFlags.BirksLaw = True
+            CaloHitFlags.TileDualReadout = True
+            CaloHitFlags.TilePmtSplit = "ushape"
+            CaloHitFlags.NeutronTimeCut = 150.0
+
     @classmethod
     def get_data_dir(cls) -> str:
         """Finds the geometry v2 data directory containing EMEC tables and maps."""

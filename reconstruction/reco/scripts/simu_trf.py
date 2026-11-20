@@ -7,9 +7,7 @@ Usage:
     simu_trf.py -i input.EVT.root -o output.HIT.root [options]
 """
 
-import os
 from pathlib import Path
-from typing import Union
 from typing_extensions import Annotated
 import typer
 
@@ -18,33 +16,9 @@ from GaugiKernel.constants import MINUTES
 from G4Kernel import EventReader, ComponentAccumulator
 from RootStreamBuilder import recordable, clear_recorded_items, RootStreamHITMaker
 from CaloHitBuilder import CaloHitBuilder, CaloHitFlags, FreeRunningFlags
-from GeoBase import DetectorConstructionCfg, DetectorFlags
+from GeoBase import DetectorConstructionCfg
 from GeoV2 import AtlasGeometryFlags
 from magfield import MagFieldFlags
-
-
-def keep_only_collection_tree(path: Union[str, Path]) -> None:
-    """
-    Keeps only the CollectionTree in the output file of free-running ATLAS format,
-    removing the monitoring directories (Event/, Expert/) as in the ATLAS HITS ntuple.
-    The tree is cloned with identical compression settings.
-    """
-    import ROOT
-
-    path_str = str(path)
-    src = ROOT.TFile.Open(path_str)
-    if not src or src.IsZombie():
-        return
-    tree = src.Get("CollectionTree")
-    if not tree:
-        src.Close()
-        return
-    tmp = path_str + ".tmp"
-    dst = ROOT.TFile(tmp, "RECREATE", "", src.GetCompressionSettings())
-    tree.CloneTree(-1, "fast").Write()
-    dst.Close()
-    src.Close()
-    os.replace(tmp, path_str)
 
 
 @file_parallel_job(ntuple_name="CollectionTree", output_replace=(".EVT.", ".HIT."))
@@ -82,55 +56,17 @@ def main(
 
     is_v2 = (detector == "v2")
 
-    # 3. Resolve defaults para cada domínio
-    AtlasGeometryFlags.apply_defaults(is_v2=is_v2)
+    # 3. Resolve defaults e validações dos domínios
     CaloHitFlags.apply_defaults(is_v2=is_v2)
     FreeRunningFlags.apply_defaults(is_v2=is_v2)
-    MagFieldFlags.apply_defaults(is_v2=is_v2)
+    if is_v2:
+        from AtlasCaloHitBuilderTools import validate_atlas_hit_flags
+        try:
+            validate_atlas_hit_flags(flags=CaloHitFlags, fr_flags=FreeRunningFlags, geo_flags=AtlasGeometryFlags)
+        except ValueError as e:
+            raise typer.BadParameter(str(e))
 
-    # 4. Validações de consistência para free-running hits
-    if FreeRunningFlags.Enable:
-        if not (AtlasGeometryFlags.TileAtlasGeometry and AtlasGeometryFlags.TileAtlasCells):
-            raise typer.BadParameter("free-running hits require TileAtlasGeometry and TileAtlasCells in AtlasGeometryFlags")
-        if not (AtlasGeometryFlags.AtlasEmbCells and AtlasGeometryFlags.AtlasHec and AtlasGeometryFlags.AtlasEmec):
-            raise typer.BadParameter("free-running hits require AtlasEmbCells, AtlasHec, and AtlasEmec in AtlasGeometryFlags")
-        if not AtlasGeometryFlags.TileAtlasGap:
-            raise typer.BadParameter("free-running hits require TileAtlasGap in AtlasGeometryFlags")
-        if not AtlasGeometryFlags.AtlasFcalCells:
-            raise typer.BadParameter("free-running hits require AtlasFcalCells in AtlasGeometryFlags")
-        if not AtlasGeometryFlags.AtlasFcalFrozenShowers:
-            raise typer.BadParameter("free-running hits require AtlasFcalFrozenShowers in AtlasGeometryFlags")
-        if not AtlasGeometryFlags.AtlasG4:
-            raise typer.BadParameter("free-running hits require AtlasG4 in AtlasGeometryFlags")
-        if not AtlasGeometryFlags.AtlasRun4:
-            raise typer.BadParameter("free-running hits require AtlasRun4 in AtlasGeometryFlags")
-
-        if FreeRunningFlags.AtlasFormat:
-            if not AtlasGeometryFlags.AtlasEmecArgonFraction:
-                raise typer.BadParameter("FreeRunningFlags.AtlasFormat requires AtlasGeometryFlags.AtlasEmecArgonFraction")
-            if not AtlasGeometryFlags.TileAtlasRun4:
-                raise typer.BadParameter("FreeRunningFlags.AtlasFormat requires AtlasGeometryFlags.TileAtlasRun4")
-            if not AtlasGeometryFlags.AtlasBarrelGapServices:
-                raise typer.BadParameter("FreeRunningFlags.AtlasFormat requires AtlasGeometryFlags.AtlasBarrelGapServices")
-            if not AtlasGeometryFlags.AtlasFullField:
-                raise typer.BadParameter("FreeRunningFlags.AtlasFormat requires AtlasGeometryFlags.AtlasFullField")
-            if not AtlasGeometryFlags.AtlasForwardShielding:
-                raise typer.BadParameter("FreeRunningFlags.AtlasFormat requires AtlasGeometryFlags.AtlasForwardShielding")
-            if not FreeRunningFlags.EmecChargeCollection:
-                raise typer.BadParameter("FreeRunningFlags.AtlasFormat requires FreeRunningFlags.EmecChargeCollection")
-
-        if FreeRunningFlags.EmecChargeCollection:
-            for f in (FreeRunningFlags.EmecTables, FreeRunningFlags.EmecFieldMap, FreeRunningFlags.EmecHVMap):
-                if not os.path.isfile(f):
-                    raise typer.BadParameter(f"EMEC charge collection file '{f}' not found")
-
-        CaloHitFlags.ActiveEnergyOnly = True
-        CaloHitFlags.BirksLaw = True
-        CaloHitFlags.TileDualReadout = True
-        CaloHitFlags.TilePmtSplit = "ushape"
-        CaloHitFlags.NeutronTimeCut = 150.0
-
-    # 5. Instancia a geometria via Factory Cfg
+    # 4. Instancia a geometria via Factory Cfg
     det = DetectorConstructionCfg("ATLAS", version=detector)
 
     gun = EventReader(
@@ -141,8 +77,6 @@ def main(
         OutputSeedKey=recordable("Seeds"),
     )
 
-    fast_sim = (AtlasGeometryFlags.AtlasFcalFrozenShowers or AtlasGeometryFlags.AtlasRun4) if is_v2 else False
-
     acc = ComponentAccumulator(
         "ComponentAccumulator",
         det,
@@ -151,13 +85,9 @@ def main(
         OutputFile=output_file,
         Timeout=timeout * MINUTES,
         NeutronTimeCut=CaloHitFlags.NeutronTimeCut or 0.0,
-        FastSimulation=fast_sim,
+        FastSimulation=(AtlasGeometryFlags.AtlasFcalFrozenShowers or AtlasGeometryFlags.AtlasRun4) if is_v2 else False,
         AtlasG4=AtlasGeometryFlags.AtlasG4 if is_v2 else False,
     )
-
-    tile_dual_readout_val = 0
-    if CaloHitFlags.TileDualReadout:
-        tile_dual_readout_val = 1 if CaloHitFlags.TilePmtSplit == "ushape" else 2
 
     calorimeter = CaloHitBuilder(
         "CaloHitBuilder",
@@ -165,18 +95,9 @@ def main(
         OutputLevel=outputLevel,
         OutputHitsKey=recordable("Hits"),
         OnlyRoI=not CaloHitFlags.SaveAllHits,
-        ActiveEnergyOnly=CaloHitFlags.ActiveEnergyOnly,
-        BirksLaw=CaloHitFlags.BirksLaw,
-        AtlasHitTime=CaloHitFlags.AtlasHitTime,
-        TileDualReadout=tile_dual_readout_val,
-        FreeRunningHits=FreeRunningFlags.Enable,
-        FreeRunningBinning=not FreeRunningFlags.NoBinning,
+        flags=CaloHitFlags,
+        fr_flags=FreeRunningFlags,
         FreeRunningNtupleName=("FreeRunningTree" if FreeRunningFlags.KeepHits else "CollectionTree"),
-        FreeRunningAtlasFormat=FreeRunningFlags.AtlasFormat,
-        EmecChargeCollection=FreeRunningFlags.EmecChargeCollection,
-        EmecChargeTables=FreeRunningFlags.EmecTables,
-        EmecChargeFieldMap=FreeRunningFlags.EmecFieldMap,
-        EmecChargeHVMap=FreeRunningFlags.EmecHVMap,
         InputEventKey=recordable("Events"),
     )
     calorimeter.merge(acc)
@@ -193,6 +114,7 @@ def main(
     exec(post_exec)
 
     if FreeRunningFlags.AtlasFormat:
+        from AtlasCaloHitBuilderTools import keep_only_collection_tree
         keep_only_collection_tree(output_file)
 
 

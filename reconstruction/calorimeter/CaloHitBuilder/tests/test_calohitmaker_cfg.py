@@ -1,6 +1,7 @@
 import unittest
 import ROOT
-from CaloHitBuilder.CaloHitMaker import CaloHitMakerCfg
+from CaloHitBuilder.CaloHitMaker import CaloHitMakerCfg, AtlasCaloHitMakerCfg
+from CaloHitBuilder.CaloHitFlags import CaloHitFlags, FreeRunningFlags
 
 
 class MockVolume:
@@ -83,12 +84,14 @@ class TestCaloHitMakerConfiguration(unittest.TestCase):
 
     def test_generic_sampling_configuration(self):
         samp = MockGenericSampling()
+        flags = CaloHitFlags
+        flags.BirksLaw = True
+        flags.AtlasHitTime = True
         maker = CaloHitMakerCfg(
             "GenericMaker",
             samp,
+            flags=flags,
             OutputCollectionKey="GenericHits",
-            BirksLaw=True,
-            AtlasHitTime=True,
         )
         self.assertIsNotNone(maker)
         self.assertEqual(maker.CellIdentifier.name(), "GenericMaker_GridCellTool")
@@ -100,14 +103,19 @@ class TestCaloHitMakerConfiguration(unittest.TestCase):
 
     def test_atlas_tile_sampling_configuration(self):
         samp = MockAtlasTileSampling()
-        maker = CaloHitMakerCfg(
+        flags = CaloHitFlags
+        flags.BirksLaw = True
+        flags.TileDualReadout = True
+        flags.TilePmtSplit = "ushape"
+        flags.AtlasHitTime = True
+        fr_flags = FreeRunningFlags
+        fr_flags.Enable = True
+        maker = AtlasCaloHitMakerCfg(
             "TileMaker",
             samp,
+            flags=flags,
+            fr_flags=fr_flags,
             OutputCollectionKey="TileHits",
-            BirksLaw=True,
-            TileDualReadout=1,
-            AtlasHitTime=True,
-            FreeRunningHits=True,
         )
         self.assertIsNotNone(maker)
         self.assertEqual(maker.CellIdentifier.name(), "TileMaker_TileBoxCellTool")

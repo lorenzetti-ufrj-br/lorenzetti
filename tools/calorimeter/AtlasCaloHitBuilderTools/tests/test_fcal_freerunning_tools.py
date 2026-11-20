@@ -59,7 +59,6 @@ class TestFCalFreeRunningTools(unittest.TestCase):
         tool_cfg = CaloFreeRunningHitRecorderToolCfg(
             "FreeRunningRecorder",
             FreeRunningListKey="FreeRunningHits",
-            FreeRunningBinning=True,
             Subdet=0,
             AtlasBarrelEc=1,
             AtlasLArSampling=0,

@@ -67,17 +67,30 @@ graph TD
 
 ## 3. Python Configuration
 
-### `CaloHitMakerCfg`
-Helper function returning a `Configurable` instance of `ROOT.CaloHitMaker` initialized with parameters from a geometry sampling descriptor.
+### `CaloHitMakerCfg` e `AtlasCaloHitMakerCfg`
+Funções de configuração que retornam instâncias `Configurable` de `ROOT.CaloHitMaker` inicializadas com os parâmetros do descritor de amostragem da geometria:
+- `CaloHitMakerCfg`: para geometrias cilíndricas universais (`GeoV1`).
+- `AtlasCaloHitMakerCfg`: para geometria ATLAS Run 4 (`GeoV2`).
 
 ```python
-from CaloHitBuilder import CaloHitMakerCfg
+from CaloHitBuilder import CaloHitMakerCfg, AtlasCaloHitMakerCfg
 
-hit_maker = CaloHitMakerCfg(
+# GeoV1 (Universal)
+hit_maker_v1 = CaloHitMakerCfg(
     "CaloHitMaker_EMB1",
     sampling=detector.samplings[0],
     OutputCollectionKey="EMB1_Hits",
     HistogramPath="Expert/EMB1",
+    SamplingNoiseStd=0.0,
+    DetailedHistograms=False,
+)
+
+# GeoV2 (ATLAS)
+hit_maker_v2 = AtlasCaloHitMakerCfg(
+    "CaloHitMaker_Tile",
+    sampling=detector.samplings[0],
+    OutputCollectionKey="Tile_Hits",
+    HistogramPath="Expert/Tile",
     SamplingNoiseStd=0.0,
     DetailedHistograms=False,
 )

@@ -11,7 +11,6 @@ import ROOT
 
 from GaugiKernel import Logger, LoggingLevel, Configurable
 from GaugiKernel.macros import MSG_INFO
-from CaloHitBuilder.CaloHitMaker import CaloHitMakerCfg
 from CaloHitBuilder.CaloHitFlags import CaloHitFlags, FreeRunningFlags
 from G4Kernel import ComponentAccumulator
 
@@ -41,18 +40,9 @@ class CaloHitBuilder(Logger):
         MinEnergy: float = 0.0,
         HistogramPath: str = "Expert",
         OutputLevel: int = LoggingLevel.toC("INFO"),
-        ActiveEnergyOnly: Optional[bool] = None,
-        BirksLaw: Optional[bool] = None,
-        AtlasHitTime: Optional[bool] = None,
-        TileDualReadout: Optional[int] = None,
-        FreeRunningHits: Optional[bool] = None,
-        FreeRunningBinning: Optional[bool] = None,
+        flags: Optional[CaloHitFlags] = None,
+        fr_flags: Optional[FreeRunningFlags] = None,
         FreeRunningNtupleName: str = "CollectionTree",
-        FreeRunningAtlasFormat: Optional[bool] = None,
-        EmecChargeCollection: Optional[bool] = None,
-        EmecChargeTables: Optional[str] = None,
-        EmecChargeFieldMap: Optional[str] = None,
-        EmecChargeHVMap: Optional[str] = None,
         InputEventKey: str = "Events",
     ) -> None:
         """
@@ -70,21 +60,14 @@ class CaloHitBuilder(Logger):
             MinEnergy: Minimum energy threshold for hit retention in MeV.
             HistogramPath: Root path for monitoring histograms.
             OutputLevel: Logging verbosity level.
-            ActiveEnergyOnly: Keep only the energy deposited in the active medium.
-            BirksLaw: Apply Birks' law in scintillator and liquid argon.
-            AtlasHitTime: Bunch crossing from the ATLAS simulation time.
-            TileDualReadout: Dual readout of tile cells (0=off, 1=ATLAS U-shape, 2=linear).
-            FreeRunningHits: Record calorimeter hits in ATLAS HITS ntuple layout.
-            FreeRunningBinning: Sum deposits in time bins of ATLAS simulation.
+            flags: CaloHitFlags configuration instance (defaults to global CaloHitFlags).
+            fr_flags: FreeRunningFlags configuration instance (defaults to global FreeRunningFlags).
             FreeRunningNtupleName: Target TTree name for free-running hits.
-            FreeRunningAtlasFormat: Filter and compress hits in exact ATLAS HITS format.
-            EmecChargeCollection: Enable charge collection physics for the ATLAS EMEC.
-            EmecChargeTables: Path to EMEC tables CSV.
-            EmecChargeFieldMap: Path to EMEC field map file.
-            EmecChargeHVMap: Path to EMEC HV map file.
             InputEventKey: StoreGate key for input event headers.
         """
         super().__init__(name)
+        self.flags: CaloHitFlags = flags if flags is not None else CaloHitFlags
+        self.fr_flags: FreeRunningFlags = fr_flags if fr_flags is not None else FreeRunningFlags
         self.RecoAlgs: List[Configurable] = []
         self.HistogramPath: str = HistogramPath
         self.OutputLevel: int = OutputLevel
@@ -96,57 +79,7 @@ class CaloHitBuilder(Logger):
         self.CellHashes: Optional[List[int]] = CellHashes
         self.FilterEmptyHits: bool = FilterEmptyHits
         self.MinEnergy: float = MinEnergy
-        self.ActiveEnergyOnly: bool = bool(
-            CaloHitFlags.ActiveEnergyOnly if ActiveEnergyOnly is None else ActiveEnergyOnly
-        )
-        self.BirksLaw: bool = bool(
-            CaloHitFlags.BirksLaw if BirksLaw is None else BirksLaw
-        )
-        self.AtlasHitTime: bool = bool(
-            CaloHitFlags.AtlasHitTime if AtlasHitTime is None else AtlasHitTime
-        )
-        if TileDualReadout is None:
-            if CaloHitFlags.TileDualReadout:
-                self.TileDualReadout: int = 1 if CaloHitFlags.TilePmtSplit == "ushape" else 2
-            else:
-                self.TileDualReadout: int = 0
-        else:
-            self.TileDualReadout: int = TileDualReadout
-
-        self.FreeRunningHits: bool = bool(
-            FreeRunningFlags.Enable if FreeRunningHits is None else FreeRunningHits
-        )
-        self.FreeRunningBinning: bool = bool(
-            (not FreeRunningFlags.NoBinning)
-            if FreeRunningBinning is None
-            else FreeRunningBinning
-        )
         self.FreeRunningNtupleName: str = FreeRunningNtupleName
-        self.FreeRunningAtlasFormat: bool = bool(
-            FreeRunningFlags.AtlasFormat
-            if FreeRunningAtlasFormat is None
-            else FreeRunningAtlasFormat
-        )
-        self.EmecChargeCollection: bool = bool(
-            FreeRunningFlags.EmecChargeCollection
-            if EmecChargeCollection is None
-            else EmecChargeCollection
-        )
-        self.EmecChargeTables: str = (
-            FreeRunningFlags.EmecTables
-            if EmecChargeTables is None
-            else EmecChargeTables
-        )
-        self.EmecChargeFieldMap: str = (
-            FreeRunningFlags.EmecFieldMap
-            if EmecChargeFieldMap is None
-            else EmecChargeFieldMap
-        )
-        self.EmecChargeHVMap: str = (
-            FreeRunningFlags.EmecHVMap
-            if EmecChargeHVMap is None
-            else EmecChargeHVMap
-        )
         self.InputEventKey: str = InputEventKey
         self.OutputCollectionKeys: List[str] = []
 
@@ -157,6 +90,16 @@ class CaloHitBuilder(Logger):
         """
         MSG_INFO(self, "Configure CaloHitBuilder.")
 
+        is_v2 = (
+            "v2" in detector_construction.__class__.__name__.lower()
+            or getattr(detector_construction, "version", "").lower() == "v2"
+        )
+
+        if is_v2:
+            from CaloHitBuilder.CaloHitMaker import AtlasCaloHitMakerCfg as CaloHitMaker
+        else:
+            from CaloHitBuilder.CaloHitMaker import CaloHitMakerCfg as CaloHitMaker
+
         for samp in detector_construction.samplings:
             MSG_INFO(
                 self,
@@ -164,49 +107,39 @@ class CaloHitBuilder(Logger):
             )
 
             histogramPath: str = f"{self.HistogramPath}/{samp.name()}"
-            alg: Configurable = CaloHitMakerCfg(
+            alg: Configurable = CaloHitMaker(
                 "CaloHitMaker",
                 samp,
+                flags=self.flags,
+                fr_flags=self.fr_flags,
                 OutputCollectionKey=samp.CollectionKey,
                 SamplingNoiseStd=samp.Noise,
                 HistogramPath=histogramPath,
                 OutputLevel=self.OutputLevel,
                 DetailedHistograms=False,
-                ActiveEnergyOnly=self.ActiveEnergyOnly,
-                BirksLaw=self.BirksLaw,
-                AtlasHitTime=self.AtlasHitTime,
-                TileDualReadout=self.TileDualReadout,
-                FreeRunningHits=self.FreeRunningHits,
-                FreeRunningBinning=self.FreeRunningBinning,
-                EmecChargeCollection=self.EmecChargeCollection,
-                EmecChargeTables=self.EmecChargeTables,
-                EmecChargeFieldMap=self.EmecChargeFieldMap,
-                EmecChargeHVMap=self.EmecChargeHVMap,
             )
 
             self.RecoAlgs.append(alg)
             self.OutputCollectionKeys.append(samp.CollectionKey)
 
         # ATLAS FCal with its cells (GeoV2/python/detectors/FCAL.py): one maker per module and side
-        for fm in getattr(detector_construction, "fcal_modules", []):
-            MSG_INFO(
-                self,
-                f"Create CaloHitMaker for {fm.Name} and dump all hits into {fm.CollectionKey} collection",
-            )
-            alg = CaloHitMakerCfg(
-                "CaloHitMaker",
-                fm,
-                OutputCollectionKey=fm.CollectionKey,
-                HistogramPath=f"{self.HistogramPath}/{fm.name()}",
-                OutputLevel=self.OutputLevel,
-                ActiveEnergyOnly=self.ActiveEnergyOnly,
-                BirksLaw=self.BirksLaw,
-                AtlasHitTime=self.AtlasHitTime,
-                FreeRunningHits=self.FreeRunningHits,
-                FreeRunningBinning=self.FreeRunningBinning,
-            )
-            self.RecoAlgs.append(alg)
-            self.OutputCollectionKeys.append(fm.CollectionKey)
+        if is_v2:
+            for fm in getattr(detector_construction, "fcal_modules", []):
+                MSG_INFO(
+                    self,
+                    f"Create CaloHitMaker for {fm.Name} and dump all hits into {fm.CollectionKey} collection",
+                )
+                alg = CaloHitMaker(
+                    "CaloHitMaker",
+                    fm,
+                    flags=self.flags,
+                    fr_flags=self.fr_flags,
+                    OutputCollectionKey=fm.CollectionKey,
+                    HistogramPath=f"{self.HistogramPath}/{fm.name()}",
+                    OutputLevel=self.OutputLevel,
+                )
+                self.RecoAlgs.append(alg)
+                self.OutputCollectionKeys.append(fm.CollectionKey)
 
         MSG_INFO(
             self,
@@ -231,7 +164,7 @@ class CaloHitBuilder(Logger):
 
         self.RecoAlgs.append(mergeAlg)
 
-        if self.FreeRunningHits:
+        if self.fr_flags.Enable:
             from AtlasCaloHitBuilderTools import CaloFreeRunningHitWriter
             MSG_INFO(
                 self,
@@ -242,7 +175,7 @@ class CaloHitBuilder(Logger):
                     "CaloFreeRunningHitWriter",
                     InputEventKey=self.InputEventKey,
                     NtupleName=self.FreeRunningNtupleName,
-                    AtlasFormat=self.FreeRunningAtlasFormat,
+                    AtlasFormat=self.fr_flags.AtlasFormat,
                     OutputLevel=self.OutputLevel,
                 )
             )

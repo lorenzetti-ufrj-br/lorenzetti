@@ -1,6 +1,7 @@
 import unittest
 import math
 import ROOT
+from CaloHitBuilder.CaloHitFlags import CaloHitFlags
 from AtlasCaloHitBuilderTools import (
     TileBoxCellToolCfg,
     TileDualReadoutSplitToolCfg,
@@ -54,10 +55,10 @@ class TestTileTools(unittest.TestCase):
         self.assertEqual(tool.tileNPmt(0, 0), 2)
 
     def test_tile_dual_readout_split_tool(self):
+        CaloHitFlags.TilePmtSplit = "ushape"
         phi_bins = [-math.pi + i * (2 * math.pi / 64) for i in range(65)]
         tool_cfg = TileDualReadoutSplitToolCfg(
             "TestTileSplitTool",
-            TileDualReadout=1,
             Sampling=5,
             PhiBins=phi_bins,
         )

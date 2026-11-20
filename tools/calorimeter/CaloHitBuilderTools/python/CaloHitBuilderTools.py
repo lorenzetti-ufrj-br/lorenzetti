@@ -3,10 +3,8 @@ __all__ = [
     "CaloBirksLawToolCfg",
     "CaloTofCorrectionToolCfg",
     "CaloStandardHitRecorderToolCfg",
-    "configure_generic_hit_maker",
 ]
 
-from typing import Any
 import ROOT
 from GaugiKernel import Configurable, LoggingLevel
 
@@ -30,26 +28,26 @@ def CaloGridCellToolCfg(
 ) -> Configurable:
     """
     Creates and configures a CaloGridCellTool instance for universal cylindrical/grid cell mapping.
+    Passes properties directly to the Configurable.
     """
-    kwargs = {
-        "Sampling": Sampling,
-        "Segment": Segment,
-        "Detector": Detector,
-        "ZMin": ZMin,
-        "ZMax": ZMax,
-        "RMin": RMin,
-        "RMax": RMax,
-        "ActiveEnergyOnly": ActiveEnergyOnly,
-        "BcDuration": BcDuration,
-        "BcidStart": BcidStart,
-        "BcidEnd": BcidEnd,
-        "OutputLevel": OutputLevel,
-    }
-    if EtaBins is not None:
-        kwargs["EtaBins"] = EtaBins
-    if PhiBins is not None:
-        kwargs["PhiBins"] = PhiBins
-    return Configurable(ROOT.CaloGridCellTool, name, **kwargs)
+    return Configurable(
+        ROOT.CaloGridCellTool,
+        name,
+        EtaBins=EtaBins if EtaBins is not None else [],
+        PhiBins=PhiBins if PhiBins is not None else [],
+        Sampling=Sampling,
+        Segment=Segment,
+        Detector=Detector,
+        ZMin=ZMin,
+        ZMax=ZMax,
+        RMin=RMin,
+        RMax=RMax,
+        ActiveEnergyOnly=ActiveEnergyOnly,
+        BcDuration=BcDuration,
+        BcidStart=BcidStart,
+        BcidEnd=BcidEnd,
+        OutputLevel=OutputLevel,
+    )
 
 
 def CaloBirksLawToolCfg(
@@ -101,84 +99,3 @@ def CaloStandardHitRecorderToolCfg(
         OutputLevel=OutputLevel,
     )
 
-
-def configure_generic_hit_maker(
-    name: str,
-    sampling: Any,
-    OutputCollectionKey: str = "Hits",
-    HistogramPath: str = "Expert",
-    OutputLevel: int = LoggingLevel.toC("INFO"),
-    DetailedHistograms: bool = False,
-    SamplingNoiseStd: float = 0.0,
-    ActiveEnergyOnly: bool = False,
-    BirksLaw: bool = False,
-    AtlasHitTime: bool = False,
-    **extra_kwargs,
-) -> Configurable:
-    """
-    Configures a generic detector-agnostic CaloHitMaker instance using universal tools.
-    Connects tools using += operator for tool lists.
-    """
-    maker = Configurable(
-        ROOT.CaloHitMaker,
-        name,
-        OutputCollectionKey=OutputCollectionKey,
-        HistogramPath=HistogramPath,
-        OutputLevel=OutputLevel,
-        DetailedHistograms=DetailedHistograms,
-        SamplingNoiseStd=SamplingNoiseStd,
-        ActiveEnergyOnly=ActiveEnergyOnly,
-    )
-
-    grid_kwargs = {
-        "ActiveEnergyOnly": ActiveEnergyOnly,
-        "OutputLevel": OutputLevel,
-    }
-    if hasattr(sampling, "sensitive") and sampling.sensitive() is not None:
-        grid_kwargs["EtaBins"] = sampling.sensitive().EtaBins
-        grid_kwargs["PhiBins"] = sampling.sensitive().PhiBins
-        grid_kwargs["Segment"] = getattr(sampling.sensitive(), "Segment", 0)
-
-    if hasattr(sampling, "volume") and sampling.volume() is not None:
-        grid_kwargs["RMin"] = sampling.volume().RMin
-        grid_kwargs["RMax"] = sampling.volume().RMax
-        grid_kwargs["ZMin"] = sampling.volume().ZMin
-        grid_kwargs["ZMax"] = sampling.volume().ZMax
-
-    if hasattr(sampling, "Sampling"):
-        grid_kwargs["Sampling"] = sampling.Sampling
-    if hasattr(sampling, "Detector"):
-        grid_kwargs["Detector"] = sampling.Detector
-    if hasattr(sampling, "BunchIdStart"):
-        grid_kwargs["BcidStart"] = sampling.BunchIdStart
-    if hasattr(sampling, "BunchIdEnd"):
-        grid_kwargs["BcidEnd"] = sampling.BunchIdEnd
-    grid_kwargs["BcDuration"] = 25.0
-
-    maker.CellIdentifier = CaloGridCellToolCfg(f"{name}_GridCellTool", **grid_kwargs)
-
-    if BirksLaw:
-        birks_k = 0.05832
-        if hasattr(sampling, "sensitive") and sampling.sensitive() is not None:
-            birks_k = getattr(sampling.sensitive(), "BirksLArK", 0.05832) or 0.05832
-        maker.EnergyModifiers += CaloBirksLawToolCfg(
-            f"{name}_BirksLawTool",
-            BirksLArK=birks_k,
-            OutputLevel=OutputLevel,
-        )
-
-    if AtlasHitTime:
-        maker.TimeCorrection = CaloTofCorrectionToolCfg(
-            f"{name}_TofCorrectionTool",
-            ApplyTof=True,
-            OutputLevel=OutputLevel,
-        )
-
-    maker.HitRecorders += CaloStandardHitRecorderToolCfg(
-        f"{name}_StandardHitRecorderTool",
-        OutputCollectionKey=OutputCollectionKey,
-        NoiseStd=SamplingNoiseStd,
-        OutputLevel=OutputLevel,
-    )
-
-    return maker
