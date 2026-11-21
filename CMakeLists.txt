@@ -137,10 +137,13 @@ add_subdirectory( reconstruction/calorimeter/CaloCellBuilder )
 add_subdirectory( reconstruction/calorimeter/CaloClusterBuilder )
 add_subdirectory( reconstruction/calorimeter/CaloRingsBuilder )
 add_subdirectory( reconstruction/calorimeter/CaloHitBuilder )
-add_subdirectory( tools/calorimeter/CaloHitBuilderTools )
-add_subdirectory( tools/calorimeter/AtlasCaloHitBuilderTools )
+add_subdirectory( tools/calorimeter/CaloHitTools )
+add_subdirectory( tools/calorimeter/AtlasCaloHitTools )
+add_subdirectory( tools/calorimeter/CaloCellTools )
+add_subdirectory( tools/calorimeter/CaloClusterTools )
 add_subdirectory( reconstruction/io/RootStreamBuilder )
 add_subdirectory( reconstruction/physics/EgammaBuilder )
+add_subdirectory( reconstruction/monitoring )
 add_subdirectory( reconstruction/reco )
 ## generator package
 
@@ -167,13 +170,16 @@ add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:Egamma>
   $<TARGET_OBJECTS:SpacePoint>
   $<TARGET_OBJECTS:CaloHitBuilder>
-  $<TARGET_OBJECTS:CaloHitBuilderTools>
-  $<TARGET_OBJECTS:AtlasCaloHitBuilderTools>
+  $<TARGET_OBJECTS:CaloHitTools>
+  $<TARGET_OBJECTS:AtlasCaloHitTools>
   $<TARGET_OBJECTS:CaloCellBuilder>
+  $<TARGET_OBJECTS:CaloCellTools>
   $<TARGET_OBJECTS:CaloClusterBuilder>
+  $<TARGET_OBJECTS:CaloClusterTools>
   $<TARGET_OBJECTS:CaloRingsBuilder>
   $<TARGET_OBJECTS:RootStreamBuilder>
   $<TARGET_OBJECTS:EgammaBuilder>
+  $<TARGET_OBJECTS:Monitoring>
   $<TARGET_OBJECTS:GenKernel>
   $<TARGET_OBJECTS:filters>
 )

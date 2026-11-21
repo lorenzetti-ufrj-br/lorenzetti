@@ -60,7 +60,7 @@ def main(
     CaloHitFlags.apply_defaults(is_v2=is_v2)
     FreeRunningFlags.apply_defaults(is_v2=is_v2)
     if is_v2:
-        from AtlasCaloHitBuilderTools import validate_atlas_hit_flags
+        from AtlasCaloHitTools import validate_atlas_hit_flags
         try:
             validate_atlas_hit_flags(flags=CaloHitFlags, fr_flags=FreeRunningFlags, geo_flags=AtlasGeometryFlags)
         except ValueError as e:
@@ -114,7 +114,7 @@ def main(
     exec(post_exec)
 
     if FreeRunningFlags.AtlasFormat:
-        from AtlasCaloHitBuilderTools import keep_only_collection_tree
+        from AtlasCaloHitTools import keep_only_collection_tree
         keep_only_collection_tree(output_file)
 
 

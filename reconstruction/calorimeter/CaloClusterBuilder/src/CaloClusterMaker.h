@@ -5,12 +5,12 @@
 #include "GaugiKernel/StatusCode.h"
 #include "GaugiKernel/DataHandle.h"
 #include "GaugiKernel/Algorithm.h"
+#include "GaugiKernel/Tool.h"
 #include "CaloCell/CaloCellContainer.h"
 #include "CaloCluster/CaloClusterContainer.h"
 #include "EventInfo/SeedContainer.h"
-#include "ShowerShapes.h"
 #include <string>
-#include <memory>
+#include <vector>
 
 /**
  * @class CaloClusterMaker
@@ -18,7 +18,7 @@
  * 
  * Uses a seed-based approach to group calorimeter cells into clusters.
  * It identifies the highest energy cell (seed) and aggregates surrounding cells
- * within a defined window, calculating comprehensive shower shape variables.
+ * within a defined window, delegating shower shape and moments calculations to pluggable tools.
  */
 class CaloClusterMaker : public Gaugi::Algorithm {
 public:
@@ -52,6 +52,19 @@ public:
   /*! Finalize the algorithm **/
   virtual StatusCode finalize() override;
 
+  /** Add tool to cluster processing **/
+  void addTool(Gaugi::Tool *tool) {
+    m_tools.push_back(tool);
+  }
+
+  void push_back(Gaugi::Tool *tool) {
+    m_tools.push_back(tool);
+  }
+
+  const std::vector<Gaugi::Tool*>& tools() const {
+    return m_tools;
+  }
+
 private:
   void fillCluster(SG::EventContext &ctx, xAOD::CaloCluster *clus, const std::string &key) const;
   float dR(float eta1, float phi1, float eta2, float phi2) const;
@@ -65,11 +78,10 @@ private:
 
   float m_etaWindow;
   float m_phiWindow;
-  bool m_doForwardMoments;
   std::string m_histPath;
 
-  // Shower shape calculator
-  ShowerShapes *m_showerShapes;
+  // Tools executed on each reconstructed cluster
+  std::vector<Gaugi::Tool*> m_tools;
 
   float m_minCenterEnergy;
 };

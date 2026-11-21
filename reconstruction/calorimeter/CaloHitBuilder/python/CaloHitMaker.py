@@ -11,13 +11,13 @@ import ROOT
 
 from GaugiKernel import Configurable, LoggingLevel
 from CaloHitBuilder.CaloHitFlags import CaloHitFlags, FreeRunningFlags
-from CaloHitBuilderTools import (
+from CaloHitTools import (
     CaloGridCellToolCfg,
     CaloBirksLawToolCfg,
     CaloTofCorrectionToolCfg,
     CaloStandardHitRecorderToolCfg,
 )
-from AtlasCaloHitBuilderTools import (
+from AtlasCaloHitTools import (
     validate_atlas_hit_flags,
     TileBoxCellToolCfg,
     TileDualReadoutSplitToolCfg,

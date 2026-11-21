@@ -165,7 +165,7 @@ class CaloHitBuilder(Logger):
         self.RecoAlgs.append(mergeAlg)
 
         if self.fr_flags.Enable:
-            from AtlasCaloHitBuilderTools import CaloFreeRunningHitWriter
+            from AtlasCaloHitTools import CaloFreeRunningHitWriter
             MSG_INFO(
                 self,
                 f"Create CaloFreeRunningHitWriter (tree {self.FreeRunningNtupleName})",

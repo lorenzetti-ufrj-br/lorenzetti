@@ -11,7 +11,12 @@ import ROOT
 from GaugiKernel import Logger, LoggingLevel, Configurable
 from GaugiKernel.macros import MSG_INFO
 from CaloCell import CaloSampling, Detector
-from CaloCellBuilder.PulsePerturber import PulsePerturberCfg
+from CaloCellTools import (
+    PulseGeneratorToolCfg,
+    OptimalFilterToolCfg,
+    ConstrainedOptimalFilterToolCfg,
+    PulsePerturberToolCfg,
+)
 from CaloCellBuilder.CaloCellMaker import CaloCellMakerCfg
 from CaloCellBuilder.CaloFlags import CaloFlags, CrossTalkFlags, AnomalyFlags
 
@@ -99,12 +104,10 @@ class CaloCellBuilder(Logger):
             )
 
             noise_std = getattr(samp, "DigitNoise", samp.Noise)
-            pulse: Configurable = Configurable(
-                ROOT.PulseGenerator,
-                "PulseGenerator",
+            pulse: Configurable = PulseGeneratorToolCfg(
+                "PulseGeneratorTool",
                 NSamples=samp.Samples,
                 ShaperFile=samp.Shaper,
-                OutputLevel=self.OutputLevel,
                 SamplingRate=25.0,
                 Pedestal=0.0,
                 DeformationMean=0.0,
@@ -112,22 +115,22 @@ class CaloCellBuilder(Logger):
                 NoiseMean=0.0,
                 NoiseStd=noise_std,
                 StartSamplingBC=samp.StartSamplingBC,
+                OutputLevel=self.OutputLevel,
             )
 
             if CaloFlags.DoCOF and samp.Detector == Detector.TILE:
-                of: Configurable = Configurable(
-                    ROOT.ConstrainedOptimalFilter,
-                    "ConstrainedOptimalFilter",
-                    NSamples=samp.Samples,
+                of: Configurable = ConstrainedOptimalFilterToolCfg(
+                    "ConstrainedOptimalFilterTool",
                     PulsePath=samp.Shaper,
-                    Threshold=0,
-                    SamplingRate=25.0,
+                    Threshold=0.0,
+                    NSamples=samp.Samples,
                     StartSamplingBC=samp.StartSamplingBC,
+                    SamplingRate=25.0,
+                    OutputLevel=self.OutputLevel,
                 )
             else:
-                of = Configurable(
-                    ROOT.OptimalFilter,
-                    "OptimalFilter",
+                of = OptimalFilterToolCfg(
+                    "OptimalFilterTool",
                     WeightsEnergy=samp.OFWeightsEnergy,
                     WeightsTime=samp.OFWeightsTime,
                     OutputLevel=self.OutputLevel,
@@ -148,8 +151,8 @@ class CaloCellBuilder(Logger):
             maker.PulseGenerator = pulse
 
             if CaloFlags.DoDefects:
-                anomaly: Configurable = PulsePerturberCfg(
-                    f"PulsePerturber_{samp.CollectionKey}",
+                anomaly: Configurable = PulsePerturberToolCfg(
+                    f"PulsePerturberTool_{samp.CollectionKey}",
                     InputEventKey=self.InputEventKey,
                     NoiseMean=pulse.NoiseMean,
                     NoiseStd=pulse.NoiseStd,

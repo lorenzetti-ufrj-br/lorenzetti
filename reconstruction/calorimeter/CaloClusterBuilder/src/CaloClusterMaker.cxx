@@ -29,8 +29,7 @@ using namespace Gaugi;
  */
 CaloClusterMaker::CaloClusterMaker(std::string name) : 
   IMsgService(name),
-  Algorithm(),
-  m_showerShapes(nullptr)
+  Algorithm()
 {
   // Key inputs
   declareProperty("InputCellsKey"       , m_cellsKey = "Cells"              );
@@ -40,16 +39,15 @@ CaloClusterMaker::CaloClusterMaker(std::string name) :
   // Algorithm configuration
   declareProperty("EtaWindow"           , m_etaWindow = 0.4                 );
   declareProperty("PhiWindow"           , m_phiWindow = 0.4                 );
-  declareProperty("DoForwardMoments"    , m_doForwardMoments = false        );
   declareProperty("HistogramPath"       , m_histPath = "Clusters"           );
   declareProperty("MinCenterEnergy"     , m_minCenterEnergy = 15.0 * GeV    );
   declareProperty("OutputLevel"         , m_outputLevel = 1                 );
+  declareProperty("Tools"               , m_tools                           );
 }
 
 //!=====================================================================
 
 CaloClusterMaker::~CaloClusterMaker() {
-  delete m_showerShapes;  
 }
 
 //!=====================================================================
@@ -57,8 +55,6 @@ CaloClusterMaker::~CaloClusterMaker() {
 StatusCode CaloClusterMaker::initialize() {
   CHECK_INIT();
   setMsgLevel((MSG::Level)m_outputLevel);
-  m_showerShapes = new ShowerShapes("ShowerShapes");
-  m_showerShapes->setForwardMoments(m_doForwardMoments);
   return StatusCode::SUCCESS;
 }
 
@@ -201,7 +197,11 @@ StatusCode CaloClusterMaker::post_execute(EventContext &ctx) const {
         clus->setSeed(m_seedKey, seed_index, part);
         
         fillCluster(ctx, clus, m_cellsKey);
-        m_showerShapes->execute(ctx, clus);
+        for (const auto tool : m_tools) {
+          if (tool) {
+            tool->execute(ctx, clus);
+          }
+        }
         clusters->push_back(clus);
       }
     } else {

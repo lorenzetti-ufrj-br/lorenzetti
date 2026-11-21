@@ -21,6 +21,8 @@ def main(
     output_level: Annotated[str, typer.Option("-l", "--output-level", help="Logging verbosity.")] = "INFO",
     filter_by_sigma: Annotated[bool, typer.Option("--filter-by-sigma/--no-filter-by-sigma", help="Filter cells by noise sigma threshold.")] = False,
     sigma_threshold: Annotated[float, typer.Option("--sigma-threshold", help="Noise sigma threshold for cell filtering (E > threshold * sigma).")] = 2.0,
+    enable_monitoring: Annotated[bool, typer.Option("--enable-monitoring/--no-monitoring", help="Generate expert monitoring ROOT file.")] = False,
+    monitoring_file: Annotated[str, typer.Option("--monitoring-file", help="Destination file for expert monitoring ROOT histograms.")] = "expert_monitoring.root",
     preexec: Annotated[str, typer.Option("-p", "--preexec", help="The preexec command to run before reconstruction.")] = "''",
 ):
     """
@@ -92,6 +94,19 @@ def main(
     acc += acc_rings
     acc += hypo
     acc += AOD
+
+    if enable_monitoring:
+        from EgammaMonitoring import EgammaMonitoringMakerCfg
+        mon = EgammaMonitoringMakerCfg(
+            "EgammaMonitoringMaker",
+            OutputFile=monitoring_file,
+            InputClusterKey=recordable("Clusters"),
+            InputElectronKey=recordable("Electrons"),
+            InputEventInfoKey=recordable("Events"),
+            InputRingsKey=recordable("Rings"),
+            OutputLevel=outputLevel,
+        )
+        acc += mon
 
     print(acc)
     acc.run(nov)

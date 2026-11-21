@@ -9,6 +9,7 @@ import ROOT
 
 from GaugiKernel import Configurable, LoggingLevel
 from CaloClusterBuilder.CaloClusterFlags import CaloClusterFlags
+from CaloClusterTools import ShowerShapeToolCfg, MomentsToolCfg
 
 __all__ = ["CaloClusterMakerCfg", "CaloClusterMaker"]
 
@@ -26,7 +27,7 @@ def CaloClusterMakerCfg(
     HistogramPath: str = "Expert/Clusters",
 ) -> Configurable:
     """
-    Configures and returns a CaloClusterMaker algorithm instance.
+    Configures and returns a CaloClusterMaker algorithm instance with attached shower shape tools.
 
     Args:
         name: Name of the algorithm instance.
@@ -43,7 +44,7 @@ def CaloClusterMakerCfg(
     Returns:
         Configurable: Configured ROOT.CaloClusterMaker algorithm instance.
     """
-    return Configurable(
+    maker = Configurable(
         ROOT.CaloClusterMaker,
         name,
         InputCellsKey=InputCellsKey,
@@ -52,10 +53,15 @@ def CaloClusterMakerCfg(
         EtaWindow=EtaWindow,
         PhiWindow=PhiWindow,
         MinCenterEnergy=MinCenterEnergy,
-        DoForwardMoments=DoForwardMoments,
         OutputLevel=OutputLevel,
         HistogramPath=HistogramPath,
     )
+
+    maker.Tools += ShowerShapeToolCfg(f"ShowerShape_{name}", OutputLevel=OutputLevel)
+    if DoForwardMoments:
+        maker.Tools += MomentsToolCfg(f"Moments_{name}", OutputLevel=OutputLevel)
+
+    return maker
 
 
 # Alias for backward compatibility
