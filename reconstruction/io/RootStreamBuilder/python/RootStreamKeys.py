@@ -36,6 +36,11 @@ DEFAULT_KEY_TO_TYPE_MAP: Dict[str, str] = {
     "Electrons": "ElectronContainer",
     # Rings
     "Rings": "CaloRingsContainer",
+    "Rings_Asym": "CaloRingsContainer",
+    "Rings_Cross": "CaloRingsContainer",
+    "Rings_Corner": "CaloRingsContainer",
+    "Rings_Strips": "CaloRingsContainer",
+    "Rings_Custom": "CaloRingsContainer",
     "RingsSigmaNoise": "CaloRingsContainer",
     "AsymRings": "CaloRingsContainer",
     "CornerRings": "CaloRingsContainer",

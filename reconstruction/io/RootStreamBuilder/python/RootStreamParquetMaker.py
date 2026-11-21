@@ -21,7 +21,14 @@ def RootStreamParquetMakerCfg(
     Creates a RootStreamParquetMaker algorithm for dumping flat analysis variables into an Apache Parquet file.
     """
     if InputRingerKeys is None:
-        InputRingerKeys = ["Rings"]
+        InputRingerKeys = [
+            "Rings",
+            "Rings_Asym",
+            "Rings_Cross",
+            "Rings_Corner",
+            "Rings_Strips",
+            "Rings_Custom",
+        ]
     elif isinstance(InputRingerKeys, str):
         InputRingerKeys = [InputRingerKeys]
 

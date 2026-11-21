@@ -69,7 +69,7 @@ RootStreamParquetMaker::RootStreamParquetMaker(std::string name) : IMsgService(n
   declareProperty("InputTruthKey", m_truthKey = "Particles");
   declareProperty("InputSeedsKey", m_seedsKey = "Seeds");
   declareProperty("InputClusterKey", m_clusterKey = "Clusters");
-  declareProperty("InputRingerKeys", m_ringerKeys = {"Rings"});
+  declareProperty("InputRingerKeys", m_ringerKeys = {"Rings", "Rings_Asym", "Rings_Cross", "Rings_Corner", "Rings_Strips", "Rings_Custom"});
   declareProperty("InputElectronKey", m_electronKey = "Electrons");
   declareProperty("OutputLevel", m_outputLevel = 0);
   declareProperty("Schema", m_schema = {});

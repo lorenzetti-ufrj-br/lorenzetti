@@ -103,7 +103,14 @@ def main(
             InputClusterKey=recordable("Clusters"),
             InputElectronKey=recordable("Electrons"),
             InputEventInfoKey=recordable("Events"),
-            InputRingsKey=recordable("Rings"),
+            InputRingsKeys=[
+                "Rings",
+                "Rings_Asym",
+                "Rings_Cross",
+                "Rings_Corner",
+                "Rings_Strips",
+                "Rings_Custom",
+            ],
             OutputLevel=outputLevel,
         )
         acc += mon

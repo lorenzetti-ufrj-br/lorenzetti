@@ -1,127 +1,48 @@
 #ifndef CaloRingsMaker_h
 #define CaloRingsMaker_h
 
-#include "CaloCell/enumeration.h"
+#include "GaugiKernel/Algorithm.h"
+#include "GaugiKernel/Tool.h"
 #include "GaugiKernel/StatusCode.h"
 #include "GaugiKernel/DataHandle.h"
-#include "GaugiKernel/Algorithm.h"
-#include "CaloRings/CaloRingsContainer.h"
 #include "CaloCluster/CaloClusterContainer.h"
+#include "CaloRings/CaloRingsContainer.h"
 
-class RingSet
-{
-
-  /**
-   * @class RingSet
-   * @brief Helper class to manage a set of rings for a specific layer.
-   *
-   * accumulating energy in concentric rings centered around a specific point.
-   */
-
-public:
-  /*! Constructor */
-  RingSet(std::vector<CaloSampling> &samplings, unsigned nrings, float deta, float dphi);
-  /*! Destructor */
-  RingSet() = default;
-
-  /**
-   * @brief Add the cell energy to the correct ring position.
-   *
-   * Checks validity of the cell (sampling) and calculates its distance
-   * to the center to assign energy to the appropriate ring.
-   *
-   * @param cell Pointer to the calorimeter cell.
-   * @param eta_center Eta of the ring center.
-   * @param phi_center Phi of the ring center.
-   */
-  void push_back(const xAOD::CaloCell *cell, float eta_center, float phi_center);
-
-  /*! Get the ringer shaper pattern for this RingSet */
-  const std::vector<float> &rings() const;
-
-  /*! The number of rings in this RingSet */
-  size_t size() const;
-
-  /**
-   * @brief Check if cell belongs to this RingSet's samplings.
-   * @return true if valid, false otherwise.
-   */
-  bool isValid(const xAOD::CaloCell *) const;
-
-  /*! Zeroize all energy values */
-  void clear();
-  /*! Get Delta eta */
-  float deta() const { return m_deta; }
-  /*! Get Delta phi */
-  float dphi() const { return m_dphi; }
-
-protected:
-  std::vector<float> m_rings;
-  /*! Delta eta */
-  float m_deta;
-  /*! Delta phi */
-  float m_dphi;
-  /*! Sampling layer */
-  std::vector<CaloSampling> m_samplings;
-};
+#include <string>
+#include <vector>
 
 /**
  * @class CaloRingsMaker
- * @brief Algorithm to build RingSets from CaloClusters.
- *
- * This algorithm creates the "Rings" feature set used for electron identification.
- * It iterates over clusters and computes energy sums in concentric rings for
- * each calorimeter layer.
+ * @brief Orchestrator algorithm managing the creation of xAOD::CaloRingsContainer
+ *        and delegating ring decoration to specialized Gaugi::Tool instances.
  */
-class CaloRingsMaker : public Gaugi::Algorithm
-{
+class CaloRingsMaker : public Gaugi::Algorithm {
 public:
-  /** Constructor **/
-  CaloRingsMaker(std::string);
-
-  virtual ~CaloRingsMaker();
+  CaloRingsMaker(std::string name);
+  virtual ~CaloRingsMaker() = default;
 
   virtual StatusCode initialize() override;
-
   virtual StatusCode bookHistograms(SG::EventContext &ctx) const override;
-
   virtual StatusCode pre_execute(SG::EventContext &ctx) const override;
-
   virtual StatusCode execute(SG::EventContext &ctx, const G4Step *step) const override;
-
-  /*! Execute in ComponentAccumulator */
-  virtual StatusCode execute(SG::EventContext &ctx, int /*evt*/) const override;
-
-  /*! Post-execution step to create rings */
+  virtual StatusCode execute(SG::EventContext &ctx, int evt) const override;
   virtual StatusCode post_execute(SG::EventContext &ctx) const override;
-
   virtual StatusCode fillHistograms(SG::EventContext &ctx) const override;
-
   virtual StatusCode finalize() override;
 
-protected:
-  int m_maxRingSets;
-  int m_maxRingsAccumulated;
+  void addTool(Gaugi::Tool *tool) { m_tools.push_back(tool); }
+  void push_back(Gaugi::Tool *tool) { m_tools.push_back(tool); }
+  void setRingsTool(Gaugi::Tool *tool) { m_tools.clear(); m_tools.push_back(tool); }
+  Gaugi::Tool* tool() const { return m_tools.empty() ? nullptr : m_tools[0]; }
+  const std::vector<Gaugi::Tool*>& tools() const { return m_tools; }
 
-  const xAOD::CaloCell *maxCell(const xAOD::CaloCluster *, RingSet &) const;
-
-  std::string m_histPath;
-
+private:
   std::string m_clusterKey;
   std::string m_ringerKey;
-
-  std::vector<float> m_detaRings;
-  std::vector<float> m_dphiRings;
-  std::vector<int> m_nRings;
+  std::string m_histPath;
   std::vector<float> m_etaRange;
-
-  std::vector<std::vector<int>> m_layerRings;
-
   int m_outputLevel;
-  bool m_doForward;
-
-  bool m_DoSigmaCut;
-  float m_SigmaCut;
+  std::vector<Gaugi::Tool*> m_tools;
 };
 
 #endif

@@ -189,6 +189,37 @@ class Configurable(Logger):
         """Merges this configurable into a ComponentAccumulator."""
         acc += self
 
+    def __iadd__(self, other):
+        """
+        Supports `configurable += tool` accumulation directly, syncing with C++ push_back/addTool/Tools.
+        """
+        if hasattr(self, '_c_ptr'):
+            c_ptr = other.c_ptr() if hasattr(other, 'c_ptr') else other
+            if hasattr(self._c_ptr, 'push_back'):
+                try:
+                    self._c_ptr.push_back(c_ptr)
+                    if 'Tools' in getattr(self, '_properties', set()):
+                        if not hasattr(self, '_tools_list'):
+                            self._tools_list = []
+                        self._tools_list.append(other)
+                    return self
+                except TypeError:
+                    pass
+            if hasattr(self._c_ptr, 'addTool'):
+                try:
+                    self._c_ptr.addTool(c_ptr)
+                    if 'Tools' in getattr(self, '_properties', set()):
+                        if not hasattr(self, '_tools_list'):
+                            self._tools_list = []
+                        self._tools_list.append(other)
+                    return self
+                except TypeError:
+                    pass
+        if 'Tools' in getattr(self, '_properties', set()):
+            self.Tools += other
+            return self
+        raise TypeError(f"Cannot add {type(other)} to {self}")
+
     def __setattr__(self, name, value):
         if name in ('_properties', '_c_ptr', '_name'):
             super().__setattr__(name, value)

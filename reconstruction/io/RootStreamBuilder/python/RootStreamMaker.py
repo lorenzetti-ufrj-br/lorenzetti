@@ -90,6 +90,11 @@ def RootStreamAODMakerCfg(
                 "CaloClusterContainer#CaloClusters",
                 "ElectronContainer#Electrons",
                 "CaloRingsContainer#Rings",
+                "CaloRingsContainer#Rings_Asym",
+                "CaloRingsContainer#Rings_Cross",
+                "CaloRingsContainer#Rings_Corner",
+                "CaloRingsContainer#Rings_Strips",
+                "CaloRingsContainer#Rings_Custom",
             ]
             if DumpCells:
                 item_list.extend([

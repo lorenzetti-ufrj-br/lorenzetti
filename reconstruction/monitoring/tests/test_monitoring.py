@@ -37,6 +37,17 @@ class TestMonitoring(unittest.TestCase):
         self.assertEqual(alg.InputClusterKey, "TestClusters")
         self.assertEqual(alg.InputElectronKey, "TestElectrons")
         self.assertEqual(alg.InputRingsKey, "TestRings")
+        self.assertEqual(alg.InputRingsKeys, ["TestRings"])
+
+    def test_monitoring_all_rings_keys(self):
+        alg = EgammaMonitoringMakerCfg("AllRingsMon")
+        self.assertEqual(len(alg.InputRingsKeys), 6)
+        self.assertIn("Rings", alg.InputRingsKeys)
+        self.assertIn("Rings_Asym", alg.InputRingsKeys)
+        self.assertIn("Rings_Cross", alg.InputRingsKeys)
+        self.assertIn("Rings_Corner", alg.InputRingsKeys)
+        self.assertIn("Rings_Strips", alg.InputRingsKeys)
+        self.assertIn("Rings_Custom", alg.InputRingsKeys)
 
     def test_aliases(self):
         alg1 = EgammaMonitoringCfg("Alias1")

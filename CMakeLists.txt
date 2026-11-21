@@ -141,6 +141,7 @@ add_subdirectory( tools/calorimeter/CaloHitTools )
 add_subdirectory( tools/calorimeter/AtlasCaloHitTools )
 add_subdirectory( tools/calorimeter/CaloCellTools )
 add_subdirectory( tools/calorimeter/CaloClusterTools )
+add_subdirectory( tools/calorimeter/CaloRingsTools )
 add_subdirectory( reconstruction/io/RootStreamBuilder )
 add_subdirectory( reconstruction/physics/EgammaBuilder )
 add_subdirectory( reconstruction/monitoring )
@@ -177,6 +178,7 @@ add_library(lorenzetti SHARED
   $<TARGET_OBJECTS:CaloClusterBuilder>
   $<TARGET_OBJECTS:CaloClusterTools>
   $<TARGET_OBJECTS:CaloRingsBuilder>
+  $<TARGET_OBJECTS:CaloRingsTools>
   $<TARGET_OBJECTS:RootStreamBuilder>
   $<TARGET_OBJECTS:EgammaBuilder>
   $<TARGET_OBJECTS:Monitoring>

@@ -28,6 +28,7 @@ EgammaMonitoringMaker::EgammaMonitoringMaker(std::string name)
     m_clusterKey("Clusters"),
     m_electronKey("Electrons"),
     m_ringsKey("Rings"),
+    m_ringsKeys({"Rings", "Rings_Asym", "Rings_Cross", "Rings_Corner", "Rings_Strips", "Rings_Custom"}),
     m_outputLevel(1),
     m_file(nullptr),
     m_isBooked(false)
@@ -38,6 +39,7 @@ EgammaMonitoringMaker::EgammaMonitoringMaker(std::string name)
   declareProperty("InputClusterKey",   m_clusterKey);
   declareProperty("InputElectronKey",  m_electronKey);
   declareProperty("InputRingsKey",     m_ringsKey);
+  declareProperty("InputRingsKeys",    m_ringsKeys);
   declareProperty("OutputLevel",       m_outputLevel);
 }
 
@@ -49,6 +51,19 @@ StatusCode EgammaMonitoringMaker::initialize()
 {
   CHECK_INIT();
   setMsgLevel(m_outputLevel);
+
+  if (!m_ringsKey.empty()) {
+    bool found = false;
+    for (const auto &k : m_ringsKeys) {
+      if (k == m_ringsKey) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      m_ringsKeys.push_back(m_ringsKey);
+    }
+  }
 
   bookAll();
   return StatusCode::SUCCESS;
@@ -106,8 +121,25 @@ void EgammaMonitoringMaker::bookAll() const
     m_hists1D["PID/electron_pid_pass"]->GetXaxis()->SetBinLabel(4, "Tight");
   }
 
-  // 6. Rings Profile (if available)
-  book1D("Rings", "rings_profile", "Ringer Concentric Ring Energy Profile;Ring Index;Energy [GeV]", 100, 0.0, 100.0);
+  // 6. Rings Profiles (Standard and specialised topologies)
+  for (const auto &key : m_ringsKeys) {
+    if (key == "Rings") {
+      book1D("Rings", "rings_profile", "Standard Rings Profile;Ring Index;Energy [GeV]", 100, 0.0, 100.0);
+    } else if (key == "Rings_Asym") {
+      book1D("Rings", "rings_asym_profile", "Asymmetric Rings Profile (4 quadrants);Ring Index;Energy [GeV]", 277, 0.0, 277.0);
+    } else if (key == "Rings_Cross") {
+      book1D("Rings", "rings_cross_profile", "Cross Rings Profile (4 arms);Ring Index;Energy [GeV]", 400, 0.0, 400.0);
+    } else if (key == "Rings_Corner") {
+      book1D("Rings", "rings_corner_profile", "Corner Rings Profile (4 diagonal corners);Ring Index;Energy [GeV]", 400, 0.0, 400.0);
+    } else if (key == "Rings_Strips") {
+      book1D("Rings", "rings_strips_profile", "Strips Rings Profile (1D projection);Ring Index;Energy [GeV]", 338, 0.0, 338.0);
+    } else if (key == "Rings_Custom") {
+      book1D("Rings", "rings_custom_profile", "Custom Rings Profile (shifted rings);Ring Index;Energy [GeV]", 100, 0.0, 100.0);
+    } else {
+      std::string histName = key + "_profile";
+      book1D("Rings", histName, key + " Profile;Ring Index;Energy [GeV]", 500, 0.0, 500.0);
+    }
+  }
 
   // 7. 2D Correlations
   book2D("Correlations", "reta_vs_eta", "R_{\\eta} vs \\eta;\\eta;R_{\\eta}", 50, -2.5, 2.5, 50, 0.5, 1.05);
@@ -288,14 +320,23 @@ StatusCode EgammaMonitoringMaker::fillHistograms(SG::EventContext &ctx) const
   }
 
   // 4. Inspeciona Rings se configurado
-  if (!m_ringsKey.empty()) {
-    SG::ReadHandle<xAOD::CaloRingsContainer> rings(m_ringsKey, ctx);
+  for (const auto &key : m_ringsKeys) {
+    if (key.empty()) continue;
+    SG::ReadHandle<xAOD::CaloRingsContainer> rings(key, ctx);
     if (rings.isValid()) {
+      std::string histName = "rings_profile";
+      if (key == "Rings_Asym") histName = "rings_asym_profile";
+      else if (key == "Rings_Cross") histName = "rings_cross_profile";
+      else if (key == "Rings_Corner") histName = "rings_corner_profile";
+      else if (key == "Rings_Strips") histName = "rings_strips_profile";
+      else if (key == "Rings_Custom") histName = "rings_custom_profile";
+      else if (key != "Rings") histName = key + "_profile";
+
       for (const auto *rg : *rings) {
         if (!rg) continue;
         const auto &vec = rg->rings();
         for (size_t r = 0; r < vec.size(); ++r) {
-          fill1D("Rings/rings_profile", static_cast<float>(r), vec[r] / 1000.0);
+          fill1D("Rings/" + histName, static_cast<float>(r), vec[r] / 1000.0);
         }
       }
     }

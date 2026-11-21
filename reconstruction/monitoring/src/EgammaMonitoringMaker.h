@@ -40,6 +40,7 @@ public:
 
   const std::string& outputFile() const { return m_outputFile; }
   const std::string& directory() const { return m_histDir; }
+  const std::vector<std::string>& ringsKeys() const { return m_ringsKeys; }
 
 private:
   void bookAll() const;
@@ -57,6 +58,7 @@ private:
   std::string m_clusterKey;
   std::string m_electronKey;
   std::string m_ringsKey;
+  std::vector<std::string> m_ringsKeys;
   int m_outputLevel;
 
   mutable std::unique_ptr<TFile> m_file;

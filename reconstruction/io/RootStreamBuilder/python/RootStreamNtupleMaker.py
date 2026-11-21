@@ -21,7 +21,14 @@ def RootStreamNtupleMakerCfg(
     Creates a RootStreamNtupleMaker algorithm for dumping flat analysis ntuples.
     """
     if InputRingerKeys is None:
-        InputRingerKeys = ["Rings"]
+        InputRingerKeys = [
+            "Rings",
+            "Rings_Asym",
+            "Rings_Cross",
+            "Rings_Corner",
+            "Rings_Strips",
+            "Rings_Custom",
+        ]
     elif isinstance(InputRingerKeys, str):
         InputRingerKeys = [InputRingerKeys]
 

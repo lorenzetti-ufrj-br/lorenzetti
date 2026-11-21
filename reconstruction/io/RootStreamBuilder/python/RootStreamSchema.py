@@ -73,6 +73,11 @@ def get_default_schema() -> Dict[str, str]:
 
         # CaloRings (Vector Branches)
         "cl_rings_Rings": "CaloRings#Rings#rings",
+        "cl_rings_Rings_Asym": "CaloRings#Rings_Asym#rings",
+        "cl_rings_Rings_Cross": "CaloRings#Rings_Cross#rings",
+        "cl_rings_Rings_Corner": "CaloRings#Rings_Corner#rings",
+        "cl_rings_Rings_Strips": "CaloRings#Rings_Strips#rings",
+        "cl_rings_Rings_Custom": "CaloRings#Rings_Custom#rings",
 
         # Seeds
         "seed_eta": "Seed#Seeds#eta",

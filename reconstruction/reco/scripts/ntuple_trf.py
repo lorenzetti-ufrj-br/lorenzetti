@@ -50,7 +50,14 @@ def main(
         InputSeedsKey=recordable("Seeds"),
         InputClusterKey=recordable("Clusters"),
         InputElectronKey=recordable("Electrons"),
-        InputRingerKeys=[recordable("Rings")],
+        InputRingerKeys=[
+            recordable("Rings"),
+            recordable("Rings_Asym"),
+            recordable("Rings_Cross"),
+            recordable("Rings_Corner"),
+            recordable("Rings_Strips"),
+            recordable("Rings_Custom"),
+        ],
         OutputNtupleName="physics",
         Schema=schema_dict,
     )

@@ -16,7 +16,13 @@ Inspirado no sistema de monitoramento do ATLAS (`TrigEgammaMonitoring` / Athena 
 3. **Shower Shapes**: $R_{\eta}$, $R_{\phi}$, $w_{\eta 2}$, $f_1$, $f_3$, $E_{\text{ratio}}$, $R_{\text{had}}$.
 4. **Momentos de Cluster**: $\lambda_{\text{center}}$, $\langle\lambda^2\rangle$ (`secondLambda`), $\langle r^2\rangle$ (`secondR`), $f_{\max}$, momentos longitudinais e laterais.
 5. **Identificação (PID)**: Contagem e fração de candidatos aceitos por Working Point (*Very Loose*, *Loose*, *Medium*, *Tight*).
-6. **Perfis Ringer (Rings)**: Perfil médio de energia por anéis concêntricos.
+6. **Perfis Ringer (Rings)**: Perfil médio de energia por anéis para todas as 6 topologias de anéis:
+   - `rings_profile`: Anéis concêntricos padrão (*Standard*, 100 anéis)
+   - `rings_asym_profile`: Anéis assimétricos por quadrantes (*Asym*, 277 anéis)
+   - `rings_cross_profile`: Formato em cruz de 4 braços (*Cross*, 400 anéis)
+   - `rings_corner_profile`: Formato em cantos diagonais (*Corner*, 400 anéis)
+   - `rings_strips_profile`: Projeções 1D por camada/tiras (*Strips*, 338 anéis)
+   - `rings_custom_profile`: Anéis customizados com deslocamentos (*Custom*, 100 anéis)
 7. **Correlações 2D**: $R_{\eta}$ vs $\eta$, $w_{\eta 2}$ vs $E_T$, $R_{\text{had}}$ vs $\eta$.
 
 ---

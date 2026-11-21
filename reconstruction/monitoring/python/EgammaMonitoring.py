@@ -2,7 +2,7 @@
 EgammaMonitoring configuration helper for expert data quality validation.
 """
 
-from typing import Optional
+from typing import List, Optional
 import ROOT
 from GaugiKernel import Configurable, LoggingLevel
 
@@ -22,6 +22,7 @@ def EgammaMonitoringMakerCfg(
     InputClusterKey: str = "Clusters",
     InputElectronKey: str = "Electrons",
     InputRingsKey: str = "Rings",
+    InputRingsKeys: Optional[List[str]] = None,
     OutputLevel: int = LoggingLevel.toC("INFO"),
 ) -> Configurable:
     """
@@ -33,10 +34,25 @@ def EgammaMonitoringMakerCfg(
     :param InputEventInfoKey: StoreGate key for xAOD::EventInfo.
     :param InputClusterKey: StoreGate key for xAOD::CaloClusterContainer.
     :param InputElectronKey: StoreGate key for xAOD::ElectronContainer.
-    :param InputRingsKey: StoreGate key for xAOD::CaloRingsContainer.
+    :param InputRingsKey: StoreGate key for primary xAOD::CaloRingsContainer (backward compatible).
+    :param InputRingsKeys: Optional list of StoreGate keys for all xAOD::CaloRingsContainer collections to monitor.
+                           If None, defaults to all 6 topologies: [Rings, Rings_Asym, Rings_Cross, Rings_Corner, Rings_Strips, Rings_Custom].
     :param OutputLevel: Logging level verbosity.
     :return: Configurable algorithm instance.
     """
+    if InputRingsKeys is None:
+        if InputRingsKey == "Rings":
+            InputRingsKeys = [
+                "Rings",
+                "Rings_Asym",
+                "Rings_Cross",
+                "Rings_Corner",
+                "Rings_Strips",
+                "Rings_Custom",
+            ]
+        else:
+            InputRingsKeys = [InputRingsKey]
+
     cls = getattr(ROOT, "EgammaMonitoringMaker", getattr(ROOT.Gaugi, "EgammaMonitoringMaker", None))
     return Configurable(
         cls,
@@ -47,6 +63,7 @@ def EgammaMonitoringMakerCfg(
         InputClusterKey=InputClusterKey,
         InputElectronKey=InputElectronKey,
         InputRingsKey=InputRingsKey,
+        InputRingsKeys=InputRingsKeys,
         OutputLevel=OutputLevel,
     )
 
