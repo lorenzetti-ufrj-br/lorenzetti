@@ -99,7 +99,6 @@ def main(
         from EgammaMonitoring import EgammaMonitoringMakerCfg
         mon = EgammaMonitoringMakerCfg(
             "EgammaMonitoringMaker",
-            OutputFile=monitoring_file,
             InputClusterKey=recordable("Clusters"),
             InputElectronKey=recordable("Electrons"),
             InputEventInfoKey=recordable("Events"),

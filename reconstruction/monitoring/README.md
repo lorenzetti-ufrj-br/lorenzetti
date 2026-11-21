@@ -3,8 +3,9 @@
 Pacote responsável pelo monitoramento de qualidade de dados (Data Quality Monitoring - DQM) e validação técnica da reconstrução e física de elétrons e calorimetria no Lorenzetti.
 
 Inspirado no sistema de monitoramento do ATLAS (`TrigEgammaMonitoring` / Athena DQ), o pacote fornece:
-- **`EgammaMonitoringMaker`** (`C++` / `Gaugi::Algorithm`): Algoritmo de monitoramento que roda no final da sequência de reconstrução e produz um arquivo ROOT de auditoria independente (`expert_monitoring.root`).
+- **`EgammaMonitoringMaker`** (`C++` / `Gaugi::Algorithm`): Algoritmo de monitoramento que monta e preenche histogramas através dos métodos `bookHistograms` e `fillHistograms`, integrados diretamente ao `SG::StoreGate` e `SG::EventContext`.
 - **`EgammaMonitoringMakerCfg` / `EgammaMonitoringCfg`** (`Python`): Interface de configuração para inserção na cadeia via `ComponentAccumulator`.
+- **`monitoring_trf.py`** (`CLI`): Job transformador paralelo (`@file_parallel_job`) para extrair histogramas de monitoramento (`expert_monitoring.root`) a partir de arquivos ou pastas de AOD.
 - **`reco_monitoring_diff.py`** (`CLI`): Utilitário de comparação estatística histograma-a-histograma entre o arquivo gerado e uma referência homologada, gerando relatórios em **HTML interativo** e **PDF**.
 
 ---
@@ -27,11 +28,16 @@ Inspirado no sistema de monitoramento do ATLAS (`TrigEgammaMonitoring` / Athena 
 
 ---
 
-## Uso na Reconstrução (`reco_trf.py`)
+## Execução da Extração de Monitoramento (`monitoring_trf.py`)
 
-Para gerar o arquivo de monitoramento durante a etapa AOD:
+O job `monitoring_trf.py` extrai o arquivo `expert_monitoring.root` a partir de arquivos ou diretórios de AOD:
+
 ```bash
-reco_trf.py -i input.ESD.root -o output.AOD.root --enable-monitoring --monitoring-file expert_monitoring.root
+# Execução sobre um único arquivo AOD
+monitoring_trf.py -i sample.AOD.root -o expert_monitoring.root
+
+# Execução em lote sobre diretório de AODs em paralelo
+monitoring_trf.py -i /caminho/aods/ -o /caminho/monitoring/ -nw 4
 ```
 
 ---

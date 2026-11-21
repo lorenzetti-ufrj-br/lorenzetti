@@ -13,7 +13,7 @@ from EgammaMonitoring import (
 
 
 class TestMonitoring(unittest.TestCase):
-    """Unit tests for EgammaMonitoringMaker configuration and DQM utilities."""
+    """Unit tests for EgammaMonitoringMaker configuration, StoreGate booking, and DQM utilities."""
 
     @classmethod
     def setUpClass(cls):
@@ -23,7 +23,6 @@ class TestMonitoring(unittest.TestCase):
     def test_monitoring_cfg_instantiation(self):
         alg = EgammaMonitoringMakerCfg(
             "TestEgammaMonitoring",
-            OutputFile="test_expert.root",
             Directory="Expert-Test",
             InputEventInfoKey="TestEvents",
             InputClusterKey="TestClusters",
@@ -31,7 +30,6 @@ class TestMonitoring(unittest.TestCase):
             InputRingsKey="TestRings",
         )
         self.assertEqual(alg.name(), "TestEgammaMonitoring")
-        self.assertEqual(alg.OutputFile, "test_expert.root")
         self.assertEqual(alg.Directory, "Expert-Test")
         self.assertEqual(alg.InputEventInfoKey, "TestEvents")
         self.assertEqual(alg.InputClusterKey, "TestClusters")
@@ -62,8 +60,69 @@ class TestMonitoring(unittest.TestCase):
         self.assertIsNotNone(alg_cls)
         instance = alg_cls("CppEgammaMonitoring")
         self.assertEqual(instance.name(), "CppEgammaMonitoring")
-        self.assertEqual(instance.outputFile(), "expert_monitoring.root")
         self.assertEqual(instance.directory(), "Expert-Monitoring")
+
+    def test_storegate_booking_and_retrieval(self):
+        """Verifies bookHistograms registers all directories and histograms into StoreGate."""
+        from ROOT import SG
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = os.path.join(tmpdir, "test_storegate_mon.root")
+            store = SG.StoreGate(test_file)
+            ctx = SG.EventContext("EventContext")
+            ctx.setStoreGateSvc(store)
+
+            alg_cls = getattr(ROOT, "EgammaMonitoringMaker", getattr(ROOT.Gaugi, "EgammaMonitoringMaker", None))
+            mon = alg_cls("TestMonStoreGate")
+            self.assertTrue(mon.initialize().isSuccess())
+            self.assertTrue(mon.bookHistograms(ctx).isSuccess())
+
+            # Check EventInfo
+            store.cd("Expert-Monitoring/EventInfo")
+            h_avgmu = store.hist1("avgmu")
+            self.assertIsNotNone(h_avgmu)
+            self.assertEqual(h_avgmu.GetName(), "avgmu")
+
+            # Check Kinematics
+            store.cd("Expert-Monitoring/Kinematics")
+            h_clet = store.hist1("cl_et")
+            self.assertIsNotNone(h_clet)
+
+            # Check ShowerShapes
+            store.cd("Expert-Monitoring/ShowerShapes")
+            h_reta = store.hist1("reta")
+            self.assertIsNotNone(h_reta)
+
+            # Check Moments
+            store.cd("Expert-Monitoring/Moments")
+            h_mom = store.hist1("secondLambda")
+            self.assertIsNotNone(h_mom)
+
+            # Check PID
+            store.cd("Expert-Monitoring/PID")
+            h_pid = store.hist1("electron_pid_pass")
+            self.assertIsNotNone(h_pid)
+            self.assertEqual(h_pid.GetXaxis().GetBinLabel(1), "VeryLoose")
+            self.assertEqual(h_pid.GetXaxis().GetBinLabel(4), "Tight")
+
+            # Check Rings (all 6 topologies)
+            store.cd("Expert-Monitoring/Rings")
+            self.assertIsNotNone(store.hist1("rings_profile"))
+            self.assertIsNotNone(store.hist1("rings_asym_profile"))
+            self.assertIsNotNone(store.hist1("rings_cross_profile"))
+            self.assertIsNotNone(store.hist1("rings_corner_profile"))
+            self.assertIsNotNone(store.hist1("rings_strips_profile"))
+            self.assertIsNotNone(store.hist1("rings_custom_profile"))
+
+            # Check Correlations (2D)
+            store.cd("Expert-Monitoring/Correlations")
+            self.assertIsNotNone(store.hist2("reta_vs_eta"))
+
+            # Save and verify ROOT file persistence
+            store.save()
+            f = ROOT.TFile.Open(test_file, "READ")
+            self.assertIsNotNone(f)
+            self.assertIsNotNone(f.Get("Expert-Monitoring/ShowerShapes/reta"))
+            f.Close()
 
     def test_monitoring_diff_logic(self):
         import sys

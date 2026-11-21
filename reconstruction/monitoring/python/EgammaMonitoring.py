@@ -16,7 +16,6 @@ __all__ = [
 
 def EgammaMonitoringMakerCfg(
     name: str = "EgammaMonitoringMaker",
-    OutputFile: str = "expert_monitoring.root",
     Directory: str = "Expert-Monitoring",
     InputEventInfoKey: str = "Events",
     InputClusterKey: str = "Clusters",
@@ -28,8 +27,9 @@ def EgammaMonitoringMakerCfg(
     """
     Configures and returns an EgammaMonitoringMaker instance for expert data quality monitoring.
 
+    Histograms are booked into and managed directly by StoreGate and saved via ComponentAccumulator.
+
     :param name: Instance name of the monitoring algorithm.
-    :param OutputFile: Path to destination expert monitoring ROOT file.
     :param Directory: Base directory name inside the ROOT file.
     :param InputEventInfoKey: StoreGate key for xAOD::EventInfo.
     :param InputClusterKey: StoreGate key for xAOD::CaloClusterContainer.
@@ -57,7 +57,6 @@ def EgammaMonitoringMakerCfg(
     return Configurable(
         cls,
         name,
-        OutputFile=OutputFile,
         Directory=Directory,
         InputEventInfoKey=InputEventInfoKey,
         InputClusterKey=InputClusterKey,
