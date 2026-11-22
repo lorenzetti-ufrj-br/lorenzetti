@@ -54,12 +54,16 @@ class TestDetectorFactory(unittest.TestCase):
         self.assertEqual(DetectorFlags.Version, "GALTIC")
 
     def test_construct_galtic_by_version(self):
-        """Constructs GALTIC via version='GALTIC' and version='v1'."""
-        det1 = DetectorConstructionCfg("TestGaltic", version="GALTIC")
-        self.assertIsInstance(det1, GalticDetectorConstruction)
+        """Constructs GALTIC via version='GALTIC'."""
+        det = DetectorConstructionCfg("TestGaltic", version="GALTIC")
+        self.assertIsInstance(det, GalticDetectorConstruction)
 
-        det2 = DetectorConstructionCfg("TestV1", version="v1")
-        self.assertIsInstance(det2, GalticDetectorConstruction)
+    def test_v1_v2_rejected(self):
+        """Verifies that legacy 'v1' and 'v2' versions are rejected."""
+        with self.assertRaises(ValueError):
+            DetectorConstructionCfg("TestV1", version="v1")
+        with self.assertRaises(ValueError):
+            DetectorConstructionCfg("TestV2", version="v2")
 
     def test_construct_galtic_by_detector_param(self):
         """Constructs GALTIC via detector='GALTIC'."""

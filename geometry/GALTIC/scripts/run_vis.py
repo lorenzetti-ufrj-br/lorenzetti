@@ -6,7 +6,7 @@ import sys,os,gc
 
 try:
 
-  from GeoV1 import DetectorConstruction_v1 as ATLAS
+  from GALTIC import DetectorConstruction as ATLAS
   from CaloHitBuilder import CaloHitBuilder
   
   # Build the ATLAS detector

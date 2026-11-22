@@ -55,25 +55,7 @@ class DetectorConstruction_v1 : public G4VUserDetectorConstruction, public MsgSe
     const G4VPhysicalVolume* GetAbsorberPV() const;
     const G4VPhysicalVolume* GetGapPV() const;
 
-    void AddVolume(std::string region,
-                   int plates,
-                   std::string absorberMaterial,
-                   std::string gapMaterial,
-                   int nofLayers,
-                   double absoThickness,
-                   double gapThickness,
-                   double rMin,
-                   double rMax,
-                   double zSize,
-                   double x,
-                   double y,
-                   double z,
-                   // production cuts
-                   double electronCut,
-                   double positronCut,
-                   double gammaCut,
-                   double photonCut
-                   );
+    bool LoadGeometryFile(const std::string& filepath);
 
   private:
 
@@ -119,6 +101,7 @@ class DetectorConstruction_v1 : public G4VUserDetectorConstruction, public MsgSe
     bool m_useMagneticField;
     bool m_cutOnPhi;
     int m_outputLevel;
+    std::string m_geometryFile;
 
     static G4ThreadLocal G4GlobalMagFieldMessenger*  m_magFieldMessenger;
 };

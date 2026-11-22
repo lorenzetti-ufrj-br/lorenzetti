@@ -9,7 +9,7 @@
 
 Built upon **Geant4**, **Pythia8**, and **ROOT**, Lorenzetti models the complete calorimeter readout chain:
 - **Primary particle generation** and kinematic filtering.
-- **Geant4 shower evolution** in high-granularity detector media (Classical or ATLAS Run 4 geometry).
+- **Geant4 shower evolution** in high-granularity detector media (Parametric GALTIC or realistic ATLAS Run 4 geometry).
 - **Electronic pulse shaping** across bunch crossings and pileup overlay.
 - **Signal reconstruction** via Optimal Filtering (OF/COF).
 - **Topological clustering** and concentric shower ring extraction (Ringer).
@@ -55,7 +55,7 @@ source build/lzt_setup.sh
 
 *(Optional)* To enable full ATLAS Run 4 GeoModel support:
 ```bash
-bash geometry/GeoV2/scripts/build_geomodel.sh ~/geomodel
+bash geometry/ATLAS/scripts/build_geomodel.sh ~/geomodel
 export GEOMODEL_DIR=~/geomodel
 make
 source build/lzt_setup.sh
@@ -79,17 +79,17 @@ The framework provides clean, declarative command-line interfaces for every stag
 #### 1. Geant4 Simulation (`simu_trf.py`)
 Simulates energy depositions in calorimeter media:
 ```bash
-# Classical cylindrical geometry (v1):
-simu_trf.py -i input.EVT.root -o output.HIT.root --detector v1 -nt 4
+# Parametric calorimeter geometry (GALTIC):
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector galtic -nt 4
 
-# High-fidelity ATLAS Run 4 geometry (v2):
-simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 -nt 4
+# High-fidelity ATLAS Run 4 geometry (ATLAS):
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector atlas -nt 4
 ```
 
 #### 2. Digitization & Electronics (`digit_trf.py`)
 Applies pulse shaping, electronic noise, and optional pileup overlay:
 ```bash
-digit_trf.py -i output.HIT.root -o output.ESD.root --detector v2
+digit_trf.py -i output.HIT.root -o output.ESD.root --detector atlas
 ```
 
 #### 3. Calorimeter Reconstruction (`reco_trf.py`)
@@ -113,10 +113,10 @@ Scale execution across multiple CPU cores using built-in multiprocessing workers
 
 ```bash
 # Run simulation across 8 worker processes with 2 threads each:
-simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 -nw 8 -nt 2
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector atlas -nw 8 -nt 2
 
 # Limit total number of events processed:
-simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 --nov 5000
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector atlas --nov 5000
 ```
 
 ### 🎛️ Dynamic Steering via Python Overrides (`--pre-init`)
@@ -124,11 +124,11 @@ Steer any typed dataclass flag ([doc/flags.md](doc/flags.md)) directly from the 
 
 ```bash
 # Disable specific subdetectors and tune neutron time cuts in simulation:
-simu_trf.py -i input.EVT.root -o output.HIT.root --detector v2 \
-  --pre-init "from GeoV2 import AtlasGeometryFlags as Geo; from CaloHitBuilder import CaloHitFlags; Geo.AtlasEmb = False; CaloHitFlags.NeutronTimeCut = 200.0"
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector atlas \
+  --pre-init "from ATLAS import AtlasGeometryFlags as Geo; from CaloHitBuilder import CaloHitFlags; Geo.AtlasEmb = False; CaloHitFlags.NeutronTimeCut = 200.0"
 
 # Enable electronic cross-talk, defect masking, and disable noise in digitization:
-digit_trf.py -i input.HIT.root -o output.ESD.root --detector v2 \
+digit_trf.py -i input.HIT.root -o output.ESD.root --detector atlas \
   --pre-init "from CaloCellBuilder import CaloFlags; CaloFlags.DoCrossTalk = True; CaloFlags.ElectronicNoise = False"
 ```
 
@@ -142,7 +142,7 @@ simu_trf.py -i input.EVT.root -o output.HIT.root --job-file job_config.json
 *Example `job_config.json`:*
 ```json
 {
-  "DetectorFlags": { "Version": "v2" },
+  "DetectorFlags": { "Version": "ATLAS" },
   "AtlasGeometryFlags": { "AtlasEmb": true, "TileAtlasRun4": true },
   "CaloHitFlags": { "BirksLaw": true, "NeutronTimeCut": 150.0 }
 }
@@ -152,15 +152,19 @@ simu_trf.py -i input.EVT.root -o output.HIT.root --job-file job_config.json
 Write calorimeter hits formatted identically to official ATLAS Athena simulation (`CollectionTree` ntuple layout and ported EMEC charge collection):
 
 ```bash
-simu_trf.py -i input.EVT.root -o output.HITS.root --detector v2 \
+simu_trf.py -i input.EVT.root -o output.HITS.root --detector atlas \
   --free-running-hits --free-running-atlas-format
 ```
 
-### 🎨 Interactive 3D Visualization
-Inspect calorimeter geometries, volumes, and particle tracks using Geant4 OpenGL / Qt drivers:
+### 🎨 Interactive 3D Visualization & Technical Vector Drawings
+Inspect calorimeter geometries in 3D WebGL (FastAPI/Three.js) or export 100% mathematically vectorized PDF drawings:
 
 ```bash
-python3 geometry/GeoV1/scripts/run_vis.py
+# Launch modern 3D Web Visualizer:
+visualizer_trf.py --geometry geometry/GALTIC/data/galtic_geometry.json --port 8080
+
+# Export vector technical drawing:
+visualizer_trf.py --geometry geometry/GALTIC/data/galtic_geometry.json --export-pdf rz_cut.pdf --view rz
 ```
 
 ---
@@ -171,9 +175,9 @@ python3 geometry/GeoV1/scripts/run_vis.py
 lorenzetti/
 ├── kernel/                  # GaugiKernel (event loop, StoreGate, JobFlags), G4Kernel, GenKernel
 ├── geometry/                # Modular Geometry Subsystem
-│   ├── GeoBase/             # Shared primitives, pulse data & DetectorConstructionCfg factory
-│   ├── GeoV1/               # Classical 4π cylindrical calorimeter model
-│   └── GeoV2/               # High-fidelity ATLAS Run 4 geometry (GeoModel SQLite, FCal)
+│   ├── GALTIC/              # Parametric 4π calorimeter model (JSON-driven, direct C++ parsing)
+│   ├── ATLAS/               # High-fidelity ATLAS Run 4 geometry (GeoModel SQLite, FCal)
+│   └── visualizer/          # Interactive 3D WebGL viewer (FastAPI/Three.js) & Vector PDF drawings
 ├── magfield/                # Magnetic field subsystem (MagField, MagFieldElements)
 ├── events/                  # Relational EDM (CaloHit, CaloCell, CaloCluster, CaloRings, Egamma)
 ├── reconstruction/          # Digitization, clustering, Ringer extraction & CLI transforms
@@ -187,9 +191,10 @@ lorenzetti/
 
 - **[CHANGE_NOTES.md](CHANGE_NOTES.md)**: Comprehensive architectural guide and detailed changelog.
 - **[doc/flags.md](doc/flags.md)**: Complete reference manual for all `@dataclass` configuration flags.
-- **[geometry/README.md](geometry/README.md)**: Detailed geometry architecture (`GeoBase`, `GeoV1`, `GeoV2`).
-- **[geometry/GeoV1/README.md](geometry/GeoV1/README.md)**: Classical calorimeter design and ray-traced figures.
-- **[geometry/GeoV2/README.md](geometry/GeoV2/README.md)**: ATLAS Run 4 geometry, GeoModel, and frozen showers.
+- **[geometry/README.md](geometry/README.md)**: Detailed geometry architecture (`GALTIC`, `ATLAS`, `visualizer`).
+- **[geometry/GALTIC/README.md](geometry/GALTIC/README.md)**: GALTIC parametric calorimeter design and JSON specifications.
+- **[geometry/ATLAS/README.md](geometry/ATLAS/README.md)**: ATLAS Run 4 geometry, GeoModel, and frozen showers.
+- **[geometry/visualizer/README.md](geometry/visualizer/README.md)**: WebGL 3D visualizer and vector technical drawing export.
 - **[magfield/README.md](magfield/README.md)**: Tabulated magnetic field service and steppers.
 
 ---

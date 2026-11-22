@@ -1,4 +1,4 @@
-#include "GeoV1/DetectorConstruction_v1.h"
+#include "GALTIC/DetectorConstruction_v1.h"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4Box.hh"
@@ -22,6 +22,8 @@
 #include "G4TransportationManager.hh"
 #include "G4FieldManager.hh"
 #include "G4RegionStore.hh"
+#include "GALTIC/json.hpp"
+#include <fstream>
 #include <string>
 #include <sstream>
 
@@ -56,6 +58,7 @@ DetectorConstruction_v1::DetectorConstruction_v1(std::string name)
   declareProperty( "UseMagneticField"           , m_useMagneticField=true     );
   declareProperty( "CutOnPhi"                   , m_cutOnPhi=false            );
   declareProperty( "OutputLevel"                , m_outputLevel=0             ); 
+  declareProperty( "GeometryFile"               , m_geometryFile=""           );
 }
 
 
@@ -64,37 +67,89 @@ DetectorConstruction_v1::~DetectorConstruction_v1()
 
 
 
-//
-// Add volume
-//
-void DetectorConstruction_v1::AddVolume(std::string region,
-                                        int plates,
-                                        std::string absorberMaterial,
-                                        std::string gapMaterial,
-                                        int nofLayers,
-                                        double absoThickness,
-                                        double gapThickness,
-                                        double rMin,
-                                        double rMax,
-                                        double zSize,
-                                        double x,
-                                        double y,
-                                        double z,
-                                        // production cuts
-                                        double electronCut,
-                                        double positronCut,
-                                        double gammaCut,
-                                        double photonCut
-                                        )
+bool DetectorConstruction_v1::LoadGeometryFile(const std::string& filepath)
 {
-  m_volumes.push_back(Volume{region,plates,absorberMaterial,gapMaterial,nofLayers,absoThickness,gapThickness,rMin,rMax,zSize,x,y,z,
-                      electronCut,positronCut,gammaCut,photonCut});
+  std::ifstream f(filepath);
+  if (!f.is_open()) {
+    MSG_ERROR("Cannot open geometry file: " << filepath);
+    return false;
+  }
+  try {
+    nlohmann::json j;
+    f >> j;
+    if (!j.contains("volumes") || !j["volumes"].is_array()) {
+      MSG_ERROR("Geometry file has no valid 'volumes' array: " << filepath);
+      return false;
+    }
+    m_volumes.clear();
+    for (const auto& vol : j["volumes"]) {
+      Volume v;
+      v.name = vol.value("name", "");
+      std::string platesStr = vol.value("plates", "Horizontal");
+      v.plates = (platesStr == "Vertical") ? 1 : 0;
+
+      if (vol.contains("materials")) {
+        v.absorberMaterial = vol["materials"].value("absorber", "");
+        v.gapMaterial = vol["materials"].value("gap", "");
+      } else {
+        v.absorberMaterial = "";
+        v.gapMaterial = "";
+      }
+      if (vol.contains("geometry")) {
+        const auto& geom = vol["geometry"];
+        v.nofLayers = geom.value("nof_layers", 1);
+        v.absoThickness = geom.value("absorber_thickness", 1.0);
+        v.gapThickness = geom.value("gap_thickness", 1.0);
+        v.rMin = geom.value("rmin", 0.0);
+        v.rMax = geom.value("rmax", 0.0);
+        v.zSize = geom.value("z_size", 0.0);
+        if (geom.contains("center") && geom["center"].is_array() && geom["center"].size() >= 3) {
+          v.x = geom["center"][0].get<double>();
+          v.y = geom["center"][1].get<double>();
+          v.z = geom["center"][2].get<double>();
+        } else {
+          v.x = v.y = v.z = 0.0;
+        }
+      } else {
+        v.nofLayers = 1;
+        v.absoThickness = v.gapThickness = 1.0;
+        v.rMin = v.rMax = v.zSize = 0.0;
+        v.x = v.y = v.z = 0.0;
+      }
+      if (vol.contains("cuts")) {
+        const auto& cuts = vol["cuts"];
+        v.electronCut = cuts.value("electron", 1.0);
+        v.positronCut = cuts.value("positron", 1.0);
+        v.gammaCut = cuts.value("gamma", 1.0);
+        v.photonCut = cuts.value("proton", 1.0);
+      } else {
+        v.electronCut = v.positronCut = v.gammaCut = v.photonCut = 1.0;
+      }
+      m_volumes.push_back(v);
+    }
+    MSG_INFO("Successfully loaded " << m_volumes.size() << " volumes from " << filepath);
+    return true;
+  } catch (const std::exception& e) {
+    MSG_ERROR("Error parsing geometry file " << filepath << ": " << e.what());
+    return false;
+  }
 }
 
 
 
 G4VPhysicalVolume* DetectorConstruction_v1::Construct()
 {
+  if (m_volumes.empty()) {
+    if (!m_geometryFile.empty()) {
+      MSG_INFO("Loading geometry directly from file: " << m_geometryFile);
+      if (!LoadGeometryFile(m_geometryFile)) {
+        MSG_FATAL("Failed to load geometry file: " << m_geometryFile);
+      }
+    } else {
+      MSG_FATAL("No geometry file specified for GALTIC DetectorConstruction and no volumes loaded!");
+    }
+  }
+
   // Define materials
   DefineMaterials();
   // Define volumes
@@ -205,12 +260,16 @@ void DetectorConstruction_v1::DefineMaterials()
   nistManager->FindOrBuildMaterial("G4_Al");
   nistManager->FindOrBuildMaterial("G4_Si");
   nistManager->FindOrBuildMaterial("G4_CESIUM_IODIDE");
+  nistManager->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
   nistManager->FindOrBuildMaterial("PLASTIC SCINTILLATOR");
   G4Element* elH = new G4Element("Hydrogen", "H", 1., 1.0079 * g/mole);
   G4Element* elC = new G4Element("Carbon", "C", 6., 12.011 * g/mole);
   G4Material* scinti = new G4Material("PLASTIC SCINTILLATOR", 1.032 * g/cm3, 2); // Organic plastic scintillator, polystyrene
   scinti->AddElement(elH, 8.5*perCent);
   scinti->AddElement(elC, 91.5*perCent);
+  if (!G4Material::GetMaterial("G4_PLASTIC_SC_VINYLTOLUENE", false)) {
+    new G4Material("G4_PLASTIC_SC_VINYLTOLUENE", 1.032 * g/cm3, scinti);
+  }
 
   // Liquid argon material
   G4double a;  // mass of a mole;
@@ -360,30 +419,32 @@ void DetectorConstruction_v1::CreateHorizontalPlates(  G4LogicalVolume *worldLV,
 
 
 
-    G4VSolid* gapS = new G4Tubs( name+"_Gap",// its name
-                                 calorRmin + layer*(absoThickness + gapThickness) + absoThickness,   // R max 48cm+1700mm
-                                 calorRmin + (layer+1)*(absoThickness + gapThickness),   // R max 48cm+1700mm
-                                 calorZ/2,          // Z max, +250cm
-                                 0*deg,           // phi_min
-                                 (!m_cutOnPhi)?(360*deg):(235*deg)          // phi_max
-        ); 
+    if (gapThickness > 1e-5) {
+      G4VSolid* gapS = new G4Tubs( name+"_Gap",// its name
+                                   calorRmin + layer*(absoThickness + gapThickness) + absoThickness,   // R min 1700mm
+                                   calorRmin + (layer+1)*(absoThickness + gapThickness),   // R max 48cm+1700mm
+                                   calorZ/2,          // Z max, +250cm
+                                   0*deg,           // phi_min
+                                   (!m_cutOnPhi)?(360*deg):(235*deg)          // phi_max
+          ); 
 
-    G4LogicalVolume* gapLV = new G4LogicalVolume(
-                                                  gapS,           // its solid
-                                                  gapMaterial,  // its material
-                                                  name+"_Gap");         // its name
+      G4LogicalVolume* gapLV = new G4LogicalVolume(
+                                                    gapS,           // its solid
+                                                    gapMaterial,  // its material
+                                                    name+"_Gap");         // its name
 
 
-    new G4PVPlacement(
-                 0,                 // no rotation
-                 G4ThreeVector(0,0,0),
-                 //center_pos,        // at (0,0,0)
-                 gapLV,             // its logical volume
-                 name+"_Gap",       // its name
-                 layerLV,           // its mother  volume
-                 false,             // no boolean operation
-                 0,                 // copy number
-                 m_checkOverlaps);  // checking overlaps
+      new G4PVPlacement(
+                   0,                 // no rotation
+                   G4ThreeVector(0,0,0),
+                   //center_pos,        // at (0,0,0)
+                   gapLV,             // its logical volume
+                   name+"_Gap",       // its name
+                   layerLV,           // its mother  volume
+                   false,             // no boolean operation
+                   0,                 // copy number
+                   m_checkOverlaps);  // checking overlaps
+    }
 
 
   }// Loop over calorimeter layers
@@ -511,34 +572,36 @@ void DetectorConstruction_v1::CreateVerticalPlates(  G4LogicalVolume *worldLV,
 
 
 
-    G4VSolid* gapS = new G4Tubs( name+"_Gap",// its name
-                                 calorRmin,   // R max
-                                 calorRmax,   // R max
-                                 gapThickness/2,   // Z max,
-                                 0*deg,           // phi_min
-                                 (!m_cutOnPhi)?(360*deg):(235*deg)          // phi_max
-        ); 
+    if (gapThickness > 1e-5) {
+      G4VSolid* gapS = new G4Tubs( name+"_Gap",// its name
+                                   calorRmin,   // R max
+                                   calorRmax,   // R max
+                                   gapThickness/2,   // Z max,
+                                   0*deg,           // phi_min
+                                   (!m_cutOnPhi)?(360*deg):(235*deg)          // phi_max
+          ); 
 
-    G4LogicalVolume* gapLV = new G4LogicalVolume(
-                                                  gapS,           // its solid
-                                                  gapMaterial,  // its material
-                                                  name+"_Gap");         // its name
+      G4LogicalVolume* gapLV = new G4LogicalVolume(
+                                                    gapS,           // its solid
+                                                    gapMaterial,  // its material
+                                                    name+"_Gap");         // its name
 
 
-    new G4PVPlacement(
-                 0,                 // no rotation
-                 G4ThreeVector(0,0,
-                   ((invertOrder)?+1.:-1) * 
-                   layerThickness/2
-                   + ((invertOrder)?-1.:+1) * 
-                    gapThickness/2
-                 ),
-                 gapLV,             // its logical volume
-                 name+"_Gap",       // its name
-                 layerLV,           // its mother  volume
-                 false,             // no boolean operation
-                 0,                 // copy number
-                 m_checkOverlaps);  // checking overlaps
+      new G4PVPlacement(
+                   0,                 // no rotation
+                   G4ThreeVector(0,0,
+                     ((invertOrder)?+1.:-1) * 
+                     layerThickness/2
+                     + ((invertOrder)?-1.:+1) * 
+                      gapThickness/2
+                   ),
+                   gapLV,             // its logical volume
+                   name+"_Gap",       // its name
+                   layerLV,           // its mother  volume
+                   false,             // no boolean operation
+                   0,                 // copy number
+                   m_checkOverlaps);  // checking overlaps
+    }
   }// Loop over calorimeter layers
 
 }
@@ -567,6 +630,6 @@ void DetectorConstruction_v1::ConstructSDandField(){
 
 
 G4Region* DetectorConstruction_v1::GetRegion( std::string name ){
-  auto reg = G4RegionStore::GetInstance()->GetRegion(name);
+  auto reg = G4RegionStore::GetInstance()->GetRegion(name, false);
   return reg ? reg : new G4Region(name);
 }

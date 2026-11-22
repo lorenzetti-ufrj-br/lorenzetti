@@ -86,9 +86,9 @@
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 
-#include "GeoV2/EnergyCalculator.h"
-#include "GeoV2/HVHelper.h"
-#include "GeoV2/PortMsg.h"
+#include "ATLAS/EnergyCalculator.h"
+#include "ATLAS/HVHelper.h"
+#include "ATLAS/PortMsg.h"
 #include <limits>
 
 #include "CLHEP/Units/PhysicalConstants.h"

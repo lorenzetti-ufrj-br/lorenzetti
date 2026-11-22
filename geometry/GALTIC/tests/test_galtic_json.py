@@ -16,7 +16,7 @@ for p in [_ROOT, os.path.join(_ROOT, "geometry"), os.path.join(_ROOT, "geometry/
 
 from GALTIC import (
     GalticDetectorConstruction,
-    DetectorConstruction_v1,
+    DetectorConstruction,
     CaloSamplingLayer,
     DeadMaterialVolume,
     Plates,
@@ -105,10 +105,20 @@ class TestGalticGeometry(unittest.TestCase):
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
 
-    def test_detector_construction_v1_alias(self):
-        """Verifies backward-compatibility alias DetectorConstruction_v1."""
-        det = DetectorConstruction_v1("TestV1Compat")
+    def test_detector_construction_alias(self):
+        """Verifies canonical alias DetectorConstruction."""
+        det = DetectorConstruction("TestAlias")
         self.assertIsInstance(det, GalticDetectorConstruction)
+
+    def test_detector_construction_compile_and_construct(self):
+        """Verifies GalticDetectorConstruction compile() and C++ Geant4 Construct without AddVolume."""
+        det = GalticDetectorConstruction("TestCompileConstruct")
+        det.compile()
+        pv = det._c_ptr.Construct()
+        self.assertIsNotNone(pv)
+        self.assertEqual(pv.GetName(), "World")
+        # Ensure AddVolume was removed from C++ interface
+        self.assertFalse(hasattr(det._c_ptr, "AddVolume"))
 
 
 if __name__ == "__main__":

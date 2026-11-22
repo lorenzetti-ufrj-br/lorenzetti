@@ -1,4 +1,4 @@
-#include "GeoV1/DetectorConstruction_v1.h"
+#include "GALTIC/DetectorConstruction_v1.h"
 
 #ifdef __CINT__
 

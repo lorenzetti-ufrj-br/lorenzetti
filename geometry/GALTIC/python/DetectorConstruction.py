@@ -15,7 +15,7 @@ from GaugiKernel import Configurable, Logger
 from GALTIC.Layer import CaloSamplingLayer, DeadMaterialVolume, Plates
 from GALTIC.GalticCfg import getGalticAllSamplings, getGalticAllDeadMaterials
 
-__all__ = ["GalticDetectorConstruction", "DetectorConstruction_v1"]
+__all__ = ["GalticDetectorConstruction", "DetectorConstruction"]
 
 
 def _default_geo_file() -> str:
@@ -140,41 +140,14 @@ class GalticDetectorConstruction(Configurable):
 
     def compile(self) -> None:
         """
-        Prepares the C++ detector construction.
-        If a geometry file is available, configures C++ to read it directly.
-        Also populates C++ volumes via AddVolume for full backward compatibility.
+        Prepares the C++ detector construction by configuring the JSON geometry file.
+        If the geometry file does not exist on disk, saves it first.
         """
-        if self.geometry_file and os.path.isfile(self.geometry_file):
-            self._c_ptr.setProperty("GeometryFile", self.geometry_file)
-
-        all_elements = [samp.volume() for samp in self.samplings]
-        all_elements.extend(self.dead_materials)
-
-        unique_dict: Dict[int, Any] = {}
-        for vol in all_elements:
-            unique_dict.setdefault(id(vol), vol)
-        unique_volumes = list(unique_dict.values())
-
-        for pv in unique_volumes:
-            self._c_ptr.AddVolume(
-                pv.Name,
-                int(pv.Plates),
-                pv.AbsorberMaterial,
-                pv.GapMaterial,
-                int(pv.NofLayers),
-                float(pv.AbsorberThickness),
-                float(pv.GapThickness),
-                float(pv.RMin),
-                float(pv.RMax),
-                float(pv.ZSize),
-                float(pv.X),
-                float(pv.Y),
-                float(pv.Z),
-                float(pv.Cuts.ElectronCut),
-                float(pv.Cuts.PositronCut),
-                float(pv.Cuts.GammaCut),
-                float(pv.Cuts.PhotonCut),
-            )
+        if not self.geometry_file:
+            raise ValueError("GALTIC geometry_file path must be set before compiling.")
+        if not os.path.isfile(self.geometry_file):
+            self.save(self.geometry_file)
+        self._c_ptr.setProperty("GeometryFile", self.geometry_file)
 
     def view(self, port: int = 8080) -> None:
         """Launches the interactive 3D WebGL detector visualizer in browser."""
@@ -208,5 +181,4 @@ class GalticDetectorConstruction(Configurable):
         print(table)
 
 
-# Backward-compatible alias
-DetectorConstruction_v1 = GalticDetectorConstruction
+DetectorConstruction = GalticDetectorConstruction

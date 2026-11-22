@@ -1,10 +1,12 @@
-# Detector Geometry Packages (`geometry/`)
+# Lorenzetti Geometry Subsystem (`geometry/`)
 
-The `geometry/` directory manages detector geometries for the **Lorenzetti** simulation framework. It is modularized into three first-class packages:
+The `geometry/` directory manages all detector geometries for the **Lorenzetti** simulation framework. It is organized into three first-class packages unified under a central root factory:
 
-- **[GeoBase](GeoBase/)**: Shared geometry building blocks (`PhysicalVolume`, `SensitiveDetector`, `Calorimeter`, `Tracking`), common pulse data (`pulseTile.dat`, `pulseLar.dat`), and the centralized factory **`DetectorConstructionCfg`**.
-- **[GeoV1](GeoV1/)**: Classical cylindrical $4\pi$ calorimeter model implemented with Geant4 primitives. Lightweight, fast, and self-contained. Sub-detectors reside in `GeoV1.detectors`.
-- **[GeoV2](GeoV2/)**: High-fidelity ATLAS Run 4 geometry imported from official GeoModel SQLite dumps, featuring realistic FCal forward calorimetry, frozen shower models, and integration with the standalone [`magfield/`](../magfield/README.md) package. Sub-detectors reside in `GeoV2.detectors`.
+- **[GALTIC](GALTIC/)**: *General Argon Liquid and Tile Integrated Calorimeter*. A high-performance, parametric $4\pi$ calorimeter model driven by declarative JSON (`galtic_geometry.json`) with direct C++ volume parsing. Lightweight, self-contained, and ideal for fast simulation and algorithmic development.
+- **[ATLAS](ATLAS/)**: High-fidelity ATLAS Run 4 geometry imported from official GeoModel SQLite dumps, featuring realistic FCal forward calorimetry, frozen shower models, and integration with the standalone [`magfield/`](../magfield/README.md) package.
+- **[visualizer](visualizer/)**: Asynchronous FastAPI 3D WebGL viewer (Three.js) supporting dynamic wedge $\phi$ and longitudinal $R-Z$ cutaways, cell granularity inspection HUD, CAD mesh extraction via ROOT `TGeoManager`, and 100% mathematically vectorized PDF technical drawings.
+
+All legacy `v1`/`v2` nomenclature, `GeoBase` intermediate couplings, and backwards-compatibility shims (`DetectorConstruction_v2.py`) have been **completely eliminated**.
 
 ---
 
@@ -12,63 +14,102 @@ The `geometry/` directory manages detector geometries for the **Lorenzetti** sim
 
 ```text
 geometry/
-├── CMakeLists.txt              # Orchestrator (add_subdirectory GeoBase, GeoV1, GeoV2)
-├── README.md                   # This overview file
-├── GeoBase/                    # Shared Primitives, Common Data & Factory
-│   ├── CMakeLists.txt          # Installs GeoBase Python module and shared data
-│   ├── README.md               # GeoBase documentation
-│   ├── data/                   # Shared pulse files (pulseLar.dat, pulseTile.dat)
-│   ├── python/                 # GeoBase modules (DetectorConstructionCfg, DetectorFlags, PhysicalVolume, etc.)
-│   └── tests/                  # Unit tests (test_detector_construction_cfg.py)
-├── GeoV1/                      # Classical Detector Package
-│   ├── CMakeLists.txt          # Target GeoV1
-│   ├── README.md               # GeoV1 documentation & ray-traced views
-│   ├── GeoV1/                  # Public C++ headers (DetectorConstruction_v1.h)
-│   ├── src/                    # C++ implementations & LinkDef.h
-│   ├── python/                 # GeoV1 Python module (DetectorConstruction_v1, detectors/)
-│   └── scripts/                # Visualization scripts (run_vis.py)
-└── GeoV2/                      # ATLAS Run 4 Package
-    ├── CMakeLists.txt          # Target GeoV2
-    ├── README.md               # GeoV2 documentation & external prerequisites
-    ├── GeoV2/                  # Public C++ headers (unified: DetectorConstruction, EMEC, FCal, etc.)
-    ├── src/                    # C++ implementations & LinkDef.h
-    ├── python/                 # GeoV2 Python module (DetectorConstruction_v2, AtlasGeometryFlags, detectors/)
-    ├── data/                   # FCal electrodes, EMEC tables, and ShowerLib
-    └── scripts/                # GeoModel and cell check scripts
+├── CMakeLists.txt                         # Orchestrates GALTIC, ATLAS, and visualizer
+├── __init__.py                            # [ROOT FACTORY] Exports DetectorConstructionCfg and DetectorFlags
+├── README.md                              # This overview file
+├── GALTIC/                                # Parametric Calorimeter Package (GALTIC)
+│   ├── CMakeLists.txt
+│   ├── README.md                          # GALTIC documentation & layer specifications
+│   ├── GALTIC/                            # C++ public headers (canonical include path: #include "GALTIC/...")
+│   │   ├── DetectorConstruction_v1.h
+│   │   └── json.hpp                       # nlohmann/json C++ header
+│   ├── src/                               # C++ implementation (LoadGeometryFile direct JSON parser)
+│   ├── python/                            # Consolidated Python modules (Layer.py, GalticCfg.py, DetectorConstruction.py)
+│   ├── data/                              # Canonical galtic_geometry.json and pulse calibration files
+│   ├── scripts/                           # CLI geometry generator (generate_galtic_geometry.py)
+│   └── tests/                             # Unit tests (test_galtic_json.py)
+├── ATLAS/                                 # Realistic ATLAS Run 4 Package
+│   ├── CMakeLists.txt
+│   ├── README.md                          # ATLAS documentation & external prerequisites
+│   ├── ATLAS/                             # C++ public headers (canonical include path: #include "ATLAS/...")
+│   ├── src/                               # C++ implementations & LinkDef.h
+│   ├── python/                            # ATLAS module (AtlasDetectorConstruction, AtlasGeometryFlags, detectors/)
+│   ├── data/                              # FCal electrodes, EMEC tables, and ShowerLib
+│   ├── scripts/                           # GeoModel and cell check scripts
+│   └── tests/
+├── visualizer/                            # 3D WebGL Visualizer & Vector PDF Exporter
+│   ├── CMakeLists.txt
+│   ├── README.md                          # Visualizer architecture & API documentation
+│   ├── python/                            # Server.py (FastAPI), CadReader.py, VectorPdfExporter.py
+│   ├── web/                               # Three.js SPA (HTML5/CSS3/ES6)
+│   ├── scripts/                           # visualizer_trf.py CLI tool
+│   └── tests/                             # test_visualizer_export.py
+└── tests/
+    └── test_detector_factory.py           # Unit tests for the root geometry factory
 ```
 
 ---
 
 ## Python API Usage
 
-### Recommended: Unified Factory (`DetectorConstructionCfg`)
+### Central Factory (`DetectorConstructionCfg`)
+
+The root `geometry/__init__.py` acts as the single entry point to instantiate either detector model:
+
 ```python
-from GeoBase import DetectorConstructionCfg
+from geometry import DetectorConstructionCfg, DetectorFlags
 
-# Automatically resolves target version from DetectorFlags.Version (default: "v1"):
+# 1. Instantiate fast parametric calorimeter (GALTIC):
+det_galtic = DetectorConstructionCfg("ATLAS", version="GALTIC")
+det_galtic.compile()
+
+# 2. Instantiate full high-fidelity ATLAS detector:
+det_atlas = DetectorConstructionCfg("ATLAS", version="ATLAS")
+
+# 3. Dynamic selection via global flag:
+DetectorFlags.Version = "GALTIC"  # or "ATLAS"
 det = DetectorConstructionCfg("ATLAS")
-
-# Or explicitly select version:
-det_v1 = DetectorConstructionCfg("ATLAS", version="v1")
-det_v2 = DetectorConstructionCfg("ATLAS", version="v2")
 ```
 
-### Direct Package Usage:
-```python
-# Classical detector:
-from GeoV1 import DetectorConstruction_v1
-from GeoV1.detectors import ECAL, TILE, EMEC, HEC
+### Direct Package Usage
 
-# ATLAS Run 4 detector:
-from GeoV2 import DetectorConstruction_v2, AtlasGeometryFlags
-from GeoV2.detectors import AtlasEmb, AtlasTile, AtlasEmec, AtlasHec
+```python
+# GALTIC (Parametric):
+from GALTIC import GalticDetectorConstruction, CaloSamplingLayer, Plates
+det = GalticDetectorConstruction("MyGaltic")
+
+# ATLAS (High-Fidelity):
+from ATLAS import AtlasDetectorConstruction, AtlasGeometryFlags
+from ATLAS.detectors import AtlasEmb, AtlasTile, AtlasEmec, AtlasHec
+det = AtlasDetectorConstruction("MyAtlas")
+```
+
+---
+
+## Command-Line Transforms
+
+```bash
+# Simulation with GALTIC:
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector galtic -nt 4
+
+# Simulation with ATLAS Run 4:
+simu_trf.py -i input.EVT.root -o output.HIT.root --detector atlas -nt 4
+
+# Digitization with GALTIC:
+digit_trf.py -i output.HIT.root -o output.ESD.root --detector galtic
+
+# Digitization with ATLAS:
+digit_trf.py -i output.HIT.root -o output.ESD.root --detector atlas
+
+# Interactive 3D Web Visualizer:
+visualizer_trf.py --geometry geometry/GALTIC/data/galtic_geometry.json --port 8080
 ```
 
 ---
 
 ## Subsystem Documentation
 
-- [GeoBase Documentation](GeoBase/README.md): Shared primitives, pulse data, and factory implementation.
-- [GeoV1 Documentation](GeoV1/README.md): Classical geometry description, layer specifications, and ray-traced views.
-- [GeoV2 Documentation](GeoV2/README.md): ATLAS Run 4 geometry, GeoModel SQLite import, and frozen showers.
+- [GALTIC Documentation](GALTIC/README.md): Parametric calorimeter design, direct C++ JSON parsing, and layer specifications.
+- [ATLAS Documentation](ATLAS/README.md): ATLAS Run 4 geometry, GeoModel SQLite import, and frozen showers.
+- [Visualizer Documentation](visualizer/README.md): Interactive WebGL 3D viewer, CAD extraction, and vector PDF drawings.
 - [Flags Reference Guide](../doc/flags.md): Complete steering flags manual for `AtlasGeometryFlags` and `DetectorFlags`.

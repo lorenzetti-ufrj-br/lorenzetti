@@ -110,21 +110,29 @@ class AtlasGeometryFlags(JobFlags):
     AtlasFcalElectrodes: str = ""
 
     @classmethod
-    def apply_defaults(cls, is_v2: bool = True) -> None:
+    def apply_defaults(cls, enable_atlas: bool = True) -> None:
         """
-        Applies defaults: if is_v2 is True, all unconfigured (None) boolean flags
-        are enabled. If is_v2 is False, they are disabled. Resolves external data paths.
+        Applies defaults: if enable_atlas is True, all unconfigured (None) boolean flags
+        are enabled (except AtlasRun4, which requires the SQLite geometry dump).
+        Resolves external data paths.
         """
         for f in fields(cls):
             if f.type is Optional[bool]:
                 current = getattr(cls, f.name)
                 if current is None:
-                    setattr(cls, f.name, is_v2)
+                    setattr(cls, f.name, enable_atlas)
 
-        if is_v2:
+        if enable_atlas:
             data_dir = cls.get_data_dir()
             if not cls.AtlasRun4Geometry:
                 cls.AtlasRun4Geometry = os.environ.get("LORENZETTI_ATLAS_RUN4_GEOMETRY", "")
+            # AtlasRun4 and dependent external flags require a valid GeoModel SQLite dump
+            if not cls.AtlasRun4Geometry:
+                cls.AtlasRun4 = False
+                cls.AtlasForwardShielding = False
+                cls.AtlasFullField = False
+                cls.AtlasBarrelGapServices = False
+                cls.TileAtlasRun4 = False
             if not cls.AtlasFieldMap:
                 cls.AtlasFieldMap = os.environ.get("LORENZETTI_FIELD_MAP", "")
             if not cls.AtlasFcalElectrodes:
@@ -135,8 +143,9 @@ class AtlasGeometryFlags(JobFlags):
 
     @classmethod
     def get_data_dir(cls) -> str:
-        """Finds the geometry v2 data directory from environment or repository layout."""
+        """Finds the ATLAS geometry data directory from environment or repository layout."""
         for p in (
+            os.environ.get("LORENZETTI_ATLAS_DATA_DIR"),
             os.environ.get("LORENZETTI_GEOV2_DATA_DIR"),
             os.environ.get("LORENZETTI_GEOMETRY_V2_DATA_DIR"),
             os.environ.get("LORENZETTI_GEOMETRY_DATA_DIR"),

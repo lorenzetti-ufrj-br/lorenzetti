@@ -16,8 +16,8 @@
 #include "G4Exception.hh"
 #include "globals.hh"
 
-#include "GeoV2/EnergyCalculator.h"
-#include "GeoV2/PortMsg.h"
+#include "ATLAS/EnergyCalculator.h"
+#include "ATLAS/PortMsg.h"
 
 using namespace LArG4::EC;
 

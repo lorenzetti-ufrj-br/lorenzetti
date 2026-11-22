@@ -9,8 +9,8 @@ endif()
 file(GLOB EMEC_PORT_SOURCES src/GeoSpecialShapes_*.cxx src/LArG4EC_*.cxx)
 set_source_files_properties( ${EMEC_PORT_SOURCES} PROPERTIES COMPILE_OPTIONS "-O2;-DNDEBUG" )
 
-file(GLOB_RECURSE HEADERS GeoV2/*.h)
-set(DICT_HEADERS GeoV2/DetectorConstruction_v2.h)
+file(GLOB_RECURSE HEADERS ATLAS/*.h)
+set(DICT_HEADERS ATLAS/DetectorConstruction_v2.h)
 
 include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/kernel/GaugiKernel)
@@ -20,12 +20,8 @@ include_directories(${CMAKE_SOURCE_DIR}/magfield/MagFieldElements)
 
 ROOT_GENERATE_DICTIONARY(GeoV2Dict ${DICT_HEADERS} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/src/LinkDef.h MODULE GeoV2)
 add_library(GeoV2 OBJECT ${SOURCES} GeoV2Dict.cxx)
-install(DIRECTORY GeoV2/ DESTINATION geometry/GeoV2)
+install(DIRECTORY ATLAS/ DESTINATION geometry/ATLAS)
 
-# Install as both ATLAS and GeoV2 for backwards compatibility
 gaugi_install_python_modules( ${CMAKE_CURRENT_SOURCE_DIR}/python ATLAS)
-gaugi_install_python_modules( ${CMAKE_CURRENT_SOURCE_DIR}/python GeoV2)
 gaugi_install_data_modules( ${CMAKE_CURRENT_SOURCE_DIR}/data ATLAS)
-gaugi_install_data_modules( ${CMAKE_CURRENT_SOURCE_DIR}/data GeoV2)
 gaugi_install_scripts_modules( ${CMAKE_CURRENT_SOURCE_DIR}/scripts ATLAS)
-gaugi_install_scripts_modules( ${CMAKE_CURRENT_SOURCE_DIR}/scripts GeoV2)

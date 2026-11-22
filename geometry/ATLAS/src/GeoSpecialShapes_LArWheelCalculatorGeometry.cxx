@@ -9,10 +9,10 @@
 #include <cassert>
 #include <iostream>
 
-#include "GeoV2/LArWheelCalculator.h"
-#include "GeoV2/LArWheelCalculator_Impl/IDistanceCalculator.h"
-#include "GeoV2/LArWheelCalculator_Impl/IFanCalculator.h"
-#include "GeoV2/GeoModelKernelUnits.h" // Lorenzetti port: same units, without GeoModel
+#include "ATLAS/LArWheelCalculator.h"
+#include "ATLAS/LArWheelCalculator_Impl/IDistanceCalculator.h"
+#include "ATLAS/LArWheelCalculator_Impl/IFanCalculator.h"
+#include "ATLAS/GeoModelKernelUnits.h" // Lorenzetti port: same units, without GeoModel
 #ifdef HARDDEBUG
 #include<stdio.h>
 #endif

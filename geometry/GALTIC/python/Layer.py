@@ -28,6 +28,7 @@ class Plates(IntEnum):
     """Plate geometry orientation enum."""
     Horizontal = 0
     Vertical = 1
+    Polycone = 2
 
 
 class ProductionCuts:
@@ -462,7 +463,7 @@ class TileCalBuilder:
             absorber_thickness=14.0,
             gap_thickness=3.0,
             absorber_material="G4_Fe",
-            gap_material="G4_PLASTIC_SC_VINYLTOLUENE",
+            gap_material="PLASTIC SCINTILLATOR",
             plates=Plates.Horizontal,
             center=self._center,
             delta_eta=self._delta_eta,
@@ -587,11 +588,17 @@ class DeadMaterialBuilder:
         return self
 
     def build(self) -> DeadMaterialVolume:
+        """Builds a DeadMaterialVolume with appropriate absorber thickness."""
+        thickness = (
+            self._z_size
+            if self._plates == Plates.Vertical
+            else (self._rmax - self._rmin)
+        )
         return DeadMaterialVolume(
             name=self._name,
             plates=self._plates,
             nof_layers=1,
-            absorber_thickness=self._rmax - self._rmin,
+            absorber_thickness=thickness,
             gap_thickness=0.0,
             rmin=self._rmin,
             rmax=self._rmax,

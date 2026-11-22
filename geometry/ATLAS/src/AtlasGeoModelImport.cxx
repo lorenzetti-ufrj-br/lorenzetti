@@ -1,5 +1,5 @@
 // F41 conserto 27: volumes of the ATLAS geometry of the simulation imported from its GeoModel SQLite dump (see AtlasGeoModelImport.h).
-#include "GeoV2/AtlasGeoModelImport.h"
+#include "ATLAS/AtlasGeoModelImport.h"
 
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"

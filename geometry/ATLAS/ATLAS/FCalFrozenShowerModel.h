@@ -5,7 +5,7 @@
 #define FCalFrozenShowerModel_h
 
 #include "G4VFastSimulationModel.hh"
-#include "GeoV2/FCalShowerLib.h"
+#include "ATLAS/FCalShowerLib.h"
 #include <map>
 #include <memory>
 #include <string>

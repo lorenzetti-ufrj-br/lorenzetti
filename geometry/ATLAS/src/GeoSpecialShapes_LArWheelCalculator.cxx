@@ -14,17 +14,17 @@
 #include "GaudiKernel/ISvcLocator.h"
 #include "GaudiKernel/MsgStream.h"
 #else
-#include "GeoV2/PortableMsgStream.h"
+#include "ATLAS/PortableMsgStream.h"
 #endif
 
-#include "GeoV2/LArWheelCalculator.h"
-#include "GeoV2/EMECData.h"
+#include "ATLAS/LArWheelCalculator.h"
+#include "ATLAS/EMECData.h"
 
-#include "GeoV2/LArWheelCalculator_Impl/DistanceCalculatorFactory.h"
-#include "GeoV2/LArWheelCalculator_Impl/FanCalculatorFactory.h"
+#include "ATLAS/LArWheelCalculator_Impl/DistanceCalculatorFactory.h"
+#include "ATLAS/LArWheelCalculator_Impl/FanCalculatorFactory.h"
 
 
-#include "GeoV2/GeoModelKernelUnits.h" // Lorenzetti port: same units, without GeoModel
+#include "ATLAS/GeoModelKernelUnits.h" // Lorenzetti port: same units, without GeoModel
 
 using namespace GeoModelKernelUnits;
 

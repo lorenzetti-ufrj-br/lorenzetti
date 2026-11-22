@@ -25,11 +25,11 @@ from .GalticCfg import (
     getGalticAllSamplings,
     getGalticAllDeadMaterials,
 )
-from .DetectorConstruction import GalticDetectorConstruction, DetectorConstruction_v1
+from .DetectorConstruction import GalticDetectorConstruction, DetectorConstruction
 
 __all__ = [
     "GalticDetectorConstruction",
-    "DetectorConstruction_v1",
+    "DetectorConstruction",
     "Plates",
     "ProductionCuts",
     "CaloSamplingLayer",

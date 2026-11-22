@@ -27,9 +27,9 @@
 #endif // XAOD_STANDALONE
 
 #if HAVE_VECTOR_SIZE_ATTRIBUTE
-    #include "GeoV2/vec_parametrized_sincos.h"
+    #include "ATLAS/vec_parametrized_sincos.h"
 #endif
-#include "GeoV2/LArWheelCalculatorEnums.h"
+#include "ATLAS/LArWheelCalculatorEnums.h"
 
 #define LARWC_SINCOS_POLY 5
 #define LARWC_DTNF_NEW

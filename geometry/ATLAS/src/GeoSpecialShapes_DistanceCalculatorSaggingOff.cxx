@@ -3,8 +3,8 @@
 */
 // Ported to Lorenzetti from Athena release 23.0.14 (DetectorDescription/GeoModel/GeoSpecialShapes/src) for --atlas-emec-charge-collection (F41 conserto 29); changes: include paths; GeoModel units from GeoSpecialShapes/GeoModelKernelUnits.h (same values). Compiled with -DNDEBUG -O2 as in the Athena release.
 
-#include "GeoV2/LArWheelCalculator_Impl/DistanceCalculatorSaggingOff.h"
-#include "GeoV2/LArWheelCalculator.h"
+#include "ATLAS/LArWheelCalculator_Impl/DistanceCalculatorSaggingOff.h"
+#include "ATLAS/LArWheelCalculator.h"
 
 #include<cassert>
 

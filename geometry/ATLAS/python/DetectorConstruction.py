@@ -1,6 +1,7 @@
 __all__ = [
-           "DetectorConstruction_v2", 
-           ]
+    "AtlasDetectorConstruction",
+    "DetectorConstruction",
+]
 
 
 import ROOT
@@ -16,19 +17,19 @@ from GaugiKernel.macros import *
 
 from GeoBase import Plates, ProductionCuts
 from CaloCell.CaloDefs import CaloSampling
-from GeoV2.detectors.ECAL import getLArBarrelCfg, getAtlasEmbVolumesCfg, getAtlasPseCfg, getAtlasEmbEndCfg
-from GeoV2.detectors.ECAL import getAtlasPsbVolumesCfg, ATLAS_PS_ELECTRODE_MIXTURE
-from GeoV2.detectors.TILE import getTileBarrelCfg, getTileExtendedCfg
-from GeoV2.detectors.TILE import getAtlasTileGapCfg, getAtlasTileGapVolumesCfg, ATLAS_TILE_GAP_MIXTURES
-from GeoV2.detectors.EMEC import getLArEMECCfg, getAtlasEmecVolumesCfg
-from GeoV2.detectors.HEC import getHECCfg, getAtlasHecPassiveCfg
-from GeoV2.detectors.DeadMaterials import getDMVolumesCfg, getCrackVolumesCfg, getAtlasEndcapCryostatCfg
-from GeoV2.detectors.AtlasBarrelFront import ATLAS_BARREL_FRONT_MIXTURES, ATLAS_BARREL_FRONT_FIELD_RADIUS
-from GeoV2.detectors.AtlasBarrelCryostat import ATLAS_BARREL_CRYOSTAT_MIXTURES
-from GeoV2.detectors.AtlasFCal import ATLAS_FCAL_MIXTURES
-from GeoV2.detectors.DeadMaterials import getAtlasFcalCfg
-from GeoV2.detectors.AtlasFCal import ATLAS_FCAL_CELL_MATERIALS
-from GeoV2.detectors.FCAL import getAtlasFcalCellsCfg
+from ATLAS.detectors.ECAL import getLArBarrelCfg, getAtlasEmbVolumesCfg, getAtlasPseCfg, getAtlasEmbEndCfg
+from ATLAS.detectors.ECAL import getAtlasPsbVolumesCfg, ATLAS_PS_ELECTRODE_MIXTURE
+from ATLAS.detectors.TILE import getTileBarrelCfg, getTileExtendedCfg
+from ATLAS.detectors.TILE import getAtlasTileGapCfg, getAtlasTileGapVolumesCfg, ATLAS_TILE_GAP_MIXTURES
+from ATLAS.detectors.EMEC import getLArEMECCfg, getAtlasEmecVolumesCfg
+from ATLAS.detectors.HEC import getHECCfg, getAtlasHecPassiveCfg
+from ATLAS.detectors.DeadMaterials import getDMVolumesCfg, getCrackVolumesCfg, getAtlasEndcapCryostatCfg
+from ATLAS.detectors.AtlasBarrelFront import ATLAS_BARREL_FRONT_MIXTURES, ATLAS_BARREL_FRONT_FIELD_RADIUS
+from ATLAS.detectors.AtlasBarrelCryostat import ATLAS_BARREL_CRYOSTAT_MIXTURES
+from ATLAS.detectors.AtlasFCal import ATLAS_FCAL_MIXTURES
+from ATLAS.detectors.DeadMaterials import getAtlasFcalCfg
+from ATLAS.detectors.AtlasFCal import ATLAS_FCAL_CELL_MATERIALS
+from ATLAS.detectors.FCAL import getAtlasFcalCellsCfg
 #from geometry.detectors.Tracking      import *
 
 
@@ -43,7 +44,7 @@ def flatten(nested_list : List) -> List:
   return result
 
 
-class DetectorConstruction_v2( Cpp ):
+class AtlasDetectorConstruction( Cpp ):
 
   def __init__( self, 
                 name              : str, 
@@ -80,7 +81,7 @@ class DetectorConstruction_v2( Cpp ):
     Cpp.__init__(self, ROOT.DetectorConstruction_v2(name) )
     # The EMEC of the ATLAS Run 4 geometry of the simulation leaves the crack between its wheels to the transversal bars of ATLAS
     # (geometry/python/v1/EMEC.py; F41 conserto 27)
-    import GeoV2.detectors.EMEC as _emec
+    import ATLAS.detectors.EMEC as _emec
     _emec.EMEC_ATLAS_CRACK_EDGES_INSIDE = bool(AtlasRun4)
     # The argon fraction of the ATLAS accordion in the bands of the ATLAS-like EMEC (geometry/python/v1/EMEC.py; F41 conserto 37)
     if AtlasEmecArgonFraction and not AtlasEmec:
@@ -458,10 +459,11 @@ class DetectorConstruction_v2( Cpp ):
     return commands
 
 
+DetectorConstruction = AtlasDetectorConstruction
 
 
 if __name__ == "__main__":
-    atlas = DetectorConstruction_v2("ATLAS")
+    atlas = AtlasDetectorConstruction("ATLAS")
     atlas.summary()
     #atlas.compile()
     #pprint(atlas.create_visualization_commands())

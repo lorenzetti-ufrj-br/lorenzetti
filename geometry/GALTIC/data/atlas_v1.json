@@ -186,7 +186,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -230,7 +230,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -274,7 +274,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -318,7 +318,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -362,7 +362,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -406,7 +406,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -450,7 +450,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -494,7 +494,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -538,7 +538,7 @@
       "plates": "Horizontal",
       "materials": {
         "absorber": "G4_Fe",
-        "gap": "G4_PLASTIC_SC_VINYLTOLUENE"
+        "gap": "PLASTIC SCINTILLATOR"
       },
       "geometry": {
         "nof_layers": 1,
@@ -1283,7 +1283,7 @@
       },
       "geometry": {
         "nof_layers": 1,
-        "absorber_thickness": 1332.0,
+        "absorber_thickness": 300.0,
         "gap_thickness": 0.0,
         "rmin": 900.0,
         "rmax": 2232.0,
@@ -1310,7 +1310,7 @@
       },
       "geometry": {
         "nof_layers": 1,
-        "absorber_thickness": 1332.0,
+        "absorber_thickness": 300.0,
         "gap_thickness": 0.0,
         "rmin": 900.0,
         "rmax": 2232.0,
@@ -1337,7 +1337,7 @@
       },
       "geometry": {
         "nof_layers": 1,
-        "absorber_thickness": 2001.0,
+        "absorber_thickness": 680.0,
         "gap_thickness": 0.0,
         "rmin": 2283.0,
         "rmax": 4284.0,
@@ -1364,7 +1364,7 @@
       },
       "geometry": {
         "nof_layers": 1,
-        "absorber_thickness": 2001.0,
+        "absorber_thickness": 680.0,
         "gap_thickness": 0.0,
         "rmin": 2283.0,
         "rmax": 4284.0,

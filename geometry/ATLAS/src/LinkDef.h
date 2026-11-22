@@ -1,4 +1,4 @@
-#include "GeoV2/DetectorConstruction_v2.h"
+#include "ATLAS/DetectorConstruction_v2.h"
 
 #ifdef __CINT__
 

@@ -1,14 +1,14 @@
-# Classical Detector Geometry (`GeoV1`)
+# GALTIC: General Argon Liquid and Tile Integrated Calorimeter
 
-The `geometry/GeoV1/` package implements the classical full-acceptance $4\pi$ calorimeter detector description for the **Lorenzetti** simulation framework. It pairs a modular Geant4 C++ construction engine (`DetectorConstruction_v1`) with Python-configurable volume builders, ideal for fast simulation and algorithmic benchmarks.
+The `geometry/GALTIC/` package implements the **General Argon Liquid and Tile Integrated Calorimeter (GALTIC)** for the **Lorenzetti** simulation framework. GALTIC is a high-performance parametric $4\pi$ calorimeter model designed for ultra-fast simulation, algorithmic benchmarking, trigger development, and machine learning workflows.
 
-Shared primitives (`PhysicalVolume`, `SensitiveDetector`, `Calorimeter`, `Tracking`) and pulse response data (`pulseLar.dat`, `pulseTile.dat`) are imported from **`GeoBase`**.
+GALTIC is **100% self-contained and declarative**, decoupling geometry definition from runtime simulation through its Single Source of Truth: [`galtic_geometry.json`](data/galtic_geometry.json).
 
 ---
 
 ## 1. Visual Overview
 
-The detector model features fine $\eta \times \phi$ granularity, accordion/cell approximations, dead material cryostats, and forward endcaps:
+The calorimeter geometry features fine $\eta \times \phi$ cell readout granularity, horizontal/vertical plate arrangements, dead material cryostats, and forward endcaps:
 
 | 3D Isometric Cutaway View | Frontal ($x-y$) Cross-Section |
 | :---: | :---: |
@@ -30,21 +30,23 @@ flowchart TD
         Tracker["Beam Pipe & Tracking Cavity<br/>(Silicon Pixel / Strip envelope)"]
     end
 
-    subgraph CaloSystem ["Calorimeter System"]
+    subgraph CaloSystem ["Calorimeter System (GALTIC)"]
         subgraph BarrelCalo ["Barrel System (|η| < 1.475)"]
-            LArBarrel["LAr Electromagnetic Barrel (ECAL)<br/>PreSampler, EM1, EM2, EM3"]
-            TileBarrel["Scintillating Tile Calorimeter (TILE)<br/>HAD1, HAD2, HAD3"]
+            LArBarrel["LAr Electromagnetic Barrel (EMB)<br/>PreSampler (PSB), EMB1, EMB2, EMB3"]
+            TileBarrel["Scintillating Tile Calorimeter (TileCal)<br/>TileCal1, TileCal2, TileCal3"]
         end
 
         subgraph EndcapCalo ["Endcap System (1.375 < |η| < 3.2)"]
-            EMEC["LAr EM Endcap (EMEC)<br/>Outer & Inner Wheels"]
-            HEC["Hadronic Endcap (HEC)<br/>Copper / Liquid Argon"]
-            TileExt["Tile Extended Barrel<br/>Extended HAD1, HAD2, HAD3"]
+            EMEC["LAr EM Endcap (EMEC)<br/>PreSampler (PSE), EMEC1, EMEC2, EMEC3 (Sides A & B)"]
+            HEC["Hadronic Endcap (HEC)<br/>HEC1, HEC2, HEC3 (Sides A & B)"]
+            TileExt["Tile Extended Barrel<br/>TileExt1, TileExt2, TileExt3 (Sides A & B)"]
         end
 
-        subgraph PassiveMaterials ["Dead Material & Structural Support"]
-            Cryostats["Cryostat Envelopes (Aluminum / Steel)"]
-            Crack["Barrel-Endcap Crack Absorbers"]
+        subgraph PassiveMaterials ["Dead Material & Cryostats"]
+            CryoInner["Inner Cryostat Walls (Aluminum)"]
+            CryoOuter["Outer Cryostat Walls (Aluminum)"]
+            CrackEM["EM Crack Absorbers (Sides A & B)"]
+            CrackTile["Tile Crack Absorbers (Sides A & B)"]
         end
     end
 
@@ -59,84 +61,105 @@ flowchart TD
 
 ## 3. Subdetector Specifications
 
-The geometry is partitioned into physical sampling layers matching standard calorimeter segmentation:
+The calorimeter comprises 27 active sampling layers and 7 passive dead material volumes:
 
-| Subdetector | Region | Active Medium | Absorber Medium | Depth / Granularity |
+| Subdetector | Region | Active Medium | Absorber Medium | Segmentation / Granularity |
 | :--- | :--- | :--- | :--- | :--- |
-| **Presampler (PS)** | Barrel ($|\eta| < 1.52$) | Liquid Argon ($1.396\text{ g/cm}^3$) | None (thin active gap) | $11.0\text{ mm}$ ($\Delta\eta \times \Delta\phi = 0.025 \times 0.1$) |
-| **EM1 (Strips)** | Barrel ($|\eta| < 1.475$) | Liquid Argon | Lead ($11.35\text{ g/cm}^3$) | $4.3\ X_0$ ($\Delta\eta \times \Delta\phi = 0.0031 \times 0.1$) |
-| **EM2 (Middle)** | Barrel ($|\eta| < 1.475$) | Liquid Argon | Lead | $16.0\ X_0$ ($\Delta\eta \times \Delta\phi = 0.025 \times 0.025$) |
-| **EM3 (Back)** | Barrel ($|\eta| < 1.475$) | Liquid Argon | Lead | $2.0\ X_0$ ($\Delta\eta \times \Delta\phi = 0.05 \times 0.025$) |
-| **TileCal (HAD1-3)** | Barrel ($|\eta| < 1.0$) | Polystyrene Scintillator | Iron ($7.87\text{ g/cm}^3$) | $7.4\ \lambda_I$ ($\Delta\eta \times \Delta\phi = 0.1 \times 0.1$) |
-| **Extended Tile** | Extended ($0.8 < |\eta| < 1.7$) | Polystyrene Scintillator | Iron | $7.4\ \lambda_I$ ($\Delta\eta \times \Delta\phi = 0.1 \times 0.1$) |
-| **EMEC** | Endcap ($1.375 < |\eta| < 3.2$) | Liquid Argon | Lead | Outer/Inner Wheels ($24\ X_0$) |
-| **HEC** | Endcap ($1.5 < |\eta| < 3.2$) | Liquid Argon | Copper ($8.96\text{ g/cm}^3$) | 4 longitudinal samplings ($10\ \lambda_I$) |
+| **Presampler (PSB)** | Barrel ($|\eta| < 1.52$) | Liquid Argon | Thin shell | $\Delta\eta \times \Delta\phi = 0.025 \times \pi/32$ |
+| **EMB1 (Strips)** | Barrel ($|\eta| < 1.475$) | Liquid Argon | Lead ($1.53\text{ mm}$) | $\Delta\eta \times \Delta\phi = 0.003125 \times \pi/32$ |
+| **EMB2 (Middle)** | Barrel ($|\eta| < 1.475$) | Liquid Argon | Lead ($1.53\text{ mm}$) | $\Delta\eta \times \Delta\phi = 0.025 \times \pi/128$ |
+| **EMB3 (Back)** | Barrel ($|\eta| < 1.475$) | Liquid Argon | Lead ($1.53\text{ mm}$) | $\Delta\eta \times \Delta\phi = 0.05 \times \pi/128$ |
+| **TileCal (1-3)** | Central Barrel ($|\eta| < 1.0$) | Plastic Scintillator | Steel ($14\text{ mm}$) | $\Delta\eta \times \Delta\phi = 0.1 \times 0.1$ |
+| **Extended Tile** | Extended Barrel ($0.8 < |\eta| < 1.7$) | Plastic Scintillator | Steel ($14\text{ mm}$) | $\Delta\eta \times \Delta\phi = 0.1 \times 0.1$ |
+| **EMEC (0-3)** | Endcap ($1.375 < |\eta| < 3.2$) | Liquid Argon | Lead | Concentric wheels ($\Delta\eta = 0.025 - 0.05$) |
+| **HEC (1-3)** | Endcap ($1.5 < |\eta| < 3.2$) | Liquid Argon | Copper ($25\text{ mm}$) | Longitudinal segments ($\Delta\eta \times \Delta\phi = 0.1 \times 0.1$) |
 
 ---
 
-## 4. Package Structure
+## 4. Consolidated Package Structure
+
+All GALTIC Python logic is consolidated into **two core files** (`Layer.py` and `GalticCfg.py`), with direct C++ JSON parsing (`json.hpp`):
 
 ```text
-geometry/GeoV1/
-├── CMakeLists.txt              # Builds GeoV1 OBJECT library
-├── README.md                   # This specification file
-├── GeoV1/                      # C++ Public headers
-│   └── DetectorConstruction_v1.h
-├── src/                        # C++ Implementation and ROOT LinkDef
-│   ├── DetectorConstruction_v1.cxx
-│   └── LinkDef.h
-├── python/                     # GeoV1 Python module
-│   ├── __init__.py             # Exports DetectorConstruction_v1 and detectors
-│   ├── DetectorConstruction_v1.py # Top-level Python builder
-│   └── detectors/              # Sub-detector builders
-│       ├── __init__.py
-│       ├── DeadMaterials.py
-│       ├── ECAL.py
-│       ├── EMEC.py
-│       ├── HEC.py
-│       └── TILE.py
-├── scripts/                    # Interactive tools
-│   └── run_vis.py              # Geant4 Qt/OpenGL visualizer
-└── doc/                        # Ray-traced detector views
-    ├── cut_view.png
-    ├── front_view.png
-    └── lateral_view.png
+geometry/GALTIC/
+├── CMakeLists.txt                         # Builds GALTIC C++ library and installs Python/data
+├── README.md                              # This specification file
+├── GALTIC/                                # C++ Public Headers
+│   ├── DetectorConstruction_v1.h          # Geant4 UserDetectorConstruction engine
+│   └── json.hpp                           # nlohmann/json header (zero external dependencies)
+├── src/                                   # C++ Implementation
+│   ├── DetectorConstruction_v1.cxx        # Direct JSON parser (LoadGeometryFile) and solid builder
+│   └── LinkDef.h                          # ROOT dictionary bindings
+├── python/                                # Consolidated Python Module
+│   ├── __init__.py                        # Exports GalticDetectorConstruction, Layer, GalticCfg
+│   ├── Layer.py                           # [CORE] CaloSamplingLayer, DeadMaterialVolume, and Fluent Builders
+│   ├── GalticCfg.py                       # [CORE] 100% of subdetector parameters and dimensions
+│   └── DetectorConstruction.py           # Orchestrator (save, load, Geant4 compilation, PDF export)
+├── data/                                  # Canonical Geometry and Pulse Calibration Assets
+│   ├── galtic_geometry.json               # Canonical Single Source of Truth (SSOT)
+│   ├── pulseLar.dat                       # LAr electronic pulse calibration (self-contained)
+│   └── pulseTile.dat                      # Tile electronic pulse calibration (self-contained)
+├── scripts/
+│   ├── generate_galtic_geometry.py        # CLI generator to rebuild galtic_geometry.json
+│   └── run_vis.py                         # Geant4 Qt/OpenGL interactive visualizer
+└── tests/
+    └── test_galtic_json.py                # Unit tests for builders, serialization, and roundtrip
 ```
 
 ---
 
-## 5. Usage Examples
+## 5. Direct C++ JSON Loading (`LoadGeometryFile`)
+
+Unlike legacy implementations that iterated through 34 volumes via PyROOT invoking `AddVolume(...)` repeatedly, GALTIC builds the Geant4 geometry directly in C++ from the canonical JSON file:
+
+```cpp
+// Direct 1 ms C++ JSON parsing in DetectorConstruction_v1.cxx
+bool DetectorConstruction_v1::LoadGeometryFile(const std::string& filepath) {
+    std::ifstream file(filepath);
+    nlohmann::json j;
+    file >> j;
+    // Fast in-memory volume deserialization...
+}
+```
+
+In Python, the job transform simply declares the geometry file, leaving volume construction entirely to native C++:
+
+```python
+det.compile()  # Injects GeometryFile property; Geant4 constructs volumes in C++
+```
+
+---
+
+## 6. Usage Examples
 
 ### Instantiation via `DetectorConstructionCfg` (Recommended)
 
 ```python
-from GeoBase import DetectorConstructionCfg
+from geometry import DetectorConstructionCfg
 
-# Factory handles defaults and returns DetectorConstruction_v1:
-detector = DetectorConstructionCfg("ATLAS", version="v1")
+# Factory automatically configures GALTIC:
+det = DetectorConstructionCfg("ATLAS", version="GALTIC")
+det.compile()
 ```
 
-### Direct Instantiation
+### Direct Python Instantiation
 
 ```python
-from GeoV1 import DetectorConstruction_v1
+from GALTIC import GalticDetectorConstruction
 
-detector = DetectorConstruction_v1(
-    "GenericATLASDetector",
-    UseBarrel=True,
-    UseTile=True,
-    UseTileExt=True,
-    UseEMEC=True,
-    UseHEC=True,
-    UseDeadMaterial=True,
-    UseMagneticField=True,
-)
+# Instantiates from default canonical JSON (or custom file path):
+det = GalticDetectorConstruction("MyGaltic", geometry_file="geometry/GALTIC/data/galtic_geometry.json")
+det.summary()
 ```
 
-### Interactive Visualization
+### Interactive 3D Web Visualization & Technical Vector Drawings
 
-To inspect the detector interactively with Geant4 visualization drivers (Qt, OpenGL, RayTracer):
+Launch the modern WebGL 3D visualizer or export 100% mathematically vectorized PDF drawings:
 
 ```bash
-python3 geometry/GeoV1/scripts/run_vis.py
+# Launch FastAPI / Three.js 3D web visualizer:
+visualizer_trf.py --geometry geometry/GALTIC/data/galtic_geometry.json --port 8080
+
+# Export vector drawing (R-Z cross-section):
+visualizer_trf.py --geometry geometry/GALTIC/data/galtic_geometry.json --export-pdf rz_cut.pdf --view rz
 ```

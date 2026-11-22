@@ -17,12 +17,12 @@
 #include "globals.hh"
 #include "CxxUtils/features.h"
 #include "CxxUtils/vec.h"
-#include "GeoV2/EMECDataCSV.h"
+#include "ATLAS/EMECDataCSV.h"
 #define private public
 #define protected public
-#include "GeoV2/LArWheelCalculator.h"
-#include "GeoV2/HVHelper.h"
-#include "GeoV2/EnergyCalculator.h"
+#include "ATLAS/LArWheelCalculator.h"
+#include "ATLAS/HVHelper.h"
+#include "ATLAS/EnergyCalculator.h"
 #undef private
 #undef protected
 #include "evaluate_common.icc"

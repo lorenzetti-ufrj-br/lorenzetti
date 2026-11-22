@@ -26,6 +26,7 @@ class Plates(IntEnum):
     """Plate geometry orientation enum."""
     Horizontal = 0
     Vertical = 1
+    Polycone = 2
 
 
 class ProductionCuts:
@@ -96,8 +97,8 @@ def DetectorConstructionCfg(
 
     Args:
         name: Instance name (default: "ATLAS").
-        version: "GALTIC" (or "v1") for fast parametric calorimeter;
-                 "ATLAS" (or "v2") for full realistic detector.
+        version: "GALTIC" for fast parametric calorimeter;
+                 "ATLAS" for full realistic detector.
                  If None, falls back to DetectorFlags.Version.
         detector: Optional alias for version (e.g., passed as detector="GALTIC").
         **kwargs: Direct property overrides forwarded to the detector constructor.
@@ -108,17 +109,17 @@ def DetectorConstructionCfg(
     raw_version = version or detector or DetectorFlags.Version
     selected = raw_version.upper()
 
-    if selected in ["GALTIC", "V1"]:
+    if selected == "GALTIC":
         from GALTIC import GalticDetectorConstruction
         MagFieldFlags.apply_defaults(is_v2=False)
         v_dict = {"UseMagneticField": MagFieldFlags.EnableField}
         v_dict.update(kwargs)
         return GalticDetectorConstruction(name, **v_dict)
 
-    elif selected in ["ATLAS", "V2"]:
+    elif selected == "ATLAS":
         from ATLAS import AtlasDetectorConstruction, AtlasGeometryFlags
         MagFieldFlags.apply_defaults(is_v2=True)
-        AtlasGeometryFlags.apply_defaults(is_v2=True)
+        AtlasGeometryFlags.apply_defaults(enable_atlas=True)
         geo_dict = AtlasGeometryFlags.to_dict()
         geo_dict["UseMagneticField"] = MagFieldFlags.EnableField
         geo_dict["UseSolenoidField"] = MagFieldFlags.EnableSolenoidOnly

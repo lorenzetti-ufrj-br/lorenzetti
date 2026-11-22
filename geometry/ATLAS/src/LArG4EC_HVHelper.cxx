@@ -5,8 +5,8 @@
 // --atlas-emec-charge-collection (F41 conserto 29); changes: see LArG4EC/HVHelper.h (file only, path from the caller, no DB, no
 // HVHelperV00, no barrettes, no Gaudi messages). The kept functions are verbatim. Compiled with -DNDEBUG -O2 as in the Athena release.
 
-#include "GeoV2/HVHelper.h"
-#include "GeoV2/PortMsg.h"
+#include "ATLAS/HVHelper.h"
+#include "ATLAS/PortMsg.h"
 
 #include "G4Exception.hh"
 
