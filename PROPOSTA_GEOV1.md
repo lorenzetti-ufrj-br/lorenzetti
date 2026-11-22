@@ -1,40 +1,54 @@
-# Proposta de Reorganização e Modernização da Geometria do Lorenzetti: GALTIC, ATLAS e Visualizer
+# Proposta Arquitetural Oficial da Geometria do Lorenzetti: GALTIC, ATLAS e Visualizer
 
-> **Documento de Proposta Técnica e Arquitetural Definitiva**  
+> **Documento de Decisão Técnica e Arquitetural Definitiva**  
+> **Status:** Aprovado (**Abordagem 1 Selecionada**)  
 > **Nomenclatura Oficial:**  
 > - **`GeoV1` $\to$ `GALTIC`**: *General Argon Liquid and Tile Integrated Calorimeter* (Calorímetro Integrado Paramétrico).  
 > - **`GeoV2` $\to$ `ATLAS`**: Geometria detalhada e realista do detector ATLAS (GeoModel / SQLite / Full Field).  
-> - **`GeoView` $\to$ `visualizer`**: Visualizador WebGL 3D interativo com backend FastAPI e suporte a CAD/ROOT.  
-> - **`GeoBase` $\to$ Análise de Eliminação Total vs. `GeoCore`**: Mecanismos de chaveamento de detectores em simulação (`simu`) e digitalização (`digit`).
+> - **`GeoBase` $\to$ Eliminado**: A fábrica central polimórfica passa a residir diretamente no ponto de entrada [`geometry/__init__.py`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/).  
+> - **`GeoView` $\to$ `visualizer`**: Visualizador WebGL 3D interativo com backend FastAPI e suporte a CAD/ROOT.
 
 ---
 
-## 1. Sumário Executivo e Objetivos da Reestruturação
+## 1. Sumário Executivo
 
-A evolução do framework Lorenzetti exige uma separação conceitual nítida entre **modelos de detectores** e **ferramentas transversais**. Os nomes legados (`GeoV1`, `GeoV2`, `GeoBase`, `GeoView`) geravam ambiguidades históricas: pareciam indicar versões sucessivas descartáveis, quando na verdade representam modelos complementares de física com objetivos distintos.
+A camada de geometria do framework Lorenzetti passa por uma reestruturação definitiva que elimina pastas intermediárias artificiais, estabelece uma separação física e conceitual rigorosa entre **modelos de detectores**, e unifica o acesso em uma interface canônica de alto nível.
 
-A reestruturação proposta redefine a camada de geometria em pilares autônomos e desacoplados:
+A decisão técnica consolida a **Abordagem 1**:
 
-1. **`GALTIC` (antigo GeoV1)**:  
-   *General Argon Liquid and Tile Integrated Calorimeter*.  
-   Modelo paramétrico analítico, rápido, modular e 100% orientado a arquivo declarativo (`galtic_geometry.json`). Ideal para simulações parametrizadas, testes de algoritmos de reconstrução, estudos de granularidade de células ($\Delta\eta \times \Delta\phi$) e pipelines de Machine Learning.
-2. **`ATLAS` (antigo GeoV2)**:  
-   Mapeamento de alta fidelidade do detector ATLAS real do CERN, integrando a biblioteca oficial GeoModel C++, bases SQLite de geometria, suporte ao Run 4, blindagens avançadas e serviços de criostato/gap.
-3. **`visualizer` (antigo GeoView)**:  
-   Aplicação de visualização moderna construída em **FastAPI** (assíncrono) + **Three.js** (WebGL 3D no browser). Suporta leitura direta de CAD/GDML via **ROOT (`TGeoManager`)**, corte azimutal interativo em cunha ($\phi$), corte longitudinal de meia seção ($R-Z$), inspeção de células e exportação de desenhos técnicos 100% matematicamente vetoriais em PDF com Matplotlib e KaTeX.
-4. **Destino do `GeoBase`**:  
-   Como o GALTIC extinguiu completamente as dependências nas classes legadas de volume (`Calorimeter`, `PhysicalVolume`, `SensitiveDetector`), estas são migradas para dentro do pacote **ATLAS**. Avaliamos formalmente a **eliminação total do GeoBase** e detalhamos como `simu_trf.py` e `digit_trf.py` chaveiam entre GALTIC e ATLAS com máxima elegância e sem acoplamento.
+1. **Eliminação Total de `GeoBase` e `GeoCore`**:
+   - Não há pastas intermediárias como `GeoBase` ou `GeoCore`.
+   - O próprio pacote raiz [`geometry/`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/) atua como a fábrica central de detectores através de `geometry/__init__.py`, exportando a função polimórfica `DetectorConstructionCfg`.
+   - Classes legadas de volume (`Calorimeter`, `PhysicalVolume`, `SensitiveDetector`, `Tracking`) que eram acopladas ao antigo GeoBase são transferidas para [`geometry/ATLAS/python/legacy/`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV2/), mantendo o ATLAS operacional enquanto liberta 100% o GALTIC de qualquer herança desnecessária.
+   - Arquivos de calibração eletrônica (`pulseLar.dat`, `pulseTile.dat`) são movidos para dentro de `GALTIC/data/`, tornando o modelo GALTIC **100% autocontido e portátil**.
+
+2. **GALTIC: Modelo Paramétrico de Alta Performance**:
+   - *General Argon Liquid and Tile Integrated Calorimeter*.
+   - Arquitetura estritamente orientada a arquivo declarativo (`galtic_geometry.json`).
+   - Todo o lado Python é consolidado em apenas **dois arquivos**:
+     - `Layer.py`: tipos fundamentais (`CaloSamplingLayer`, `DeadMaterialVolume`) e todos os *fluent builders*.
+     - `GalticCfg.py`: centraliza 100% das definições e dimensões de amostragem de todos os subdetectores.
+   - Motor C++ Geant4 puramente reativo: lê o JSON em 1 milissegundo com `nlohmann/json` e monta o mundo Geant4 sem qualquer chamada RPC em tempo de execução.
+
+3. **ATLAS: Modelo Realista de Alta Fidelidade**:
+   - Hospeda a geometria oficial detalhada do CERN (GeoModel, SQLite, Run 4, serviços criogênicos e suportes de crack).
+
+4. **visualizer: Visualização 3D e Desenho Técnico Vetorial**:
+   - Backend construído em **FastAPI** assíncrono com Uvicorn.
+   - Capacidade de extrair e tessetar a malha CAD/GDML via **ROOT (`TGeoManager`)**.
+   - Frontend interativo com **Three.js** (corte azimutal em cunha $\phi$, corte longitudinal $R-Z$, inspeção de células $\Delta\eta \times \Delta\phi$).
+   - Exportação de desenhos técnicos 100% matematicamente vetoriais em PDF com Matplotlib `Agg` e KaTeX.
 
 ---
 
-## 2. Árvore de Diretórios Proposta
+## 2. Árvore de Diretórios Definitiva (`geometry/`)
 
-Apresentamos a árvore de diretórios sob a ótica de **eliminação total de pastas intermediárias genéricas**, deixando `geometry/` composto estritamente pelos modelos de detectores concretos e pelo visualizador:
+Com a eliminação total do `GeoBase`, a estrutura do repositório torna-se extremamente limpa, contendo apenas módulos concretos e o despachante raiz:
 
 ```
 geometry/
-├── CMakeLists.txt                         # Orquestrador de compilação da camada de geometria
-├── __init__.py                            # [OPÇÃO CANÔNICA] Ponto de entrada: exporta DetectorConstructionCfg
+├── CMakeLists.txt                         # Compila e orquestra GALTIC, ATLAS e visualizer
+├── __init__.py                            # [FÁBRICA CANÔNICA] Exporta DetectorConstructionCfg e DetectorFlags
 │
 ├── GALTIC/                                # [ANTIGO GeoV1] General Argon Liquid and Tile Integrated Calorimeter
 │   ├── CMakeLists.txt
@@ -52,10 +66,10 @@ geometry/
 │   │   └── DetectorConstruction.py        # Orquestrador Python (save, load, compile)
 │   ├── data/
 │   │   ├── galtic_geometry.json           # Fonte Única da Verdade (SSOT) em disco
-│   │   ├── pulseLar.dat                   # Pulso de calibração eletrônica LAr
-│   │   └── pulseTile.dat                  # Pulso de calibração eletrônica Tile
+│   │   ├── pulseLar.dat                   # Calibração de resposta de pulso LAr (autocontido)
+│   │   └── pulseTile.dat                  # Calibração de resposta de pulso Tile (autocontido)
 │   ├── scripts/
-│   │   └── generate_galtic_geometry.py    # Script CLI para gerar o JSON canônico
+│   │   └── generate_galtic_geometry.py    # CLI para gerar o JSON canônico
 │   └── tests/
 │       └── test_galtic_json.py            # Testes de serialização, builders e carregamento C++
 │
@@ -113,50 +127,11 @@ geometry/
 
 ---
 
-## 3. Eliminação Total do `GeoBase`/`GeoCore`: Como Trocar entre GALTIC e ATLAS nos Builders de Simulação (`simu`) e Digitalização (`digit`)?
+## 3. O Chaveamento de Detectores: `geometry/__init__.py`
 
-Esta é uma questão central de arquitetura de software científico: **Se eliminarmos totalmente o `GeoBase` (e não criarmos um `GeoCore`), onde reside a lógica de seleção de detector e como os builders operam?**
+Com a adoção da **Abordagem 1**, o arquivo [`geometry/__init__.py`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/) atua como a fábrica polimórfica que conecta os scripts de simulação e digitalização aos detectores concretos.
 
-### 3.1. O Princípio Polimórfico (Por que não precisamos de uma classe base comum?)
-
-Em Python e C++, a simulação e a digitalização operam com base em contratos de interface bem definidos:
-
-#### 1. Na Simulação (`simu_trf.py` / `G4Kernel::ComponentAccumulator`):
-- O motor de simulação Geant4 espera apenas um ponteiro para `G4VUserDetectorConstruction*`.
-- Tanto o `GALTIC::DetectorConstruction` (C++) quanto o `ATLAS::DetectorConstruction` (C++) herdam diretamente de `G4VUserDetectorConstruction`.
-- No Python, ambos herdam de `Configurable` (GaugiKernel).
-- **Conclusão**: O Geant4 já é polimórfico por natureza. Ele não precisa de nenhuma classe base intermediária no Python para construir o mundo físico.
-
-#### 2. Na Digitalização e Reconstrução (`digit_trf.py` / `CaloCellBuilder`):
-Ao inspecionarmos o código real de [`CaloCellBuilder.py`](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloCellBuilder/python/CaloCellBuilder.py#L94-L120), vemos exatamente o que ele consome do objeto `det`:
-```python
-all_samplings = list(self.Detector.samplings) + list(getattr(self.Detector, "fcal_modules", []))
-for samp in all_samplings:
-    # Acessa estritamente:
-    # samp.Sampling          (Enum do CaloSampling)
-    # samp.CollectionKey     (StoreGate key)
-    # samp.Noise             (Desvio padrão de ruído)
-    # samp.Samples           (Número de amostras de pulso, default 5)
-    # samp.Shaper            (Caminho do arquivo de pulso de shaper)
-    # samp.StartSamplingBC   (Bunch crossing inicial, ex: -2)
-    # samp.EtaBins, PhiBins  (Bins da grade de reconstrução)
-```
-- Tanto o `CaloSamplingLayer` do GALTIC quanto o `Calorimeter` do ATLAS implementam exatamente essa interface com as mesmas propriedades.
-- Isso é o conceito canônico de **Duck Typing** do Python: qualquer detector que exponha a lista `.samplings` é imediatamente compatível com o `CaloCellBuilder` e com os construtores de clusters e anéis (`CaloClusterBuilder`, `CaloRingsBuilder`).
-
----
-
-### 3.2. As Duas Abordagens para Chaveamento Sem `GeoBase`
-
-Se eliminarmos totalmente a pasta `GeoBase`, existem duas formas limpas e elegantes de chavear entre GALTIC e ATLAS:
-
----
-
-### Abordagem 1 (Recomendada): O Próprio Pacote `geometry/` Atua como Fábrica Central (`geometry/__init__.py`)
-
-Nesta abordagem, **não existe nenhuma subpasta intermediária** (`GeoBase` ou `GeoCore`). O próprio diretório `geometry/` possui um arquivo [`geometry/__init__.py`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/) que atua como o ponto de entrada oficial para o usuário e para os scripts de transform.
-
-#### Implementação de `geometry/__init__.py`:
+### 3.1. Código do Ponto de Entrada: `geometry/__init__.py`
 
 ```python
 """
@@ -164,10 +139,24 @@ geometry - Root package for Lorenzetti detector geometries.
 Provides the central factory to instantiate GALTIC or ATLAS detectors.
 """
 
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 import os
 
-__all__ = ["DetectorConstructionCfg", "get_detector_names"]
+__all__ = ["DetectorConstructionCfg", "DetectorFlags", "get_available_detectors"]
+
+
+class DetectorFlags:
+    """Global configuration flags for detector selection."""
+    Version: str = "GALTIC"
+
+    @classmethod
+    def reset(cls) -> None:
+        cls.Version = "GALTIC"
+
+    @classmethod
+    def to_dict(cls) -> Dict[str, str]:
+        return {"Version": cls.Version}
+
 
 AVAILABLE_DETECTORS = {
     "GALTIC": "General Argon Liquid and Tile Integrated Calorimeter (Fast Parametric)",
@@ -175,111 +164,104 @@ AVAILABLE_DETECTORS = {
 }
 
 
-def get_detector_names() -> list[str]:
-    """Returns the list of available detector names."""
+def get_available_detectors() -> List[str]:
+    """Returns the list of registered detector names."""
     return list(AVAILABLE_DETECTORS.keys())
 
 
 def DetectorConstructionCfg(
     name: str = "ATLAS",
-    version: Optional[str] = "GALTIC",
+    version: Optional[str] = None,
     **kwargs: Any,
 ) -> Any:
     """
     Central factory function to instantiate GALTIC or ATLAS detectors.
 
     Args:
-        name: Instance name for the detector.
+        name: Instance name for the detector (default: "ATLAS").
         version: "GALTIC" (or "v1") for fast parametric calorimeter;
                  "ATLAS" (or "v2") for full realistic detector.
+                 If None, falls back to DetectorFlags.Version.
         **kwargs: Direct property overrides forwarded to the detector constructor.
 
     Returns:
         Configured detector instance (GalticDetectorConstruction or AtlasDetectorConstruction).
     """
-    v = (version or "GALTIC").upper()
+    selected_version = (version or DetectorFlags.Version).upper()
 
-    if v in ["GALTIC", "V1"]:
+    # Mapeamento de compatibilidade: v1 -> GALTIC, v2 -> ATLAS
+    if selected_version in ["GALTIC", "V1"]:
         from GALTIC import GalticDetectorConstruction
-        # Configurações padrão de campo magnético e arquivos
         return GalticDetectorConstruction(name, **kwargs)
 
-    elif v in ["ATLAS", "V2"]:
+    elif selected_version in ["ATLAS", "V2"]:
         from ATLAS import AtlasDetectorConstruction
         return AtlasDetectorConstruction(name, **kwargs)
 
     else:
         raise ValueError(
-            f"Unknown detector version '{version}'. Available versions: {get_detector_names()}"
+            f"Detector '{selected_version}' desconhecido. "
+            f"Opções disponíveis: {get_available_detectors()}"
         )
 ```
 
-#### Como fica a troca no `simu_trf.py` e `digit_trf.py`?
-O código dos scripts torna-se extremamente limpo e intuitivo:
+### 3.2. Operação na Simulação (`simu_trf.py`)
 
-```python
-# Em simu_trf.py e digit_trf.py:
-from geometry import DetectorConstructionCfg
+No script [`simu_trf.py`](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/reco/scripts/simu_trf.py):
+1. O CLI aceita `--detector [galtic|atlas]` (com default `"galtic"`).
+2. A fábrica instancia o detector correspondente em uma única linha declarativa:
+   ```python
+   from geometry import DetectorConstructionCfg
 
-# 1. Opção CLI simples: --detector [GALTIC|ATLAS] (default: GALTIC)
-det = DetectorConstructionCfg("ATLAS", version=detector)
+   det = DetectorConstructionCfg("ATLAS", version=detector)
+   ```
+3. O `det` é repassado ao `ComponentAccumulator`:
+   ```python
+   acc = ComponentAccumulator(
+       "SimulationAccumulator",
+       det,
+       gun,
+       NumberOfThreads=number_of_threads,
+       OutputFile=output_file,
+   )
+   ```
+4. **Por que funciona sem classes base?**  
+   Tanto `GALTIC.DetectorConstruction` quanto `ATLAS.DetectorConstruction` herdam de `G4VUserDetectorConstruction` no C++. O motor Geant4 recebe o ponteiro `G4VUserDetectorConstruction*` nativamente, garantindo polimorfismo total no nível do kernel C++.
 
-# 2. Passa diretamente para o ComponentAccumulator (simu) ou CaloCellBuilder (digit):
-acc = ComponentAccumulator("SimulationAccumulator", det, gun, ...)
-calorimeter = CaloCellBuilder("CaloCellBuilder", det, ...)
-```
+### 3.3. Operação na Digitalização e Reconstrução (`digit_trf.py`)
 
-#### Vantagens da Abordagem 1:
-1. **Zero pastas artificiais**: A pasta `geometry/` contém apenas coisas concretas: `GALTIC/`, `ATLAS/`, `visualizer/` e o arquivo `__init__.py`.
-2. **Import limpo e expressivo**: `from geometry import DetectorConstructionCfg` ou import direto `from GALTIC import GalticDetectorConstruction`.
-3. **Compatibilidade total**: Não quebra os scripts existentes que já chamavam `DetectorConstructionCfg("ATLAS", version=...)`.
+No script [`digit_trf.py`](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/reco/scripts/digit_trf.py):
+1. O detector é instanciado identicamente:
+   ```python
+   from geometry import DetectorConstructionCfg
 
----
-
-### Abordagem 2: Chaveamento Explícito nos Transforms (Inversão de Controle Estrita)
-
-Se preferirmos que nem mesmo o `geometry/__init__.py` atue como despachante, a escolha do detector pode ser resolvida **diretamente nos scripts de execução** (`simu_trf.py` e `digit_trf.py`), conforme o princípio do Zen do Python (*"Explicit is better than implicit"*):
-
-```python
-# Em simu_trf.py e digit_trf.py:
-if detector.upper() in ["GALTIC", "V1"]:
-    from GALTIC import GalticDetectorConstruction
-    det = GalticDetectorConstruction("GALTIC")
-elif detector.upper() in ["ATLAS", "V2"]:
-    from ATLAS import AtlasDetectorConstruction
-    det = AtlasDetectorConstruction("ATLAS")
-else:
-    raise typer.BadParameter(f"Detector '{detector}' inválido. Escolha GALTIC ou ATLAS.")
-```
-
-#### Vantagens da Abordagem 2:
-- Desacoplamento absoluto: os pacotes `GALTIC` e `ATLAS` são 100% independentes entre si e não compartilham nenhuma linha de código em comum.
-- Se o pesquisador estiver trabalhando apenas no GALTIC, o código do ATLAS sequer precisa estar compilado ou importado no ambiente Python.
-
----
-
-### 3.3. Onde Devem Ficar os Arquivos de Pulso (`pulseLar.dat` e `pulseTile.dat`)?
-
-No design antigo, os arquivos de pulso residiam em `geometry/GeoBase/data/`.  
-Contudo, pulsos de modelagem eletrônica (`CR-RC` shaper) **não são sólidos nem volumes de Geant4**; são dados de calibração eletrônica de leitura consumidos pelo `PulseGeneratorTool`.
-
-Se eliminarmos o `GeoBase`:
-1. **Opção Ideal**: Cada detector armazena seus arquivos de calibração eletrônica em sua própria pasta `data/`:
-   - `geometry/GALTIC/data/pulseLar.dat`
-   - `geometry/GALTIC/data/pulseTile.dat`
-   - O método `GalticCfg.py` busca os arquivos diretamente em seu próprio subdiretório `data/`, garantindo que o GALTIC seja **100% autocontido e portável**.
-2. **Compartilhamento**: O `ATLAS` pode ter suas próprias respostas de pulso em `geometry/ATLAS/data/`.
+   det = DetectorConstructionCfg("ATLAS", version=detector)
+   ```
+2. O `det` é fornecido ao `CaloCellBuilder`:
+   ```python
+   calorimeter = CaloCellBuilder("CaloCellBuilder", det, ...)
+   calorimeter.merge(acc)
+   ```
+3. **Por que funciona sem classes base?**  
+   O [`CaloCellBuilder.py`](file:///home/joao.pinto/git_repos/lorenzetti/reconstruction/calorimeter/CaloCellBuilder/python/CaloCellBuilder.py#L94-L120) opera via *Duck Typing*, consumindo a lista `det.samplings`. Tanto o `CaloSamplingLayer` do GALTIC quanto o `Calorimeter` do ATLAS disponibilizam exatamente as mesmas propriedades:
+   - `samp.Sampling`: Enumeração do subdetector (ex: `CaloSampling.EMB1`).
+   - `samp.CollectionKey`: Identificador do StoreGate (ex: `Collection_EMB1`).
+   - `samp.Noise`: Desvio padrão do ruído eletrônico em MeV.
+   - `samp.Samples`: Número de bunch crossings lidos (default: 5).
+   - `samp.Shaper`: Caminho para o arquivo de calibração de pulso.
+   - `samp.StartSamplingBC`: Amostra inicial de BC (ex: -2).
+   - `samp.EtaBins` e `samp.PhiBins`: Grade espacial de células.
 
 ---
 
 ## 4. O Modelo GALTIC: Consolidação Python em Apenas 2 Arquivos
 
-O GALTIC elimina completamente a dispersão de dezenas de arquivos pequenos e classes redundantes. O lado Python do GALTIC passa a ser estruturado em **apenas dois arquivos de alta coesão**:
+No GALTIC, todas as classes de modelagem física e construtores fluentes são unificados em **dois arquivos centrais**:
 
-1. [`geometry/GALTIC/python/Layer.py`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV1/python/SamplingLayer.py): Contém os tipos fundamentais e todos os *fluent builders*.
-2. [`geometry/GALTIC/python/GalticCfg.py`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV1/python/GalticCfg.py): Contém a tabela canônica com 100% dos parâmetros de amostragem de física.
+1. [`geometry/GALTIC/python/Layer.py`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV1/python/SamplingLayer.py): Tipos e builders.
+2. [`geometry/GALTIC/python/GalticCfg.py`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoV1/python/GalticCfg.py): Registro central de 100% dos parâmetros dos subdetectores.
 
-### 4.1. Código do Módulo `Layer.py`
+### 4.1. Código Completo: `geometry/GALTIC/python/Layer.py`
 
 ```python
 """
@@ -288,23 +270,10 @@ Consolidates active calorimeter sampling layers, dead material volumes, and all 
 """
 
 from typing import Any, Dict, List, Optional, Tuple
+from enum import IntEnum
 import numpy as np
 from CaloCell.CaloDefs import Detector, CaloSampling
 from GaugiKernel import Logger
-
-# Enums puros co-localizados ou importados de types
-from enum import IntEnum
-
-class Plates(IntEnum):
-    Horizontal = 0
-    Vertical = 1
-
-class ProductionCuts:
-    def __init__(self, ElectronCut: float = 1.0, PositronCut: float = 1.0, GammaCut: float = 1.0, PhotonCut: float = 1.0) -> None:
-        self.ElectronCut = float(ElectronCut)
-        self.PositronCut = float(PositronCut)
-        self.GammaCut = float(GammaCut)
-        self.PhotonCut = float(PhotonCut)
 
 __all__ = [
     "Plates",
@@ -317,6 +286,28 @@ __all__ = [
     "HECBuilder",
     "DeadMaterialBuilder",
 ]
+
+
+class Plates(IntEnum):
+    """Plate geometry orientation enum."""
+    Horizontal = 0
+    Vertical = 1
+
+
+class ProductionCuts:
+    """Production cuts for Geant4 particle generation."""
+
+    def __init__(
+        self,
+        ElectronCut: float = 1.0,
+        PositronCut: float = 1.0,
+        GammaCut: float = 1.0,
+        PhotonCut: float = 1.0,
+    ) -> None:
+        self.ElectronCut = float(ElectronCut)
+        self.PositronCut = float(PositronCut)
+        self.GammaCut = float(GammaCut)
+        self.PhotonCut = float(PhotonCut)
 
 
 class CaloSamplingLayer(Logger):
@@ -359,7 +350,7 @@ class CaloSamplingLayer(Logger):
         gamma_cut: float = 1.0,
         proton_cut: float = 1.0,
     ) -> None:
-        """Initializes an active calorimeter sampling layer with explicit arguments."""
+        """Initializes an active calorimeter sampling layer."""
         super().__init__()
         self.Name = str(name)
         self.CollectionKey = str(collection_key)
@@ -814,7 +805,7 @@ class DeadMaterialBuilder:
 
 ---
 
-### 4.2. Código do Módulo `GalticCfg.py`
+### 4.2. Código Completo: `geometry/GALTIC/python/GalticCfg.py`
 
 ```python
 """
@@ -1047,7 +1038,7 @@ def getGalticAllDeadMaterials() -> List[DeadMaterialVolume]:
 
 ## 5. `visualizer`: Visualização 3D com FastAPI e Leitura de CAD via ROOT
 
-O módulo [`geometry/visualizer/`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoView/) substitui o antigo `GeoView`, trazendo suporte nativo a FastAPI assíncrono e integração com ROOT para inspeção de sólidos CAD.
+O módulo [`geometry/visualizer/`](file:///home/joao.pinto/git_repos/lorenzetti/geometry/GeoView/) traz suporte nativo a FastAPI assíncrono e integração com ROOT para inspeção de sólidos CAD.
 
 ### 5.1. Arquitetura FastAPI + ROOT `TGeoManager`
 
@@ -1209,15 +1200,17 @@ def launch_server(geometry_file: str, port: int = 8080) -> None:
 
 ---
 
-## 6. Comparativo e Resumo da Transição
+## 6. Comparativo e Resumo da Decisão
 
-| Item | Situação Anterior | Situação Proposta | Benefício Técnico |
+| Item | Situação Anterior | **Decisão Oficial (Abordagem 1)** | Benefício Técnico |
 | :--- | :--- | :--- | :--- |
 | **Identidade GeoV1** | Nome genérico (`GeoV1`) | **`GALTIC`** | Significado físico claro (*General Argon Liquid & Tile Integrated Calorimeter*). |
 | **Identidade GeoV2** | Nome genérico (`GeoV2`) | **`ATLAS`** | Deixa explícito que se trata do detector ATLAS realista completo. |
-| **Destino do GeoBase** | Acoplamento cruzado com classes legadas de volume | **Eliminação Total** ou **`geometry/__init__.py`** | Zero pastas intermediárias artificiais; `geometry/` contém apenas coisas concretas. |
+| **Destino do GeoBase** | Acoplamento cruzado com classes legadas de volume | **Eliminado Totalmente** | Zero pastas intermediárias artificiais; `geometry/` contém apenas coisas concretas. |
+| **Ponto de Entrada da Fábrica** | Em `GeoBase/python/DetectorConstructionCfg.py` | Em **`geometry/__init__.py`** | Acesso limpo `from geometry import DetectorConstructionCfg`. |
 | **Classes de Volume Legadas** | No `GeoBase`, poluindo o GALTIC | Em **`geometry/ATLAS/python/legacy/`** | Isolamento total: GALTIC é 100% livre dessas dependências. |
-| **Chaveamento em Simu/Digit** | Dependia do `GeoBase` | Via **`geometry.DetectorConstructionCfg`** ou flag CLI `--detector` | Polimorfismo Geant4 nativo e duck typing limpo em `CaloCellBuilder`. |
+| **Arquivos de Pulso (`.dat`)** | Em `GeoBase/data/` | Em **`geometry/GALTIC/data/`** | GALTIC é 100% autocontido e portátil. |
+| **Chaveamento em Simu/Digit** | Dependia do `GeoBase` | Via **`geometry.DetectorConstructionCfg`** | Polimorfismo Geant4 nativo e duck typing limpo em `CaloCellBuilder`. |
 | **Configuração de Camadas** | Espalhada em 5 arquivos (`ECAL.py`, `TILE.py`, etc.) | **`GalticCfg.py`** (único) | Tabela centralizada com todos os parâmetros e dimensões em um só lugar. |
 | **Builders e Camadas** | Fragmentados em arquivos separados | **`Layer.py`** (único) | Classes de amostragem e construtores fluentes co-localizados. |
 | **Visualizador** | `GeoView` com `http.server` primitivo | **`visualizer` com FastAPI** | Concorrência assíncrona, Swagger `/docs` e suporte a malhas CAD/ROOT. |

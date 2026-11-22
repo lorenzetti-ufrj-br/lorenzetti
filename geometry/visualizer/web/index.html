@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lorenzetti Visualizer - Interactive Detector 3D Display</title>
+  <link rel="stylesheet" href="css/visualizer.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Sidebar Control Panel -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <h1>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          Visualizer
+        </h1>
+        <span class="badge">GALTIC</span>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- Visualization & Cuts -->
+        <div class="panel-section">
+          <div class="section-title">
+            <span>Section & Cut View</span>
+            <span style="font-size:0.7rem; color:var(--accent-blue)">3D Slice</span>
+          </div>
+
+          <div class="control-row">
+            <label for="wedge-cut-slider">Azimuthal Cut (&phi;)</label>
+            <div class="slider-container">
+              <input type="range" id="wedge-cut-slider" min="0" max="180" value="90" step="5">
+              <span id="wedge-cut-val" class="slider-val">90&deg;</span>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <label for="axial-cut-toggle">Longitudinal Cut (Y &gt; 0)</label>
+            <input type="checkbox" id="axial-cut-toggle">
+          </div>
+
+          <div class="control-row">
+            <label for="opacity-slider">Layer Opacity</label>
+            <div class="slider-container">
+              <input type="range" id="opacity-slider" min="10" max="100" value="75" step="5">
+              <span id="opacity-val" class="slider-val">75%</span>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <label for="grid-toggle">Cell Grid Wireframes</label>
+            <input type="checkbox" id="grid-toggle" checked>
+          </div>
+
+          <div class="control-row">
+            <label for="axes-toggle">Coordinate Axes</label>
+            <input type="checkbox" id="axes-toggle" checked>
+          </div>
+        </div>
+
+        <!-- Vector PDF Export -->
+        <div class="panel-section">
+          <div class="section-title">
+            <span>Vector PDF Export</span>
+            <span style="font-size:0.7rem; color:var(--accent-green)">100% Vector</span>
+          </div>
+
+          <button id="btn-export-rz" class="btn btn-primary" title="Export mathematically vectorized cross-section PDF (R-Z Plane)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export R-Z Cut (Vector PDF)
+          </button>
+
+          <button id="btn-export-rphi" class="btn" title="Export mathematically vectorized cross-section PDF (R-Phi Plane)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export R-&Phi; Cut (Vector PDF)
+          </button>
+        </div>
+
+        <!-- Detector Layers Hierarchy -->
+        <div class="panel-section">
+          <div class="section-title">
+            <span>Detector Layers</span>
+            <div>
+              <a href="#" id="btn-show-all" style="font-size:0.7rem; color:var(--accent-blue); margin-right:8px; text-decoration:none;">All</a>
+              <a href="#" id="btn-hide-all" style="font-size:0.7rem; color:var(--text-muted); text-decoration:none;">None</a>
+            </div>
+          </div>
+          <div id="layer-tree-container">
+            <div style="text-align:center; padding:20px; color:var(--text-muted);">
+              Loading geometry volumes...
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 3D Viewport -->
+    <main id="viewport">
+      <div id="canvas-container"></div>
+
+      <!-- Quick Camera Toolbar -->
+      <div id="camera-toolbar">
+        <button class="tool-btn" id="btn-cam-iso" title="Isometric 3D View">3D Iso</button>
+        <button class="tool-btn" id="btn-cam-rz" title="Side Longitudinal View (R-Z)">Side (R-Z)</button>
+        <button class="tool-btn" id="btn-cam-rphi" title="Front Transverse View (R-Phi)">Front (R-&Phi;)</button>
+        <button class="tool-btn" id="btn-cam-top" title="Top View (Z-X)">Top (Z-X)</button>
+        <button class="tool-btn" id="btn-cam-reset" title="Reset Camera">Reset</button>
+      </div>
+
+      <!-- Floating Inspector HUD -->
+      <div id="inspector-card">
+        <div class="inspector-header">
+          <span id="inspector-title">Volume Info</span>
+          <span id="inspector-close" style="cursor:pointer; font-size:1.2rem;">&times;</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Volume:</span>
+          <span class="inspector-val" id="inspector-name">-</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Subdetector:</span>
+          <span class="inspector-val" id="inspector-subdet">-</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Sampling:</span>
+          <span class="inspector-val" id="inspector-sampling">-</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Radius (R):</span>
+          <span class="inspector-val" id="inspector-r">-</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Length (Z):</span>
+          <span class="inspector-val" id="inspector-z">-</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Granularity (&Delta;&eta;&times;&Delta;&phi;):</span>
+          <span class="inspector-val" id="inspector-granularity">-</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Noise (&sigma;):</span>
+          <span class="inspector-val" id="inspector-noise">-</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Materials:</span>
+          <span class="inspector-val" id="inspector-materials">-</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Vendors (Bundled locally for 100% offline operation) -->
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/vendor/OrbitControls.js"></script>
+
+  <!-- Visualizer Application Scripts -->
+  <script src="js/visualizer3d.js"></script>
+  <script src="js/gridInspector.js"></script>
+  <script src="js/vectorExport.js"></script>
+  <script src="js/controls.js"></script>
+</body>
+</html>

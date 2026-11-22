@@ -22,7 +22,7 @@ from RootStreamBuilder import (
     RootStreamESDMaker,
     RootStreamESDFlags,
 )
-from GeoBase import DetectorConstructionCfg
+from geometry import DetectorConstructionCfg
 
 
 @file_parallel_job(ntuple_name="CollectionTree", output_replace=(".HIT", ".ESD"))
@@ -32,7 +32,7 @@ def main(
     number_of_threads: Annotated[int, typer.Option("-nt", "--number-of-threads", help="Threads allocated per worker")] = 1,
     nov: Annotated[int, typer.Option("--nov", "--number-of-events", help="Number of events to process.")] = -1,
     output_level: Annotated[str, typer.Option("-l", "--output-level", help="Logging verbosity level.")] = "INFO",
-    detector: Annotated[str, typer.Option("--detector", help="Detector version ('v1' or 'v2').")] = "v1",
+    detector: Annotated[str, typer.Option("--detector", help="Detector geometry ('GALTIC' or 'ATLAS').")] = "GALTIC",
     save_all_cells: Annotated[bool, typer.Option("--save-all-cells", help="Save all cells in the ESD.")] = False,
     pre_init: Annotated[str, typer.Option("--pre-init", help="Hook for pre-initialization code.")] = "''",
     pre_exec: Annotated[str, typer.Option("--pre-exec", help="Hook for pre-execution code.")] = "''",
@@ -62,7 +62,8 @@ def main(
 
     acc = ComponentAccumulator("ComponentAccumulator", output_file, HIT)
 
-    det = DetectorConstructionCfg("ATLAS", version=detector)
+    is_v2 = (detector.upper() in ["ATLAS", "V2"])
+    det = DetectorConstructionCfg("ATLAS", version="ATLAS" if is_v2 else "GALTIC")
 
     calorimeter = CaloCellBuilder(
         "CaloCellBuilder",

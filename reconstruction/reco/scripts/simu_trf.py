@@ -16,8 +16,8 @@ from GaugiKernel.constants import MINUTES
 from G4Kernel import EventReader, ComponentAccumulator
 from RootStreamBuilder import recordable, clear_recorded_items, RootStreamHITMaker
 from CaloHitBuilder import CaloHitBuilder, CaloHitFlags, FreeRunningFlags
-from GeoBase import DetectorConstructionCfg
-from GeoV2 import AtlasGeometryFlags
+from geometry import DetectorConstructionCfg
+from ATLAS import AtlasGeometryFlags
 from magfield import MagFieldFlags
 
 
@@ -28,7 +28,7 @@ def main(
     number_of_threads: Annotated[int, typer.Option("-nt", "--number-of-threads", help="Threads allocated per worker")] = 1,
     number_of_events: Annotated[int, typer.Option("--nov", "--number-of-events", help="The total number of events to run.")] = -1,
     output_level: Annotated[str, typer.Option("-l", "--output-level", help="The output level messenger.")] = "INFO",
-    detector: Annotated[str, typer.Option("--detector", help="Detector version ('v1' or 'v2').")] = "v1",
+    detector: Annotated[str, typer.Option("--detector", help="Detector geometry ('GALTIC' or 'ATLAS').")] = "GALTIC",
     enable_magnetic_field: Annotated[bool, typer.Option("--enable-magnetic-field", help="Enable the magnetic field.")] = False,
     free_running_hits: Annotated[bool, typer.Option("--free-running-hits", help="Write hits in ATLAS HITS ntuple layout.")] = False,
     save_all_hits: Annotated[bool, typer.Option("--save-all-hits", help="Save all hits into the output file.")] = False,
@@ -54,7 +54,7 @@ def main(
     # 2. Executa pre_init (customizações do usuário via Python)
     exec(pre_init)
 
-    is_v2 = (detector == "v2")
+    is_v2 = (detector.upper() in ["ATLAS", "V2"])
 
     # 3. Resolve defaults e validações dos domínios
     CaloHitFlags.apply_defaults(is_v2=is_v2)
