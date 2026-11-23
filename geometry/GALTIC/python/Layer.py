@@ -14,6 +14,7 @@ from GaugiKernel import Logger
 __all__ = [
     "Plates",
     "ProductionCuts",
+    "ReadoutSegment",
     "CaloSamplingLayer",
     "DeadMaterialVolume",
     "LArBarrelBuilder",
@@ -46,6 +47,98 @@ class ProductionCuts:
         self.PositronCut = float(PositronCut)
         self.GammaCut = float(GammaCut)
         self.PhotonCut = float(PhotonCut)
+
+
+class ReadoutSegment:
+    """Represents a readout ring or angular segment within a calorimeter sampling."""
+
+    def __init__(
+        self,
+        segment: int,
+        collection_key: str,
+        delta_eta: float,
+        delta_phi: float,
+        eta_min: Optional[float] = None,
+        eta_max: Optional[float] = None,
+        noise_sigma: float = 0.0,
+        shaper_file: str = "",
+        phi_shift: float = 0.0,
+    ) -> None:
+        """Initializes a ReadoutSegment with explicit arguments."""
+        self.Segment = int(segment)
+        self.CollectionKey = str(collection_key)
+        self.DeltaEta = float(delta_eta)
+        self.DeltaPhi = float(delta_phi)
+        self.EtaMin = float(eta_min) if eta_min is not None else None
+        self.EtaMax = float(eta_max) if eta_max is not None else None
+        self.Noise = float(noise_sigma)
+        self.PulseFile = str(shaper_file)
+        self.PhiShift = float(phi_shift)
+
+    @property
+    def segment(self) -> int:
+        return self.Segment
+
+    @property
+    def collection_key(self) -> str:
+        return self.CollectionKey
+
+    @property
+    def delta_eta(self) -> float:
+        return self.DeltaEta
+
+    @property
+    def delta_phi(self) -> float:
+        return self.DeltaPhi
+
+    @property
+    def eta_min(self) -> Optional[float]:
+        return self.EtaMin
+
+    @property
+    def eta_max(self) -> Optional[float]:
+        return self.EtaMax
+
+    @property
+    def noise(self) -> float:
+        return self.Noise
+
+    @property
+    def shaper(self) -> str:
+        return self.PulseFile
+
+    @property
+    def phi_shift(self) -> float:
+        return self.PhiShift
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serializes the readout segment into a dictionary."""
+        return {
+            "segment": self.Segment,
+            "collection_key": self.CollectionKey,
+            "delta_eta": self.DeltaEta,
+            "delta_phi": self.DeltaPhi,
+            "eta_min": self.EtaMin,
+            "eta_max": self.EtaMax,
+            "noise": self.Noise,
+            "shaper": self.PulseFile,
+            "phi_shift": self.PhiShift,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ReadoutSegment":
+        """Reconstructs a ReadoutSegment from a dictionary."""
+        return cls(
+            segment=data["segment"],
+            collection_key=data["collection_key"],
+            delta_eta=data["delta_eta"],
+            delta_phi=data["delta_phi"],
+            eta_min=data.get("eta_min"),
+            eta_max=data.get("eta_max"),
+            noise_sigma=data.get("noise", 0.0),
+            shaper_file=data.get("shaper", ""),
+            phi_shift=data.get("phi_shift", 0.0),
+        )
 
 
 class CaloSamplingLayer(Logger):
@@ -87,11 +180,11 @@ class CaloSamplingLayer(Logger):
         positron_cut: float = 1.0,
         gamma_cut: float = 1.0,
         proton_cut: float = 1.0,
+        segments: Optional[List[ReadoutSegment]] = None,
     ) -> None:
         """Initializes an active calorimeter sampling layer with explicit arguments."""
         super().__init__()
         self.Name = str(name)
-        self.CollectionKey = str(collection_key)
         self.Sampling = sampling
         self.Detector = detector
         self.RMin = float(rmin)
@@ -105,12 +198,6 @@ class CaloSamplingLayer(Logger):
         self.Plates = plates
         self.X, self.Y, self.Z = [float(c) for c in center]
         self.Color = str(color)
-        self.DeltaEta = float(delta_eta)
-        self.DeltaPhi = float(delta_phi)
-        self.PhiShift = float(phi_shift)
-        self.Segment = int(segment)
-        self.Noise = float(noise_sigma)
-        self.PulseFile = str(shaper_file)
         self.NSamples = int(n_samples)
         self.BunchIdStart = int(bunch_id_start)
         self.BunchIdEnd = int(bunch_id_end)
@@ -121,6 +208,37 @@ class CaloSamplingLayer(Logger):
             ElectronCut=electron_cut, PositronCut=positron_cut, GammaCut=gamma_cut, PhotonCut=proton_cut
         )
         self.Visualization = True
+
+        # Readout Segments handling
+        if segments:
+            self.segments: List[ReadoutSegment] = list(segments)
+            primary = self.segments[0]
+            self.Segment = primary.Segment
+            self.CollectionKey = primary.CollectionKey
+            self.DeltaEta = primary.DeltaEta
+            self.DeltaPhi = primary.DeltaPhi
+            self.Noise = primary.Noise
+            self.PulseFile = primary.PulseFile
+            self.PhiShift = primary.PhiShift
+        else:
+            self.Segment = int(segment)
+            self.CollectionKey = str(collection_key)
+            self.DeltaEta = float(delta_eta)
+            self.DeltaPhi = float(delta_phi)
+            self.Noise = float(noise_sigma)
+            self.PulseFile = str(shaper_file)
+            self.PhiShift = float(phi_shift)
+            self.segments = [
+                ReadoutSegment(
+                    segment=self.Segment,
+                    collection_key=self.CollectionKey,
+                    delta_eta=self.DeltaEta,
+                    delta_phi=self.DeltaPhi,
+                    noise_sigma=self.Noise,
+                    shaper_file=self.PulseFile,
+                    phi_shift=self.PhiShift,
+                )
+            ]
 
     # Readout / Reconstruction Interface Properties
     @property
@@ -162,6 +280,11 @@ class CaloSamplingLayer(Logger):
     @property
     def plates(self) -> Plates:
         return self.Plates
+
+    @property
+    def readout_segments(self) -> List[ReadoutSegment]:
+        """Returns all readout segments associated with this physical volume."""
+        return self.segments
 
     def name(self) -> str:
         """Returns volume name formatted for Geant4."""
@@ -210,6 +333,7 @@ class CaloSamplingLayer(Logger):
                 "of_weights_energy": self.OfWeightsEnergy,
                 "of_weights_time": self.OfWeightsTime,
             },
+            "readouts": [s.to_dict() for s in self.segments],
             "cuts": {
                 "electron": self.Cuts.ElectronCut,
                 "positron": self.Cuts.PositronCut,
@@ -226,6 +350,9 @@ class CaloSamplingLayer(Logger):
         mats = data["materials"]
         cuts = data.get("cuts", {})
         plates = Plates.Vertical if data.get("plates") == "Vertical" else Plates.Horizontal
+        segments = None
+        if "readouts" in data and isinstance(data["readouts"], list):
+            segments = [ReadoutSegment.from_dict(s) for s in data["readouts"]]
 
         return cls(
             name=data["name"],
@@ -258,6 +385,7 @@ class CaloSamplingLayer(Logger):
             positron_cut=cuts.get("positron", 1.0),
             gamma_cut=cuts.get("gamma", 1.0),
             proton_cut=cuts.get("proton", 1.0),
+            segments=segments,
         )
 
 
@@ -390,6 +518,11 @@ class LArBarrelBuilder:
         self._nof_layers, self._absorber_th, self._gap_th = int(nof_layers), float(absorber_th), float(gap_th)
         return self
 
+    def materials(self, absorber: str = "G4_Pb", gap: str = "liquidArgon") -> "LArBarrelBuilder":
+        """Sets the absorber and gap material names."""
+        self._absorber_mat, self._gap_mat = str(absorber), str(gap)
+        return self
+
     def granularity(self, delta_eta: float, delta_phi: float, phi_shift: float = -np.pi / 1024.0) -> "LArBarrelBuilder":
         self._delta_eta, self._delta_phi, self._phi_shift = float(delta_eta), float(delta_phi), float(phi_shift)
         return self
@@ -432,6 +565,9 @@ class TileCalBuilder:
         self._center = (0.0, 0.0, 0.0)
         self._delta_eta, self._delta_phi = 0.1, 0.1
         self._noise, self._pulse_file = 30.0, ""
+        self._nof_layers, self._absorber_th, self._gap_th = 1, 14.0, 3.0
+        self._absorber_mat, self._gap_mat = "G4_Fe", "PLASTIC SCINTILLATOR"
+        self._plates = Plates.Horizontal
 
     def radii(self, rmin: float, rmax: float) -> "TileCalBuilder":
         self._rmin, self._rmax = float(rmin), float(rmax)
@@ -439,6 +575,21 @@ class TileCalBuilder:
 
     def length_and_center(self, z_size: float, z_center: float = 0.0) -> "TileCalBuilder":
         self._z_size, self._center = float(z_size), (0.0, 0.0, float(z_center))
+        return self
+
+    def segmentation(self, nof_layers: int, absorber_th: float, gap_th: float) -> "TileCalBuilder":
+        """Sets the number of layers and plate thicknesses."""
+        self._nof_layers, self._absorber_th, self._gap_th = int(nof_layers), float(absorber_th), float(gap_th)
+        return self
+
+    def materials(
+        self,
+        absorber: str = "G4_Fe",
+        gap: str = "PLASTIC SCINTILLATOR",
+        plates: Plates = Plates.Horizontal,
+    ) -> "TileCalBuilder":
+        """Sets the absorber and gap materials and plate orientation."""
+        self._absorber_mat, self._gap_mat, self._plates = str(absorber), str(gap), plates
         return self
 
     def granularity(self, delta_eta: float, delta_phi: float) -> "TileCalBuilder":
@@ -459,12 +610,12 @@ class TileCalBuilder:
             rmin=self._rmin,
             rmax=self._rmax,
             z_size=self._z_size,
-            nof_layers=1,
-            absorber_thickness=14.0,
-            gap_thickness=3.0,
-            absorber_material="G4_Fe",
-            gap_material="PLASTIC SCINTILLATOR",
-            plates=Plates.Horizontal,
+            nof_layers=self._nof_layers,
+            absorber_thickness=self._absorber_th,
+            gap_thickness=self._gap_th,
+            absorber_material=self._absorber_mat,
+            gap_material=self._gap_mat,
+            plates=self._plates,
             center=self._center,
             delta_eta=self._delta_eta,
             delta_phi=self._delta_phi,
@@ -482,10 +633,23 @@ class LArEMECBuilder:
         self._z_center = 3900.0 if side_a else -3900.0
         self._delta_eta, self._delta_phi = 0.025, np.pi / 32.0
         self._noise, self._pulse_file = 50.0, ""
+        self._nof_layers, self._absorber_th, self._gap_th = 1, 1.75, 4.5
+        self._absorber_mat, self._gap_mat = "G4_Pb", "liquidArgon"
+        self._segments: List[ReadoutSegment] = []
 
     def geometry(self, rmin: float, rmax: float, z_size: float, z_center: float) -> "LArEMECBuilder":
         self._rmin, self._rmax, self._z_size = float(rmin), float(rmax), float(z_size)
         self._z_center = float(z_center) if self._side_a else -abs(float(z_center))
+        return self
+
+    def segmentation(self, nof_layers: int, absorber_th: float, gap_th: float) -> "LArEMECBuilder":
+        """Sets the number of layers and thicknesses for EMEC."""
+        self._nof_layers, self._absorber_th, self._gap_th = int(nof_layers), float(absorber_th), float(gap_th)
+        return self
+
+    def materials(self, absorber: str = "G4_Pb", gap: str = "liquidArgon") -> "LArEMECBuilder":
+        """Sets the absorber and gap material names for EMEC."""
+        self._absorber_mat, self._gap_mat = str(absorber), str(gap)
         return self
 
     def granularity(self, delta_eta: float, delta_phi: float) -> "LArEMECBuilder":
@@ -496,9 +660,42 @@ class LArEMECBuilder:
         self._noise, self._pulse_file = float(noise_mev), str(pulse_file)
         return self
 
+    def add_segment(
+        self,
+        segment: int,
+        delta_eta: float,
+        delta_phi: float,
+        eta_min: Optional[float] = None,
+        eta_max: Optional[float] = None,
+        noise_mev: Optional[float] = None,
+        pulse_file: Optional[str] = None,
+        phi_shift: float = 0.0,
+    ) -> "LArEMECBuilder":
+        """Adds a readout eta-segment to this sampling layer."""
+        samp_name = self._name.split("::")[-1]
+        side_tag = "A" if self._side_a else "B"
+        key = f"Collection_{samp_name}_{segment}{side_tag}"
+        seg_noise = float(noise_mev) if noise_mev is not None else self._noise
+        seg_pulse = str(pulse_file) if pulse_file is not None else self._pulse_file
+        self._segments.append(
+            ReadoutSegment(
+                segment=int(segment),
+                collection_key=key,
+                delta_eta=float(delta_eta),
+                delta_phi=float(delta_phi),
+                eta_min=float(eta_min) if eta_min is not None else None,
+                eta_max=float(eta_max) if eta_max is not None else None,
+                noise_sigma=seg_noise,
+                shaper_file=seg_pulse,
+                phi_shift=float(phi_shift),
+            )
+        )
+        return self
+
     def build(self) -> CaloSamplingLayer:
         samp_name = self._name.split("::")[-1]
         side_tag = "A" if self._side_a else "B"
+        segments = self._segments if self._segments else None
         return CaloSamplingLayer(
             name=f"{self._name}::{side_tag}",
             collection_key=f"Collection_{samp_name}_{side_tag}",
@@ -507,17 +704,18 @@ class LArEMECBuilder:
             rmin=self._rmin,
             rmax=self._rmax,
             z_size=self._z_size,
-            nof_layers=1,
-            absorber_thickness=1.75,
-            gap_thickness=4.5,
-            absorber_material="G4_Pb",
-            gap_material="liquidArgon",
+            nof_layers=self._nof_layers,
+            absorber_thickness=self._absorber_th,
+            gap_thickness=self._gap_th,
+            absorber_material=self._absorber_mat,
+            gap_material=self._gap_mat,
             plates=Plates.Vertical,
             center=(0.0, 0.0, self._z_center),
             delta_eta=self._delta_eta,
             delta_phi=self._delta_phi,
             noise_sigma=self._noise,
             shaper_file=self._pulse_file,
+            segments=segments,
         )
 
 
@@ -530,10 +728,23 @@ class HECBuilder:
         self._z_center = 4500.0 if side_a else -4500.0
         self._delta_eta, self._delta_phi = 0.1, 0.1
         self._noise, self._pulse_file = 100.0, ""
+        self._nof_layers, self._absorber_th, self._gap_th = 1, 25.0, 8.5
+        self._absorber_mat, self._gap_mat = "G4_Cu", "liquidArgon"
+        self._segments: List[ReadoutSegment] = []
 
     def geometry(self, rmin: float, rmax: float, z_size: float, z_center: float) -> "HECBuilder":
         self._rmin, self._rmax, self._z_size = float(rmin), float(rmax), float(z_size)
         self._z_center = float(z_center) if self._side_a else -abs(float(z_center))
+        return self
+
+    def segmentation(self, nof_layers: int, absorber_th: float, gap_th: float) -> "HECBuilder":
+        """Sets the number of layers and thicknesses for HEC."""
+        self._nof_layers, self._absorber_th, self._gap_th = int(nof_layers), float(absorber_th), float(gap_th)
+        return self
+
+    def materials(self, absorber: str = "G4_Cu", gap: str = "liquidArgon") -> "HECBuilder":
+        """Sets the absorber and gap material names for HEC."""
+        self._absorber_mat, self._gap_mat = str(absorber), str(gap)
         return self
 
     def granularity(self, delta_eta: float, delta_phi: float) -> "HECBuilder":
@@ -544,9 +755,42 @@ class HECBuilder:
         self._noise, self._pulse_file = float(noise_mev), str(pulse_file)
         return self
 
+    def add_segment(
+        self,
+        segment: int,
+        delta_eta: float,
+        delta_phi: float,
+        eta_min: Optional[float] = None,
+        eta_max: Optional[float] = None,
+        noise_mev: Optional[float] = None,
+        pulse_file: Optional[str] = None,
+        phi_shift: float = 0.0,
+    ) -> "HECBuilder":
+        """Adds a readout eta-segment to this sampling layer."""
+        samp_name = self._name.split("::")[-1]
+        side_tag = "A" if self._side_a else "B"
+        key = f"Collection_{samp_name}_{segment}{side_tag}"
+        seg_noise = float(noise_mev) if noise_mev is not None else self._noise
+        seg_pulse = str(pulse_file) if pulse_file is not None else self._pulse_file
+        self._segments.append(
+            ReadoutSegment(
+                segment=int(segment),
+                collection_key=key,
+                delta_eta=float(delta_eta),
+                delta_phi=float(delta_phi),
+                eta_min=float(eta_min) if eta_min is not None else None,
+                eta_max=float(eta_max) if eta_max is not None else None,
+                noise_sigma=seg_noise,
+                shaper_file=seg_pulse,
+                phi_shift=float(phi_shift),
+            )
+        )
+        return self
+
     def build(self) -> CaloSamplingLayer:
         samp_name = self._name.split("::")[-1]
         side_tag = "A" if self._side_a else "B"
+        segments = self._segments if self._segments else None
         return CaloSamplingLayer(
             name=f"{self._name}::{side_tag}",
             collection_key=f"Collection_{samp_name}_{side_tag}",
@@ -555,17 +799,18 @@ class HECBuilder:
             rmin=self._rmin,
             rmax=self._rmax,
             z_size=self._z_size,
-            nof_layers=1,
-            absorber_thickness=25.0,
-            gap_thickness=8.5,
-            absorber_material="G4_Cu",
-            gap_material="liquidArgon",
+            nof_layers=self._nof_layers,
+            absorber_thickness=self._absorber_th,
+            gap_thickness=self._gap_th,
+            absorber_material=self._absorber_mat,
+            gap_material=self._gap_mat,
             plates=Plates.Vertical,
             center=(0.0, 0.0, self._z_center),
             delta_eta=self._delta_eta,
             delta_phi=self._delta_phi,
             noise_sigma=self._noise,
             shaper_file=self._pulse_file,
+            segments=segments,
         )
 
 

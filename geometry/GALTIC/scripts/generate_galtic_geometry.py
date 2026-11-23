@@ -25,7 +25,7 @@ def main() -> None:
     )
     print(f"Generating canonical GALTIC geometry: {output_path}")
 
-    det = GalticDetectorConstruction("GALTIC")
+    det = GalticDetectorConstruction("GALTIC", geometry_file="")
     det.save(output_path)
 
     # Also keep atlas_v1.json as a symlink or copy for backward compatibility

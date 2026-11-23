@@ -24,6 +24,7 @@ This document details the major architectural enhancements, modernization effort
 16. [Unified Dataclass Job Steering System (`JobFlags`) & CLI Decoupling](#16-unified-dataclass-job-steering-system-jobflags--cli-decoupling)
 17. [Decoupled 3-Package Geometry Architecture & Unified Factory (`GeoBase`, `GeoV1`, `GeoV2`)](#17-decoupled-3-package-geometry-architecture--unified-factory-geobase-geov1-geov2)
 18. [Decoupled Magnetic Field Packages (`MagField`, `MagFieldElements`)](#18-decoupled-magnetic-field-packages-magfield-magfieldelements)
+19. [ATLAS Geometry Modernization & v1/v2 Dual-Stack Architecture](#19-atlas-geometry-modernization--v1v2-dual-stack-architecture)
 
 ---
 
@@ -949,6 +950,32 @@ geometry/
 
 ---
 
+## 19. ATLAS Geometry Modernization & v1/v2 Dual-Stack Architecture
+
+### Context & Motivation
+Following the successful modernization of GALTIC (parametric calorimeter) into a clean, data-driven architecture reading JSON directly from C++, the ATLAS geometry system was refactored into a dual-stack setup where both `v1` (imperative GeoModel dump) and `v2` (declarative JSON-driven) coexist side-by-side:
+
+1. **C++ Dual-Engine Coexistence:**
+   - **`ATLAS::DetectorConstruction_v1`**: Preserves full backward compatibility with the imperative setup, supporting `AddVolume(...)` and procedural building via Python.
+   - **`ATLAS::DetectorConstruction_v2`**: Implements high-performance native C++ JSON parsing (`LoadGeometryFile(...)` via `nlohmann::json`), eliminating PyROOT RPC loops.
+   - Both engines are compiled in `namespace ATLAS` within `liblorenzetti.so`.
+
+2. **Python Package Partitioning (`geometry/ATLAS/python/`):**
+   - **`v1/`**: Contains legacy imperative modules (`v1/DetectorConstruction.py`, `v1/detectors/`, `v1/legacy/`).
+   - **`v2/`**: Implements the modern GALTIC-like architecture (`v2/Layer.py`, `v2/AtlasCfg.py`, `v2/DetectorConstruction.py`).
+   - **Fluent Subdetector Builders (`v2/Layer.py`)**: `AtlasEmbBuilder`, `AtlasTileBuilder`, `AtlasEmecBuilder`, `AtlasHecBuilder`, `AtlasFcalBuilder`, and `AtlasDeadMaterialBuilder`.
+   - **Canonical Layer Registry (`v2/AtlasCfg.py`)**: 33 active calorimeter sampling layers and 8 dead material volumes.
+
+3. **Canonical Declarative Data (`data/atlas_geometry.json`):**
+   - Created standalone JSON describing all ATLAS active layers and dead materials with physical dimensions, readout granularities, materials, production cuts, and pulse shaper paths.
+   - Generated via dedicated script `geometry/ATLAS/scripts/generate_atlas_geometry.py`.
+
+4. **Factory & Seamless Integration:**
+   - Central factory `DetectorConstructionCfg(detector="ATLAS", atlas_version="v1" | "v2")` supports both engines.
+   - Default shim `ATLAS.DetectorConstruction` forwards to `v1` or `v2` based on configuration.
+
+---
+
 ## Summary of Benefits
 
 | Feature | `master` | `python_refactory` | Benefit |
@@ -975,4 +1002,6 @@ geometry/
 | **GALTIC Python Architecture** | 8 fragmented files & empty modules | 2 consolidated files (`Layer.py`, `GalticCfg.py`) | Single Source of Truth; zero code duplication; clean fluent builders |
 | **ATLAS & Legacy Cleanup** | `GeoV1`/`GeoV2` dual names, `DetectorConstruction_v2.py` shim | `GALTIC`/`ATLAS`, `AtlasDetectorConstruction`, `GALTIC/` & `ATLAS/` includes | Total elimination of legacy v1/v2 debt; clean canonical namespaces |
 | **Modern Detector Visualizer** | Primitive `http.server` & static PNG screenshots | FastAPI backend, Three.js 3D WebGL, ROOT CAD, Vector PDF | Real-time interactive inspection, dynamic cutting planes, publication-ready vector PDFs |
+| **ATLAS v1/v2 Dual-Stack Architecture** | Monolithic legacy ATLAS with 24 flags and PyROOT AddVolume RPC loops | Coexisting `ATLAS::DetectorConstruction_v1` & `ATLAS::DetectorConstruction_v2`, `ATLAS.v1` & `ATLAS.v2`, `atlas_geometry.json` | Gradual migration; zero PyROOT loop overhead in v2; clean fluent builders; full backward compatibility |
+
 

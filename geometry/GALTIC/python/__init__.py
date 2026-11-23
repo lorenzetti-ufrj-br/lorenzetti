@@ -7,6 +7,7 @@ Provides unified layer definitions, fluent builders, and file-driven Geant4 cons
 from .Layer import (
     Plates,
     ProductionCuts,
+    ReadoutSegment,
     CaloSamplingLayer,
     DeadMaterialVolume,
     LArBarrelBuilder,
@@ -25,6 +26,8 @@ from .GalticCfg import (
     getGalticAllSamplings,
     getGalticAllDeadMaterials,
 )
+from . import GalticCfg_v1
+from . import GalticCfg_v2
 from .DetectorConstruction import GalticDetectorConstruction, DetectorConstruction
 
 __all__ = [
@@ -32,6 +35,7 @@ __all__ = [
     "DetectorConstruction",
     "Plates",
     "ProductionCuts",
+    "ReadoutSegment",
     "CaloSamplingLayer",
     "DeadMaterialVolume",
     "LArBarrelBuilder",
@@ -39,6 +43,8 @@ __all__ = [
     "LArEMECBuilder",
     "HECBuilder",
     "DeadMaterialBuilder",
+    "GalticCfg_v1",
+    "GalticCfg_v2",
     "getGalticLArBarrelCfg",
     "getGalticTileBarrelCfg",
     "getGalticTileExtendedCfg",

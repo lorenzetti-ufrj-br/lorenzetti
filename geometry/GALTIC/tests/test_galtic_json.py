@@ -105,6 +105,24 @@ class TestGalticGeometry(unittest.TestCase):
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
 
+    def test_readout_segments(self):
+        """Validates multi-segment readout for EMEC and HEC."""
+        samplings = getGalticAllSamplings()
+        emec1_layers = [s for s in samplings if "EMEC1" in s.Name]
+        self.assertEqual(len(emec1_layers), 2)  # Side A and Side B
+        for emec1 in emec1_layers:
+            self.assertEqual(len(emec1.readout_segments), 4)
+            d_etas = [seg.delta_eta for seg in emec1.readout_segments]
+            self.assertEqual(d_etas, [0.00325, 0.025, 0.006, 0.1])
+            self.assertEqual([seg.segment for seg in emec1.readout_segments], [0, 1, 2, 3])
+
+        hec1_layers = [s for s in samplings if "HEC1" in s.Name]
+        self.assertEqual(len(hec1_layers), 2)
+        for hec1 in hec1_layers:
+            self.assertEqual(len(hec1.readout_segments), 2)
+            d_etas = [seg.delta_eta for seg in hec1.readout_segments]
+            self.assertEqual(d_etas, [0.1, 0.2])
+
     def test_detector_construction_alias(self):
         """Verifies canonical alias DetectorConstruction."""
         det = DetectorConstruction("TestAlias")

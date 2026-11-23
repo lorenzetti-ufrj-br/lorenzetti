@@ -49,7 +49,12 @@ class GalticDetectorConstruction(Configurable):
             GeometryFile: C++ property for the JSON geometry file path.
             geometry_file: Optional path to JSON geometry to load directly.
         """
-        self.geometry_file = geometry_file or GeometryFile or _default_geo_file()
+        if geometry_file is not None:
+            self.geometry_file = geometry_file
+        elif GeometryFile:
+            self.geometry_file = GeometryFile
+        else:
+            self.geometry_file = _default_geo_file()
 
         super().__init__(
             ROOT.DetectorConstruction_v1,
