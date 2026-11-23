@@ -10,7 +10,7 @@ file(GLOB EMEC_PORT_SOURCES src/GeoSpecialShapes_*.cxx src/LArG4EC_*.cxx)
 set_source_files_properties( ${EMEC_PORT_SOURCES} PROPERTIES COMPILE_OPTIONS "-O2;-DNDEBUG" )
 
 file(GLOB_RECURSE HEADERS ATLAS/*.h)
-set(DICT_HEADERS ATLAS/DetectorConstruction_v2.h)
+set(DICT_HEADERS ATLAS/DetectorConstruction_v1.h ATLAS/DetectorConstruction_v2.h)
 
 include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/kernel/GaugiKernel)

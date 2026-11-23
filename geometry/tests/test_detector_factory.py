@@ -83,6 +83,18 @@ class TestDetectorFactory(unittest.TestCase):
         det = GeoBaseCfg("TestGeoBaseShim", version="GALTIC")
         self.assertIsInstance(det, GalticDetectorConstruction)
 
+    def test_construct_atlas_v1(self):
+        """Constructs ATLAS via atlas_version='v1'."""
+        import ATLAS.v1
+        det = DetectorConstructionCfg("TestAtlasV1", detector="ATLAS", atlas_version="v1")
+        self.assertIsInstance(det, ATLAS.v1.DetectorConstruction)
+
+    def test_construct_atlas_v2(self):
+        """Constructs ATLAS via atlas_version='v2'."""
+        import ATLAS.v2
+        det = DetectorConstructionCfg("TestAtlasV2", detector="ATLAS", atlas_version="v2")
+        self.assertIsInstance(det, ATLAS.v2.DetectorConstruction)
+
 
 if __name__ == "__main__":
     unittest.main()

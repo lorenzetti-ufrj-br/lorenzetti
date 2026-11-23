@@ -63,8 +63,12 @@ from geometry import DetectorConstructionCfg, DetectorFlags
 det_galtic = DetectorConstructionCfg("ATLAS", version="GALTIC")
 det_galtic.compile()
 
-# 2. Instantiate full high-fidelity ATLAS detector:
-det_atlas = DetectorConstructionCfg("ATLAS", version="ATLAS")
+# 2. Instantiate full ATLAS detector:
+# 2.1 Modern JSON-driven ATLAS v2 (Recommended, GALTIC-like architecture):
+det_atlas_v2 = DetectorConstructionCfg("ATLAS", version="ATLAS", atlas_version="v2")
+
+# 2.2 Legacy imperative ATLAS v1 (GeoModel SQLite dump & manual volumes):
+det_atlas_v1 = DetectorConstructionCfg("ATLAS", version="ATLAS", atlas_version="v1")
 
 # 3. Dynamic selection via global flag:
 DetectorFlags.Version = "GALTIC"  # or "ATLAS"
@@ -78,10 +82,14 @@ det = DetectorConstructionCfg("ATLAS")
 from GALTIC import GalticDetectorConstruction, CaloSamplingLayer, Plates
 det = GalticDetectorConstruction("MyGaltic")
 
-# ATLAS (High-Fidelity):
-from ATLAS import AtlasDetectorConstruction, AtlasGeometryFlags
-from ATLAS.detectors import AtlasEmb, AtlasTile, AtlasEmec, AtlasHec
-det = AtlasDetectorConstruction("MyAtlas")
+# ATLAS v2 (Modern JSON-driven):
+from ATLAS.v2 import AtlasDetectorConstruction, AtlasEmbBuilder, AtlasTileBuilder
+det_v2 = AtlasDetectorConstruction("MyAtlasV2")
+
+# ATLAS v1 (Legacy Imperative):
+from ATLAS.v1 import AtlasDetectorConstruction as AtlasDetectorConstructionV1
+from ATLAS import AtlasGeometryFlags
+det_v1 = AtlasDetectorConstructionV1("MyAtlasV1")
 ```
 
 ---

@@ -63,7 +63,9 @@ class DetectorFlags:
 
 AVAILABLE_DETECTORS: Dict[str, str] = {
     "GALTIC": "General Argon Liquid and Tile Integrated Calorimeter (Fast Parametric)",
-    "ATLAS": "Full High-Fidelity ATLAS Detector (GeoModel / SQLite)",
+    "ATLAS": "Full High-Fidelity ATLAS Detector (v1 default / v2 modern JSON)",
+    "ATLAS_V1": "ATLAS Detector v1 (Imperative / GeoModel SQLite)",
+    "ATLAS_V2": "ATLAS Detector v2 (Modern Declarative JSON)",
 }
 
 
@@ -90,18 +92,27 @@ def DetectorConstructionCfg(
     name: str = "ATLAS",
     version: Optional[str] = None,
     detector: Optional[str] = None,
-    **kwargs: Any,
+    atlas_version: str = "v1",
+    UseMagneticField: Optional[bool] = None,
+    UseSolenoidField: Optional[bool] = None,
+    CutOnPhi: Optional[bool] = None,
+    GeometryFile: str = "",
+    geometry_file: Optional[str] = None,
 ) -> Any:
     """
     Central factory function to configure and instantiate detector geometries.
 
     Args:
         name: Instance name (default: "ATLAS").
-        version: "GALTIC" for fast parametric calorimeter;
-                 "ATLAS" for full realistic detector.
+        version: "GALTIC", "ATLAS", "ATLAS_V1", or "ATLAS_V2".
                  If None, falls back to DetectorFlags.Version.
         detector: Optional alias for version (e.g., passed as detector="GALTIC").
-        **kwargs: Direct property overrides forwarded to the detector constructor.
+        atlas_version: Sub-version for ATLAS ("v1" or "v2", default: "v1").
+        UseMagneticField: Optional override for global magnetic field.
+        UseSolenoidField: Optional override for solenoid field.
+        CutOnPhi: Optional override for phi wedge cut.
+        GeometryFile: C++ property for the JSON geometry file path.
+        geometry_file: Optional direct path to JSON geometry to load.
 
     Returns:
         Configured detector instance (GalticDetectorConstruction or AtlasDetectorConstruction).
@@ -112,19 +123,43 @@ def DetectorConstructionCfg(
     if selected == "GALTIC":
         from GALTIC import GalticDetectorConstruction
         MagFieldFlags.apply_defaults(is_v2=False)
-        v_dict = {"UseMagneticField": MagFieldFlags.EnableField}
-        v_dict.update(kwargs)
-        return GalticDetectorConstruction(name, **v_dict)
+        field_enabled = UseMagneticField if UseMagneticField is not None else MagFieldFlags.EnableField
+        cut_phi = CutOnPhi if CutOnPhi is not None else False
+        return GalticDetectorConstruction(
+            name,
+            UseMagneticField=field_enabled,
+            CutOnPhi=cut_phi,
+            GeometryFile=GeometryFile,
+            geometry_file=geometry_file,
+        )
 
-    elif selected == "ATLAS":
-        from ATLAS import AtlasDetectorConstruction, AtlasGeometryFlags
-        MagFieldFlags.apply_defaults(is_v2=True)
-        AtlasGeometryFlags.apply_defaults(enable_atlas=True)
-        geo_dict = AtlasGeometryFlags.to_dict()
-        geo_dict["UseMagneticField"] = MagFieldFlags.EnableField
-        geo_dict["UseSolenoidField"] = MagFieldFlags.EnableSolenoidOnly
-        geo_dict.update(kwargs)
-        return AtlasDetectorConstruction(name, **geo_dict)
+    elif selected in ("ATLAS", "ATLAS_V1", "ATLAS_V2"):
+        target_v = "v2" if selected == "ATLAS_V2" or atlas_version.lower() == "v2" else "v1"
+
+        if target_v == "v2":
+            from ATLAS.v2 import AtlasDetectorConstruction
+            MagFieldFlags.apply_defaults(is_v2=True)
+            field_enabled = UseMagneticField if UseMagneticField is not None else MagFieldFlags.EnableField
+            solenoid_enabled = UseSolenoidField if UseSolenoidField is not None else MagFieldFlags.EnableSolenoidOnly
+            cut_phi = CutOnPhi if CutOnPhi is not None else False
+            return AtlasDetectorConstruction(
+                name,
+                UseMagneticField=field_enabled,
+                UseSolenoidField=solenoid_enabled,
+                CutOnPhi=cut_phi,
+                GeometryFile=GeometryFile,
+                geometry_file=geometry_file,
+            )
+        else:
+            from ATLAS.v1 import AtlasDetectorConstruction, AtlasGeometryFlags
+            MagFieldFlags.apply_defaults(is_v2=True)
+            AtlasGeometryFlags.apply_defaults(enable_atlas=True)
+            geo_dict = AtlasGeometryFlags.to_dict()
+            geo_dict["UseMagneticField"] = UseMagneticField if UseMagneticField is not None else MagFieldFlags.EnableField
+            geo_dict["UseSolenoidField"] = UseSolenoidField if UseSolenoidField is not None else MagFieldFlags.EnableSolenoidOnly
+            if CutOnPhi is not None:
+                geo_dict["CutOnPhi"] = CutOnPhi
+            return AtlasDetectorConstruction(name, **geo_dict)
 
     else:
         raise ValueError(

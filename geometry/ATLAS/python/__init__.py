@@ -1,12 +1,17 @@
 """
-ATLAS - High-fidelity realistic ATLAS detector package (GeoModel / SQLite / Run 4).
+ATLAS - High-fidelity realistic ATLAS detector package.
+Provides both v1 (imperative legacy) and v2 (modern declarative JSON).
 """
 
-from .DetectorConstruction import AtlasDetectorConstruction, DetectorConstruction
-from .AtlasGeometryFlags import AtlasGeometryFlags
+from ATLAS.AtlasGeometryFlags import AtlasGeometryFlags
+from ATLAS import v1
+from ATLAS import v2
+from ATLAS.v1 import AtlasDetectorConstruction, DetectorConstruction
 
 __all__ = [
+    "AtlasGeometryFlags",
     "AtlasDetectorConstruction",
     "DetectorConstruction",
-    "AtlasGeometryFlags",
+    "v1",
+    "v2",
 ]

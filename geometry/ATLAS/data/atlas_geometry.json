@@ -1,0 +1,1699 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "detector": "ATLAS",
+    "description": "ATLAS Calorimeter official canonical geometry specification (v2)"
+  },
+  "volumes": [
+    {
+      "name": "LAr::PSB",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 0.01,
+        "gap_thickness": 11.0,
+        "rmin": 1430.0,
+        "rmax": 1441.0,
+        "z_size": 6330.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "0",
+        "collection_key": "Collection_LAr_PSB",
+        "delta_eta": 0.025,
+        "delta_phi": 0.09817477042468103,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 90.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMB1",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 16,
+        "absorber_thickness": 1.53,
+        "gap_thickness": 4.5,
+        "rmin": 1500.0,
+        "rmax": 1580.0,
+        "z_size": 6330.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "2",
+        "collection_key": "Collection_LAr_EMB1",
+        "delta_eta": 0.003125,
+        "delta_phi": 0.02454,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 40.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMB2",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 16,
+        "absorber_thickness": 1.53,
+        "gap_thickness": 4.5,
+        "rmin": 1590.0,
+        "rmax": 1860.0,
+        "z_size": 6330.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "3",
+        "collection_key": "Collection_LAr_EMB2",
+        "delta_eta": 0.025,
+        "delta_phi": 0.02454,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMB3",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 16,
+        "absorber_thickness": 1.13,
+        "gap_thickness": 4.5,
+        "rmin": 1870.0,
+        "rmax": 1960.0,
+        "z_size": 6330.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "4",
+        "collection_key": "Collection_LAr_EMB3",
+        "delta_eta": 0.05,
+        "delta_phi": 0.02454,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 25.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Bar0",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 313,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 2280.0,
+        "rmax": 2600.0,
+        "z_size": 5640.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "5",
+        "collection_key": "Collection_Tile_Bar0",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Bar1",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 313,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 2600.0,
+        "rmax": 3140.0,
+        "z_size": 5640.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "6",
+        "collection_key": "Collection_Tile_Bar1",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Bar2",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 313,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 3140.0,
+        "rmax": 3820.0,
+        "z_size": 5640.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "7",
+        "collection_key": "Collection_Tile_Bar2",
+        "delta_eta": 0.2,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 35.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Ext0::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 146,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 2280.0,
+        "rmax": 2600.0,
+        "z_size": 2640.0,
+        "center": [
+          0.0,
+          0.0,
+          4850.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "8",
+        "collection_key": "Collection_Tile_Ext0_A",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Ext1::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 146,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 2600.0,
+        "rmax": 3140.0,
+        "z_size": 2640.0,
+        "center": [
+          0.0,
+          0.0,
+          4850.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "9",
+        "collection_key": "Collection_Tile_Ext1_A",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Ext2::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 146,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 3140.0,
+        "rmax": 3820.0,
+        "z_size": 2640.0,
+        "center": [
+          0.0,
+          0.0,
+          4850.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "10",
+        "collection_key": "Collection_Tile_Ext2_A",
+        "delta_eta": 0.2,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 35.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Ext0::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 146,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 2280.0,
+        "rmax": 2600.0,
+        "z_size": 2640.0,
+        "center": [
+          0.0,
+          0.0,
+          -4850.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "8",
+        "collection_key": "Collection_Tile_Ext0_B",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Ext1::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 146,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 2600.0,
+        "rmax": 3140.0,
+        "z_size": 2640.0,
+        "center": [
+          0.0,
+          0.0,
+          -4850.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "9",
+        "collection_key": "Collection_Tile_Ext1_B",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "Tile::Ext2::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Fe",
+        "gap": "Scintillator"
+      },
+      "geometry": {
+        "nof_layers": 146,
+        "absorber_thickness": 14.0,
+        "gap_thickness": 3.0,
+        "rmin": 3140.0,
+        "rmax": 3820.0,
+        "z_size": 2640.0,
+        "center": [
+          0.0,
+          0.0,
+          -4850.0
+        ]
+      },
+      "readout": {
+        "detector": "1",
+        "sampling": "10",
+        "collection_key": "Collection_Tile_Ext2_B",
+        "delta_eta": 0.2,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 35.0,
+        "shaper": "pulseTile.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMEC1::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 12,
+        "absorber_thickness": 1.7,
+        "gap_thickness": 2.0,
+        "rmin": 330.0,
+        "rmax": 2034.0,
+        "z_size": 640.0,
+        "center": [
+          0.0,
+          0.0,
+          4000.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "11",
+        "collection_key": "Collection_LAr_EMEC1_A",
+        "delta_eta": 0.025,
+        "delta_phi": 0.025,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 45.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMEC2::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 12,
+        "absorber_thickness": 1.7,
+        "gap_thickness": 2.0,
+        "rmin": 330.0,
+        "rmax": 2034.0,
+        "z_size": 640.0,
+        "center": [
+          0.0,
+          0.0,
+          4000.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "12",
+        "collection_key": "Collection_LAr_EMEC2_A",
+        "delta_eta": 0.025,
+        "delta_phi": 0.025,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 35.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMEC3::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 12,
+        "absorber_thickness": 1.7,
+        "gap_thickness": 2.0,
+        "rmin": 330.0,
+        "rmax": 2034.0,
+        "z_size": 640.0,
+        "center": [
+          0.0,
+          0.0,
+          4000.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "13",
+        "collection_key": "Collection_LAr_EMEC3_A",
+        "delta_eta": 0.05,
+        "delta_phi": 0.025,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMEC1::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 12,
+        "absorber_thickness": 1.7,
+        "gap_thickness": 2.0,
+        "rmin": 330.0,
+        "rmax": 2034.0,
+        "z_size": 640.0,
+        "center": [
+          0.0,
+          0.0,
+          -4000.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "11",
+        "collection_key": "Collection_LAr_EMEC1_B",
+        "delta_eta": 0.025,
+        "delta_phi": 0.025,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 45.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMEC2::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 12,
+        "absorber_thickness": 1.7,
+        "gap_thickness": 2.0,
+        "rmin": 330.0,
+        "rmax": 2034.0,
+        "z_size": 640.0,
+        "center": [
+          0.0,
+          0.0,
+          -4000.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "12",
+        "collection_key": "Collection_LAr_EMEC2_B",
+        "delta_eta": 0.025,
+        "delta_phi": 0.025,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 35.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::EMEC3::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Pb",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 12,
+        "absorber_thickness": 1.7,
+        "gap_thickness": 2.0,
+        "rmin": 330.0,
+        "rmax": 2034.0,
+        "z_size": 640.0,
+        "center": [
+          0.0,
+          0.0,
+          -4000.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "13",
+        "collection_key": "Collection_LAr_EMEC3_B",
+        "delta_eta": 0.05,
+        "delta_phi": 0.025,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 30.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::HEC0::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 8,
+        "absorber_thickness": 25.0,
+        "gap_thickness": 8.5,
+        "rmin": 372.0,
+        "rmax": 2030.0,
+        "z_size": 520.0,
+        "center": [
+          0.0,
+          0.0,
+          4537.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "60",
+        "collection_key": "Collection_LAr_HEC0_A",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 50.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::HEC1::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 8,
+        "absorber_thickness": 25.0,
+        "gap_thickness": 8.5,
+        "rmin": 372.0,
+        "rmax": 2030.0,
+        "z_size": 520.0,
+        "center": [
+          0.0,
+          0.0,
+          4537.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "14",
+        "collection_key": "Collection_LAr_HEC1_A",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 45.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::HEC2::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 8,
+        "absorber_thickness": 50.0,
+        "gap_thickness": 8.5,
+        "rmin": 372.0,
+        "rmax": 2030.0,
+        "z_size": 1298.0,
+        "center": [
+          0.0,
+          0.0,
+          5446.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "15",
+        "collection_key": "Collection_LAr_HEC2_A",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 55.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::HEC3::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 8,
+        "absorber_thickness": 50.0,
+        "gap_thickness": 8.5,
+        "rmin": 372.0,
+        "rmax": 2030.0,
+        "z_size": 1298.0,
+        "center": [
+          0.0,
+          0.0,
+          5446.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "16",
+        "collection_key": "Collection_LAr_HEC3_A",
+        "delta_eta": 0.2,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 60.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::HEC0::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 8,
+        "absorber_thickness": 25.0,
+        "gap_thickness": 8.5,
+        "rmin": 372.0,
+        "rmax": 2030.0,
+        "z_size": 520.0,
+        "center": [
+          0.0,
+          0.0,
+          -4537.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "60",
+        "collection_key": "Collection_LAr_HEC0_B",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 50.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::HEC1::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 8,
+        "absorber_thickness": 25.0,
+        "gap_thickness": 8.5,
+        "rmin": 372.0,
+        "rmax": 2030.0,
+        "z_size": 520.0,
+        "center": [
+          0.0,
+          0.0,
+          -4537.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "14",
+        "collection_key": "Collection_LAr_HEC1_B",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 45.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::HEC2::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 8,
+        "absorber_thickness": 50.0,
+        "gap_thickness": 8.5,
+        "rmin": 372.0,
+        "rmax": 2030.0,
+        "z_size": 1298.0,
+        "center": [
+          0.0,
+          0.0,
+          -5446.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "15",
+        "collection_key": "Collection_LAr_HEC2_B",
+        "delta_eta": 0.1,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 55.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::HEC3::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 8,
+        "absorber_thickness": 50.0,
+        "gap_thickness": 8.5,
+        "rmin": 372.0,
+        "rmax": 2030.0,
+        "z_size": 1298.0,
+        "center": [
+          0.0,
+          0.0,
+          -5446.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "16",
+        "collection_key": "Collection_LAr_HEC3_B",
+        "delta_eta": 0.2,
+        "delta_phi": 0.1,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 60.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::FCAL1::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 15,
+        "absorber_thickness": 20.0,
+        "gap_thickness": 1.0,
+        "rmin": 72.0,
+        "rmax": 450.0,
+        "z_size": 450.0,
+        "center": [
+          0.0,
+          0.0,
+          4893.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "61",
+        "collection_key": "Collection_LAr_FCAL1_A",
+        "delta_eta": 0.2,
+        "delta_phi": 0.2,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 80.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::FCAL2::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_W",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 15,
+        "absorber_thickness": 20.0,
+        "gap_thickness": 1.0,
+        "rmin": 72.0,
+        "rmax": 450.0,
+        "z_size": 450.0,
+        "center": [
+          0.0,
+          0.0,
+          5353.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "62",
+        "collection_key": "Collection_LAr_FCAL2_A",
+        "delta_eta": 0.2,
+        "delta_phi": 0.2,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 90.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::FCAL3::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_W",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 15,
+        "absorber_thickness": 20.0,
+        "gap_thickness": 1.0,
+        "rmin": 72.0,
+        "rmax": 450.0,
+        "z_size": 450.0,
+        "center": [
+          0.0,
+          0.0,
+          5813.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "63",
+        "collection_key": "Collection_LAr_FCAL3_A",
+        "delta_eta": 0.2,
+        "delta_phi": 0.2,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 100.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::FCAL1::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_Cu",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 15,
+        "absorber_thickness": 20.0,
+        "gap_thickness": 1.0,
+        "rmin": 72.0,
+        "rmax": 450.0,
+        "z_size": 450.0,
+        "center": [
+          0.0,
+          0.0,
+          -4893.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "61",
+        "collection_key": "Collection_LAr_FCAL1_B",
+        "delta_eta": 0.2,
+        "delta_phi": 0.2,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 80.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::FCAL2::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_W",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 15,
+        "absorber_thickness": 20.0,
+        "gap_thickness": 1.0,
+        "rmin": 72.0,
+        "rmax": 450.0,
+        "z_size": 450.0,
+        "center": [
+          0.0,
+          0.0,
+          -5353.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "62",
+        "collection_key": "Collection_LAr_FCAL2_B",
+        "delta_eta": 0.2,
+        "delta_phi": 0.2,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 90.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::FCAL3::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "G4_W",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 15,
+        "absorber_thickness": 20.0,
+        "gap_thickness": 1.0,
+        "rmin": 72.0,
+        "rmax": 450.0,
+        "z_size": 450.0,
+        "center": [
+          0.0,
+          0.0,
+          -5813.0
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "63",
+        "collection_key": "Collection_LAr_FCAL3_B",
+        "delta_eta": 0.2,
+        "delta_phi": 0.2,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 100.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "DM::Solenoid",
+      "plates": "Polycone",
+      "materials": {
+        "absorber": "G4_Al",
+        "gap": "Vacuum"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 0.0,
+        "gap_thickness": 0.0,
+        "rmin": 0.0,
+        "rmax": 0.0,
+        "z_size": 0.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "in_solenoid_field": true,
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      },
+      "polycone": {
+        "z": [
+          -2900.0,
+          2900.0
+        ],
+        "rmin": [
+          1229.0,
+          1229.0
+        ],
+        "rmax": [
+          1275.0,
+          1275.0
+        ]
+      }
+    },
+    {
+      "name": "DM::Cryo::Barrel::InnerWarm",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Al",
+        "gap": "Vacuum"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 10.0,
+        "gap_thickness": 0.0,
+        "rmin": 1250.0,
+        "rmax": 1260.0,
+        "z_size": 6800.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "in_solenoid_field": false,
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "DM::Cryo::Barrel::InnerCold",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Al",
+        "gap": "Vacuum"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 13.0,
+        "gap_thickness": 0.0,
+        "rmin": 1400.0,
+        "rmax": 1413.0,
+        "z_size": 6800.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "in_solenoid_field": false,
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "DM::Cryo::Barrel::Outer",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Al",
+        "gap": "Vacuum"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 30.0,
+        "gap_thickness": 0.0,
+        "rmin": 2150.0,
+        "rmax": 2180.0,
+        "z_size": 6800.0,
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "in_solenoid_field": false,
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "DM::Crack::EM::A",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Al",
+        "gap": "Vacuum"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 590.0,
+        "gap_thickness": 0.0,
+        "rmin": 1440.0,
+        "rmax": 2030.0,
+        "z_size": 515.0,
+        "center": [
+          0.0,
+          0.0,
+          3422.5
+        ]
+      },
+      "in_solenoid_field": false,
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "DM::Crack::TILE::A",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Al",
+        "gap": "Vacuum"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 1540.0,
+        "gap_thickness": 0.0,
+        "rmin": 2280.0,
+        "rmax": 3820.0,
+        "z_size": 710.0,
+        "center": [
+          0.0,
+          0.0,
+          3175.0
+        ]
+      },
+      "in_solenoid_field": false,
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "DM::Crack::EM::B",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Al",
+        "gap": "Vacuum"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 590.0,
+        "gap_thickness": 0.0,
+        "rmin": 1440.0,
+        "rmax": 2030.0,
+        "z_size": 515.0,
+        "center": [
+          0.0,
+          0.0,
+          -3422.5
+        ]
+      },
+      "in_solenoid_field": false,
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "DM::Crack::TILE::B",
+      "plates": "Horizontal",
+      "materials": {
+        "absorber": "G4_Al",
+        "gap": "Vacuum"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 1540.0,
+        "gap_thickness": 0.0,
+        "rmin": 2280.0,
+        "rmax": 3820.0,
+        "z_size": 710.0,
+        "center": [
+          0.0,
+          0.0,
+          -3175.0
+        ]
+      },
+      "in_solenoid_field": false,
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    }
+  ]
+}
