@@ -14,6 +14,7 @@ from GaugiKernel import Logger
 __all__ = [
     "Plates",
     "ProductionCuts",
+    "ReadoutSegment",
     "CaloSamplingLayer",
     "DeadMaterialVolume",
     "AtlasEmbBuilder",
@@ -47,6 +48,98 @@ class ProductionCuts:
         self.PositronCut = float(PositronCut)
         self.GammaCut = float(GammaCut)
         self.PhotonCut = float(PhotonCut)
+
+
+class ReadoutSegment:
+    """Represents a readout ring or angular segment within a calorimeter sampling."""
+
+    def __init__(
+        self,
+        segment: int,
+        collection_key: str,
+        delta_eta: float,
+        delta_phi: float,
+        eta_min: Optional[float] = None,
+        eta_max: Optional[float] = None,
+        noise_sigma: float = 0.0,
+        shaper_file: str = "",
+        phi_shift: float = 0.0,
+    ) -> None:
+        """Initializes a ReadoutSegment with explicit arguments."""
+        self.Segment = int(segment)
+        self.CollectionKey = str(collection_key)
+        self.DeltaEta = float(delta_eta)
+        self.DeltaPhi = float(delta_phi)
+        self.EtaMin = float(eta_min) if eta_min is not None else None
+        self.EtaMax = float(eta_max) if eta_max is not None else None
+        self.Noise = float(noise_sigma)
+        self.PulseFile = str(shaper_file)
+        self.PhiShift = float(phi_shift)
+
+    @property
+    def segment(self) -> int:
+        return self.Segment
+
+    @property
+    def collection_key(self) -> str:
+        return self.CollectionKey
+
+    @property
+    def delta_eta(self) -> float:
+        return self.DeltaEta
+
+    @property
+    def delta_phi(self) -> float:
+        return self.DeltaPhi
+
+    @property
+    def eta_min(self) -> Optional[float]:
+        return self.EtaMin
+
+    @property
+    def eta_max(self) -> Optional[float]:
+        return self.EtaMax
+
+    @property
+    def noise(self) -> float:
+        return self.Noise
+
+    @property
+    def shaper(self) -> str:
+        return self.PulseFile
+
+    @property
+    def phi_shift(self) -> float:
+        return self.PhiShift
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serializes the readout segment into a dictionary."""
+        return {
+            "segment": self.Segment,
+            "collection_key": self.CollectionKey,
+            "delta_eta": self.DeltaEta,
+            "delta_phi": self.DeltaPhi,
+            "eta_min": self.EtaMin,
+            "eta_max": self.EtaMax,
+            "noise": self.Noise,
+            "shaper": self.PulseFile,
+            "phi_shift": self.PhiShift,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ReadoutSegment":
+        """Reconstructs a ReadoutSegment from a dictionary."""
+        return cls(
+            segment=data["segment"],
+            collection_key=data["collection_key"],
+            delta_eta=data["delta_eta"],
+            delta_phi=data["delta_phi"],
+            eta_min=data.get("eta_min"),
+            eta_max=data.get("eta_max"),
+            noise_sigma=data.get("noise", 0.0),
+            shaper_file=data.get("shaper", ""),
+            phi_shift=data.get("phi_shift", 0.0),
+        )
 
 
 class CaloSamplingLayer(Logger):
@@ -88,11 +181,11 @@ class CaloSamplingLayer(Logger):
         positron_cut: float = 1.0,
         gamma_cut: float = 1.0,
         proton_cut: float = 1.0,
+        segments: Optional[List[ReadoutSegment]] = None,
     ) -> None:
         """Initializes an active calorimeter sampling layer with explicit arguments."""
         super().__init__()
         self.Name = str(name)
-        self.CollectionKey = str(collection_key)
         self.Sampling = sampling
         self.Detector = detector
         self.RMin = float(rmin)
@@ -107,20 +200,44 @@ class CaloSamplingLayer(Logger):
         self.X, self.Y, self.Z = float(center[0]), float(center[1]), float(center[2])
         self.Color = str(color)
 
-        self.DeltaEta = float(delta_eta)
-        self.DeltaPhi = float(delta_phi)
-        self.PhiShift = float(phi_shift)
-        self.Segment = int(segment)
-        self.Noise = float(noise_sigma)
-        self.PulseFile = str(shaper_file)
         self.NSamples = int(n_samples)
         self.BunchIdStart = int(bunch_id_start)
         self.BunchIdEnd = int(bunch_id_end)
         self.StartSamplingBc = int(start_sampling_bc)
         self.OfWeightsEnergy = list(of_weights_energy) if of_weights_energy is not None else []
         self.OfWeightsTime = list(of_weights_time) if of_weights_time is not None else []
-
         self.Cuts = ProductionCuts(electron_cut, positron_cut, gamma_cut, proton_cut)
+
+        # Readout Segments handling
+        if segments:
+            self.segments: List[ReadoutSegment] = list(segments)
+            primary = self.segments[0]
+            self.Segment = primary.Segment
+            self.CollectionKey = primary.CollectionKey
+            self.DeltaEta = primary.DeltaEta
+            self.DeltaPhi = primary.DeltaPhi
+            self.Noise = primary.Noise
+            self.PulseFile = primary.PulseFile
+            self.PhiShift = primary.PhiShift
+        else:
+            self.Segment = int(segment)
+            self.CollectionKey = str(collection_key)
+            self.DeltaEta = float(delta_eta)
+            self.DeltaPhi = float(delta_phi)
+            self.Noise = float(noise_sigma)
+            self.PulseFile = str(shaper_file)
+            self.PhiShift = float(phi_shift)
+            self.segments = [
+                ReadoutSegment(
+                    segment=self.Segment,
+                    collection_key=self.CollectionKey,
+                    delta_eta=self.DeltaEta,
+                    delta_phi=self.DeltaPhi,
+                    noise_sigma=self.Noise,
+                    shaper_file=self.PulseFile,
+                    phi_shift=self.PhiShift,
+                )
+            ]
 
     @property
     def name(self) -> str:
@@ -174,6 +291,11 @@ class CaloSamplingLayer(Logger):
     def plates(self) -> Plates:
         return self.Plates
 
+    @property
+    def readout_segments(self) -> List[ReadoutSegment]:
+        """Returns all readout segments associated with this physical volume."""
+        return self.segments
+
     def volume(self) -> "CaloSamplingLayer":
         return self
 
@@ -221,6 +343,7 @@ class CaloSamplingLayer(Logger):
                 "of_weights_energy": self.OfWeightsEnergy,
                 "of_weights_time": self.OfWeightsTime,
             },
+            "readouts": [s.to_dict() for s in self.segments],
             "cuts": {
                 "electron": self.Cuts.ElectronCut,
                 "positron": self.Cuts.PositronCut,
@@ -245,6 +368,9 @@ class CaloSamplingLayer(Logger):
             plates = Plates.Horizontal
 
         center = geom.get("center", [0.0, 0.0, 0.0])
+        segments = None
+        if "readouts" in data and isinstance(data["readouts"], list):
+            segments = [ReadoutSegment.from_dict(s) for s in data["readouts"]]
 
         return cls(
             name=data["name"],
@@ -277,6 +403,7 @@ class CaloSamplingLayer(Logger):
             positron_cut=cuts.get("positron", 1.0),
             gamma_cut=cuts.get("gamma", 1.0),
             proton_cut=cuts.get("proton", 1.0),
+            segments=segments,
         )
 
 
@@ -570,10 +697,13 @@ class AtlasEmecBuilder:
         self._lead_th = 1.7
         self._lar_gap = 2.0
         self._n_layers = 12
+        self._absorber_mat = "G4_Pb"
+        self._gap_mat = "liquidArgon"
         self._delta_eta = 0.025
         self._delta_phi = 0.025
         self._noise = 45.0
         self._pulse_file = "pulseLar.dat"
+        self._segments: List[ReadoutSegment] = []
 
     def radii(self, rmin: float, rmax: float) -> "AtlasEmecBuilder":
         self._rmin = float(rmin)
@@ -591,6 +721,11 @@ class AtlasEmecBuilder:
         self._lar_gap = float(lar_gap)
         return self
 
+    def materials(self, absorber: str = "G4_Pb", gap: str = "liquidArgon") -> "AtlasEmecBuilder":
+        """Sets the absorber and gap material names for EMEC/PSE."""
+        self._absorber_mat, self._gap_mat = str(absorber), str(gap)
+        return self
+
     def granularity(self, d_eta: float, d_phi: float) -> "AtlasEmecBuilder":
         self._delta_eta = float(d_eta)
         self._delta_phi = float(d_phi)
@@ -601,9 +736,45 @@ class AtlasEmecBuilder:
         self._pulse_file = str(pulse_file)
         return self
 
+    def add_segment(
+        self,
+        segment: int,
+        delta_eta: float,
+        delta_phi: float,
+        eta_min: Optional[float] = None,
+        eta_max: Optional[float] = None,
+        noise_mev: Optional[float] = None,
+        pulse_file: Optional[str] = None,
+        phi_shift: float = 0.0,
+    ) -> "AtlasEmecBuilder":
+        """Adds a readout eta-segment to this sampling layer."""
+        samp_name = self._name.split("::")[-2] if "::" in self._name else self._name
+        side_tag = self._name.split("::")[-1] if "::" in self._name else ""
+        if side_tag in ("A", "B"):
+            key = f"Collection_{samp_name}_{segment}{side_tag}"
+        else:
+            key = f"Collection_{self._name.replace('::', '_')}_{segment}"
+        seg_noise = float(noise_mev) if noise_mev is not None else self._noise
+        seg_pulse = str(pulse_file) if pulse_file is not None else self._pulse_file
+        self._segments.append(
+            ReadoutSegment(
+                segment=int(segment),
+                collection_key=key,
+                delta_eta=float(delta_eta),
+                delta_phi=float(delta_phi),
+                eta_min=float(eta_min) if eta_min is not None else None,
+                eta_max=float(eta_max) if eta_max is not None else None,
+                noise_sigma=seg_noise,
+                shaper_file=seg_pulse,
+                phi_shift=float(phi_shift),
+            )
+        )
+        return self
+
     def build(self) -> CaloSamplingLayer:
         z_size = abs(self._zmax - self._zmin)
         z_center = (self._zmax + self._zmin) / 2.0
+        segments = self._segments if self._segments else None
 
         return CaloSamplingLayer(
             name=self._name,
@@ -616,14 +787,15 @@ class AtlasEmecBuilder:
             nof_layers=self._n_layers,
             absorber_thickness=self._lead_th,
             gap_thickness=self._lar_gap,
-            absorber_material="G4_Pb",
-            gap_material="liquidArgon",
+            absorber_material=self._absorber_mat,
+            gap_material=self._gap_mat,
             plates=Plates.Vertical,
             center=(0.0, 0.0, z_center),
             delta_eta=self._delta_eta,
             delta_phi=self._delta_phi,
             noise_sigma=self._noise,
             shaper_file=self._pulse_file,
+            segments=segments,
         )
 
 
@@ -644,6 +816,7 @@ class AtlasHecBuilder:
         self._delta_phi = 0.1
         self._noise = 50.0
         self._pulse_file = "pulseLar.dat"
+        self._segments: List[ReadoutSegment] = []
 
     def radii(self, rmin: float, rmax: float) -> "AtlasHecBuilder":
         self._rmin = float(rmin)
@@ -671,9 +844,45 @@ class AtlasHecBuilder:
         self._pulse_file = str(pulse_file)
         return self
 
+    def add_segment(
+        self,
+        segment: int,
+        delta_eta: float,
+        delta_phi: float,
+        eta_min: Optional[float] = None,
+        eta_max: Optional[float] = None,
+        noise_mev: Optional[float] = None,
+        pulse_file: Optional[str] = None,
+        phi_shift: float = 0.0,
+    ) -> "AtlasHecBuilder":
+        """Adds a readout eta-segment to this sampling layer."""
+        samp_name = self._name.split("::")[-2] if "::" in self._name else self._name
+        side_tag = self._name.split("::")[-1] if "::" in self._name else ""
+        if side_tag in ("A", "B"):
+            key = f"Collection_{samp_name}_{segment}{side_tag}"
+        else:
+            key = f"Collection_{self._name.replace('::', '_')}_{segment}"
+        seg_noise = float(noise_mev) if noise_mev is not None else self._noise
+        seg_pulse = str(pulse_file) if pulse_file is not None else self._pulse_file
+        self._segments.append(
+            ReadoutSegment(
+                segment=int(segment),
+                collection_key=key,
+                delta_eta=float(delta_eta),
+                delta_phi=float(delta_phi),
+                eta_min=float(eta_min) if eta_min is not None else None,
+                eta_max=float(eta_max) if eta_max is not None else None,
+                noise_sigma=seg_noise,
+                shaper_file=seg_pulse,
+                phi_shift=float(phi_shift),
+            )
+        )
+        return self
+
     def build(self) -> CaloSamplingLayer:
         z_size = abs(self._zmax - self._zmin)
         z_center = (self._zmax + self._zmin) / 2.0
+        segments = self._segments if self._segments else None
 
         return CaloSamplingLayer(
             name=self._name,
@@ -694,6 +903,7 @@ class AtlasHecBuilder:
             delta_phi=self._delta_phi,
             noise_sigma=self._noise,
             shaper_file=self._pulse_file,
+            segments=segments,
         )
 
 

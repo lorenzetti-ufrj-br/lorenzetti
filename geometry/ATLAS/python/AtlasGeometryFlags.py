@@ -110,19 +110,23 @@ class AtlasGeometryFlags(JobFlags):
     AtlasFcalElectrodes: str = ""
 
     @classmethod
-    def apply_defaults(cls, enable_atlas: bool = True) -> None:
+    def apply_defaults(cls, enable_atlas: bool = True, is_v2: Optional[bool] = None) -> None:
         """
-        Applies defaults: if enable_atlas is True, all unconfigured (None) boolean flags
+        Applies defaults: if enable_atlas (or is_v2) is True, all unconfigured (None) boolean flags
         are enabled (except AtlasRun4, which requires the SQLite geometry dump).
         Resolves external data paths.
         """
+        if is_v2 is not None:
+            enable_atlas = is_v2
         for f in fields(cls):
             if f.type is Optional[bool]:
                 current = getattr(cls, f.name)
                 if current is None:
                     setattr(cls, f.name, enable_atlas)
 
-        if enable_atlas:
+        if is_v2 is not None and enable_atlas:
+            cls.AtlasRun4 = True
+        elif enable_atlas:
             data_dir = cls.get_data_dir()
             if not cls.AtlasRun4Geometry:
                 cls.AtlasRun4Geometry = os.environ.get("LORENZETTI_ATLAS_RUN4_GEOMETRY", "")

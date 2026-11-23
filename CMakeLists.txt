@@ -111,6 +111,7 @@ endif()
 add_subdirectory( kernel/GaugiKernel )
 add_subdirectory( kernel/G4Kernel )
 add_subdirectory( kernel/GenKernel )
+add_subdirectory( kernel/GeoKernel )
 
 
 
@@ -127,7 +128,8 @@ add_subdirectory( events/Egamma)
 add_subdirectory( magfield/MagFieldElements )
 add_subdirectory( magfield/MagField )
 # detector definitions
-add_subdirectory( geometry )
+add_subdirectory( geometry/GALTIC )
+add_subdirectory( geometry/ATLAS )
 
 
 

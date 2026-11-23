@@ -13,19 +13,24 @@ import tempfile
 import urllib.parse
 import webbrowser
 
-from visualizer.VectorPdfExporter import VectorPdfExporter
+try:
+    from visualizer.VectorPdfExporter import VectorPdfExporter
+except ImportError:
+    from GeoKernel.visualizer.VectorPdfExporter import VectorPdfExporter
 
 __all__ = ["launch_visualizer", "VisualizerHttpHandler"]
 
 _DEFAULT_WEB_DIR = next(
     (
         d for d in [
+            os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../web")),
             os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../web")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "../../web")),
             os.path.abspath(os.path.join(os.path.dirname(__file__), "../web")),
         ]
         if os.path.isdir(d)
     ),
-    os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../web")),
+    os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../web")),
 )
 
 

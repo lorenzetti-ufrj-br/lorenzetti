@@ -120,10 +120,10 @@ geometry/ATLAS/
 
 ### Using the Unified Factory (`DetectorConstructionCfg`)
 
-The factory in `geometry/` provides explicit selection between `v1` and `v2`:
+The factory in `GeoKernel` provides explicit selection between `v1` and `v2`:
 
 ```python
-from geometry import DetectorConstructionCfg
+from GeoKernel import DetectorConstructionCfg
 
 # 1. Instantiate modern JSON-driven ATLAS v2 (Recommended):
 det_v2 = DetectorConstructionCfg("ATLAS", detector="ATLAS", atlas_version="v2")

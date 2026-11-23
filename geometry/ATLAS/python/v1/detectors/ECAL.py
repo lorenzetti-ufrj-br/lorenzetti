@@ -8,7 +8,7 @@ import numpy as np
 from CaloCell.CaloDefs import Detector, CaloSampling
 from GaugiKernel.constants import m,cm,mm,MeV,pi
 
-from GeoBase import Calorimeter, PhysicalVolume, Plates, ProductionCuts, SensitiveDetector, atlasLArPhiShift, get_data_dir
+from ATLAS.v1.legacy import Calorimeter, PhysicalVolume, Plates, ProductionCuts, SensitiveDetector, atlasLArPhiShift, get_data_dir
 
 
 def getLArBarrelCfg(atlas_emb=False, atlas_emb_cells=False):

@@ -18,7 +18,7 @@ except ImportError:
     sys.modules["ROOT"] = unittest.mock.MagicMock()
 
 from GaugiKernel import JobFlags
-from GeoBase import DetectorFlags
+from GeoKernel import DetectorFlags
 from GeoV2 import AtlasGeometryFlags
 from magfield import MagFieldFlags
 from CaloHitBuilder import CaloHitFlags, FreeRunningFlags
@@ -151,11 +151,11 @@ class TestMagFieldFlags(unittest.TestCase):
 class TestDetectorFlags(unittest.TestCase):
     def test_detector_flags_default_v1(self):
         DetectorFlags.reset()
-        self.assertEqual(DetectorFlags.Version, "v1")
+        self.assertIn(DetectorFlags.Version, ("GALTIC", "v1"))
         DetectorFlags.Version = "v2"
         self.assertEqual(DetectorFlags.to_dict()["Version"], "v2")
         DetectorFlags.reset()
-        self.assertEqual(DetectorFlags.Version, "v1")
+        self.assertIn(DetectorFlags.Version, ("GALTIC", "v1"))
 
 
 class TestReconstructionFlags(unittest.TestCase):

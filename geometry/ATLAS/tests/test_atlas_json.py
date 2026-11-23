@@ -106,6 +106,39 @@ class TestAtlasV2Geometry(unittest.TestCase):
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
 
+    def test_readout_segments(self):
+        """Validates that EMEC and HEC layers have multi-segment readout and PSE is present."""
+        samplings = getAtlasAllSamplings()
+        names = {s.Name: s for s in samplings}
+
+        # Check PSE presence
+        self.assertIn("LAr::PSE::A", names)
+        self.assertIn("LAr::PSE::B", names)
+        pse_a = names["LAr::PSE::A"]
+        self.assertEqual(pse_a.sampling, int(CaloSampling.PSE))
+        self.assertEqual(len(pse_a.readout_segments), 1)
+
+        # Check EMEC1 (4 segments)
+        self.assertIn("LAr::EMEC1::A", names)
+        emec1 = names["LAr::EMEC1::A"]
+        self.assertEqual(len(emec1.readout_segments), 4)
+        self.assertAlmostEqual(emec1.readout_segments[0].delta_eta, 0.00325)
+        self.assertAlmostEqual(emec1.readout_segments[1].delta_eta, 0.025)
+        self.assertAlmostEqual(emec1.readout_segments[2].delta_eta, 0.006)
+        self.assertAlmostEqual(emec1.readout_segments[3].delta_eta, 0.100)
+
+        # Check EMEC2 (2 segments)
+        emec2 = names["LAr::EMEC2::A"]
+        self.assertEqual(len(emec2.readout_segments), 2)
+        self.assertAlmostEqual(emec2.readout_segments[0].delta_eta, 0.025)
+        self.assertAlmostEqual(emec2.readout_segments[1].delta_eta, 0.100)
+
+        # Check HEC0 (2 segments)
+        hec0 = names["LAr::HEC0::A"]
+        self.assertEqual(len(hec0.readout_segments), 2)
+        self.assertAlmostEqual(hec0.readout_segments[0].delta_eta, 0.1)
+        self.assertAlmostEqual(hec0.readout_segments[1].delta_eta, 0.2)
+
     def test_detector_construction_compile_and_construct(self):
         """Verifies AtlasDetectorConstruction compile() and C++ Geant4 Construct."""
         det = AtlasDetectorConstruction("TestAtlasConstruct")

@@ -42,6 +42,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_PSB",
+          "delta_eta": 0.025,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 90.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -58,10 +71,10 @@
       },
       "geometry": {
         "nof_layers": 16,
-        "absorber_thickness": 1.53,
-        "gap_thickness": 4.5,
+        "absorber_thickness": 1.51,
+        "gap_thickness": 4.49,
         "rmin": 1500.0,
-        "rmax": 1580.0,
+        "rmax": 1596.0,
         "z_size": 6330.0,
         "center": [
           0.0,
@@ -86,6 +99,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_EMB1",
+          "delta_eta": 0.003125,
+          "delta_phi": 0.02454,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 40.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -101,11 +127,11 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 16,
-        "absorber_thickness": 1.53,
-        "gap_thickness": 4.5,
-        "rmin": 1590.0,
-        "rmax": 1860.0,
+        "nof_layers": 55,
+        "absorber_thickness": 1.7,
+        "gap_thickness": 4.3,
+        "rmin": 1596.0,
+        "rmax": 1926.0,
         "z_size": 6330.0,
         "center": [
           0.0,
@@ -130,6 +156,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_EMB2",
+          "delta_eta": 0.025,
+          "delta_phi": 0.02454,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 30.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -145,11 +184,11 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 16,
-        "absorber_thickness": 1.13,
-        "gap_thickness": 4.5,
-        "rmin": 1870.0,
-        "rmax": 1960.0,
+        "nof_layers": 9,
+        "absorber_thickness": 1.7,
+        "gap_thickness": 4.3,
+        "rmin": 1926.0,
+        "rmax": 1980.0,
         "z_size": 6330.0,
         "center": [
           0.0,
@@ -174,6 +213,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_EMB3",
+          "delta_eta": 0.05,
+          "delta_phi": 0.02454,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 25.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -218,6 +270,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Bar0",
+          "delta_eta": 0.1,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 30.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -262,6 +327,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Bar1",
+          "delta_eta": 0.1,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 30.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -306,6 +384,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Bar2",
+          "delta_eta": 0.2,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 35.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -350,6 +441,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Ext0_A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 30.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -394,6 +498,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Ext1_A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 30.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -438,6 +555,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Ext2_A",
+          "delta_eta": 0.2,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 35.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -482,6 +612,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Ext0_B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 30.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -526,6 +669,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Ext1_B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 30.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -570,6 +726,76 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_Tile_Ext2_B",
+          "delta_eta": 0.2,
+          "delta_phi": 0.1,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 35.0,
+          "shaper": "pulseTile.dat",
+          "phi_shift": 0.0
+        }
+      ],
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::PSE::A",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "Vacuum",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 0.01,
+        "gap_thickness": 4.99,
+        "rmin": 1232.0,
+        "rmax": 1700.0,
+        "z_size": 5.0,
+        "center": [
+          0.0,
+          0.0,
+          3737.5
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "1",
+        "collection_key": "Collection_LAr_PSE_A",
+        "delta_eta": 0.025,
+        "delta_phi": 0.09817477042468103,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 26.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_PSE_A",
+          "delta_eta": 0.025,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -585,27 +811,27 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 12,
-        "absorber_thickness": 1.7,
-        "gap_thickness": 2.0,
-        "rmin": 330.0,
-        "rmax": 2034.0,
-        "z_size": 640.0,
+        "nof_layers": 16,
+        "absorber_thickness": 2.27,
+        "gap_thickness": 3.73,
+        "rmin": 302.0,
+        "rmax": 2042.0,
+        "z_size": 96.0,
         "center": [
           0.0,
           0.0,
-          4000.0
+          3788.0
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "11",
-        "collection_key": "Collection_LAr_EMEC1_A",
-        "delta_eta": 0.025,
-        "delta_phi": 0.025,
+        "collection_key": "Collection_EMEC1_0A",
+        "delta_eta": 0.00325,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 45.0,
+        "noise": 26.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -614,6 +840,52 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_EMEC1_0A",
+          "delta_eta": 0.00325,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 1.8,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_EMEC1_1A",
+          "delta_eta": 0.025,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 1.8,
+          "eta_max": 2.0,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 2,
+          "collection_key": "Collection_EMEC1_2A",
+          "delta_eta": 0.006,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 2.0,
+          "eta_max": 2.37,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 3,
+          "collection_key": "Collection_EMEC1_3A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 2.37,
+          "eta_max": 3.2,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -629,27 +901,27 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 12,
-        "absorber_thickness": 1.7,
-        "gap_thickness": 2.0,
-        "rmin": 330.0,
-        "rmax": 2034.0,
-        "z_size": 640.0,
+        "nof_layers": 55,
+        "absorber_thickness": 2.27,
+        "gap_thickness": 3.73,
+        "rmin": 302.0,
+        "rmax": 2042.0,
+        "z_size": 330.0,
         "center": [
           0.0,
           0.0,
-          4000.0
+          4001.0
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "12",
-        "collection_key": "Collection_LAr_EMEC2_A",
+        "collection_key": "Collection_EMEC2_0A",
         "delta_eta": 0.025,
-        "delta_phi": 0.025,
+        "delta_phi": 0.02454369260617026,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 35.0,
+        "noise": 60.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -658,6 +930,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_EMEC2_0A",
+          "delta_eta": 0.025,
+          "delta_phi": 0.02454369260617026,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 60.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_EMEC2_1A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 2.5,
+          "eta_max": 3.2,
+          "noise": 60.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -673,27 +969,27 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 12,
-        "absorber_thickness": 1.7,
-        "gap_thickness": 2.0,
-        "rmin": 330.0,
-        "rmax": 2034.0,
-        "z_size": 640.0,
+        "nof_layers": 9,
+        "absorber_thickness": 2.41,
+        "gap_thickness": 3.59,
+        "rmin": 302.0,
+        "rmax": 2042.0,
+        "z_size": 54.0,
         "center": [
           0.0,
           0.0,
-          4000.0
+          4193.0
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "13",
-        "collection_key": "Collection_LAr_EMEC3_A",
+        "collection_key": "Collection_EMEC3_0A",
         "delta_eta": 0.05,
-        "delta_phi": 0.025,
+        "delta_phi": 0.02454369260617026,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 30.0,
+        "noise": 40.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -702,6 +998,87 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_EMEC3_0A",
+          "delta_eta": 0.05,
+          "delta_phi": 0.02454369260617026,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 40.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_EMEC3_1A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 2.5,
+          "eta_max": 3.2,
+          "noise": 40.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
+      "cuts": {
+        "electron": 1.0,
+        "positron": 1.0,
+        "gamma": 1.0,
+        "proton": 1.0
+      }
+    },
+    {
+      "name": "LAr::PSE::B",
+      "plates": "Vertical",
+      "materials": {
+        "absorber": "Vacuum",
+        "gap": "liquidArgon"
+      },
+      "geometry": {
+        "nof_layers": 1,
+        "absorber_thickness": 0.01,
+        "gap_thickness": 4.99,
+        "rmin": 1232.0,
+        "rmax": 1700.0,
+        "z_size": 5.0,
+        "center": [
+          0.0,
+          0.0,
+          -3737.5
+        ]
+      },
+      "readout": {
+        "detector": "0",
+        "sampling": "1",
+        "collection_key": "Collection_LAr_PSE_B",
+        "delta_eta": 0.025,
+        "delta_phi": 0.09817477042468103,
+        "phi_shift": 0.0,
+        "segment": 0,
+        "noise": 26.0,
+        "shaper": "pulseLar.dat",
+        "n_samples": 5,
+        "bunch_id_start": -21,
+        "bunch_id_end": 3,
+        "start_sampling_bc": -2,
+        "of_weights_energy": [],
+        "of_weights_time": []
+      },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_PSE_B",
+          "delta_eta": 0.025,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -717,27 +1094,27 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 12,
-        "absorber_thickness": 1.7,
-        "gap_thickness": 2.0,
-        "rmin": 330.0,
-        "rmax": 2034.0,
-        "z_size": 640.0,
+        "nof_layers": 16,
+        "absorber_thickness": 2.27,
+        "gap_thickness": 3.73,
+        "rmin": 302.0,
+        "rmax": 2042.0,
+        "z_size": 96.0,
         "center": [
           0.0,
           0.0,
-          -4000.0
+          -3788.0
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "11",
-        "collection_key": "Collection_LAr_EMEC1_B",
-        "delta_eta": 0.025,
-        "delta_phi": 0.025,
+        "collection_key": "Collection_EMEC1_0B",
+        "delta_eta": 0.00325,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 45.0,
+        "noise": 26.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -746,6 +1123,52 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_EMEC1_0B",
+          "delta_eta": 0.00325,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 1.8,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_EMEC1_1B",
+          "delta_eta": 0.025,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 1.8,
+          "eta_max": 2.0,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 2,
+          "collection_key": "Collection_EMEC1_2B",
+          "delta_eta": 0.006,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 2.0,
+          "eta_max": 2.37,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 3,
+          "collection_key": "Collection_EMEC1_3B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 2.37,
+          "eta_max": 3.2,
+          "noise": 26.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -761,27 +1184,27 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 12,
-        "absorber_thickness": 1.7,
-        "gap_thickness": 2.0,
-        "rmin": 330.0,
-        "rmax": 2034.0,
-        "z_size": 640.0,
+        "nof_layers": 55,
+        "absorber_thickness": 2.27,
+        "gap_thickness": 3.73,
+        "rmin": 302.0,
+        "rmax": 2042.0,
+        "z_size": 330.0,
         "center": [
           0.0,
           0.0,
-          -4000.0
+          -4001.0
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "12",
-        "collection_key": "Collection_LAr_EMEC2_B",
+        "collection_key": "Collection_EMEC2_0B",
         "delta_eta": 0.025,
-        "delta_phi": 0.025,
+        "delta_phi": 0.02454369260617026,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 35.0,
+        "noise": 60.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -790,6 +1213,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_EMEC2_0B",
+          "delta_eta": 0.025,
+          "delta_phi": 0.02454369260617026,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 60.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_EMEC2_1B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 2.5,
+          "eta_max": 3.2,
+          "noise": 60.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -805,27 +1252,27 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 12,
-        "absorber_thickness": 1.7,
-        "gap_thickness": 2.0,
-        "rmin": 330.0,
-        "rmax": 2034.0,
-        "z_size": 640.0,
+        "nof_layers": 9,
+        "absorber_thickness": 2.41,
+        "gap_thickness": 3.59,
+        "rmin": 302.0,
+        "rmax": 2042.0,
+        "z_size": 54.0,
         "center": [
           0.0,
           0.0,
-          -4000.0
+          -4193.0
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "13",
-        "collection_key": "Collection_LAr_EMEC3_B",
+        "collection_key": "Collection_EMEC3_0B",
         "delta_eta": 0.05,
-        "delta_phi": 0.025,
+        "delta_phi": 0.02454369260617026,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 30.0,
+        "noise": 40.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -834,6 +1281,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_EMEC3_0B",
+          "delta_eta": 0.05,
+          "delta_phi": 0.02454369260617026,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 40.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_EMEC3_1B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": 2.5,
+          "eta_max": 3.2,
+          "noise": 40.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -854,22 +1325,22 @@
         "gap_thickness": 8.5,
         "rmin": 372.0,
         "rmax": 2030.0,
-        "z_size": 520.0,
+        "z_size": 280.5,
         "center": [
           0.0,
           0.0,
-          4537.0
+          4417.25
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "60",
-        "collection_key": "Collection_LAr_HEC0_A",
+        "collection_key": "Collection_HEC0_0A",
         "delta_eta": 0.1,
-        "delta_phi": 0.1,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 50.0,
+        "noise": 250.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -878,6 +1349,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_HEC0_0A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_HEC0_1A",
+          "delta_eta": 0.2,
+          "delta_phi": 0.19634954084936207,
+          "eta_min": 2.5,
+          "eta_max": 3.3,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -893,27 +1388,27 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 8,
+        "nof_layers": 16,
         "absorber_thickness": 25.0,
         "gap_thickness": 8.5,
-        "rmin": 372.0,
+        "rmin": 475.0,
         "rmax": 2030.0,
-        "z_size": 520.0,
+        "z_size": 536.0,
         "center": [
           0.0,
           0.0,
-          4537.0
+          4825.5
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "14",
-        "collection_key": "Collection_LAr_HEC1_A",
+        "collection_key": "Collection_HEC1_0A",
         "delta_eta": 0.1,
-        "delta_phi": 0.1,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 45.0,
+        "noise": 250.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -922,6 +1417,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_HEC1_0A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_HEC1_1A",
+          "delta_eta": 0.2,
+          "delta_phi": 0.19634954084936207,
+          "eta_min": 2.5,
+          "eta_max": 3.3,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -940,24 +1459,24 @@
         "nof_layers": 8,
         "absorber_thickness": 50.0,
         "gap_thickness": 8.5,
-        "rmin": 372.0,
+        "rmin": 475.0,
         "rmax": 2030.0,
-        "z_size": 1298.0,
+        "z_size": 493.0,
         "center": [
           0.0,
           0.0,
-          5446.0
+          5380.5
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "15",
-        "collection_key": "Collection_LAr_HEC2_A",
+        "collection_key": "Collection_HEC2_0A",
         "delta_eta": 0.1,
-        "delta_phi": 0.1,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 55.0,
+        "noise": 250.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -966,6 +1485,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_HEC2_0A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_HEC2_1A",
+          "delta_eta": 0.2,
+          "delta_phi": 0.19634954084936207,
+          "eta_min": 2.5,
+          "eta_max": 3.3,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -984,24 +1527,24 @@
         "nof_layers": 8,
         "absorber_thickness": 50.0,
         "gap_thickness": 8.5,
-        "rmin": 372.0,
+        "rmin": 475.0,
         "rmax": 2030.0,
-        "z_size": 1298.0,
+        "z_size": 468.0,
         "center": [
           0.0,
           0.0,
-          5446.0
+          5861.0
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "16",
-        "collection_key": "Collection_LAr_HEC3_A",
-        "delta_eta": 0.2,
-        "delta_phi": 0.1,
+        "collection_key": "Collection_HEC3_0A",
+        "delta_eta": 0.1,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 60.0,
+        "noise": 250.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -1010,6 +1553,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_HEC3_0A",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_HEC3_1A",
+          "delta_eta": 0.2,
+          "delta_phi": 0.19634954084936207,
+          "eta_min": 2.5,
+          "eta_max": 3.3,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1030,22 +1597,22 @@
         "gap_thickness": 8.5,
         "rmin": 372.0,
         "rmax": 2030.0,
-        "z_size": 520.0,
+        "z_size": 280.5,
         "center": [
           0.0,
           0.0,
-          -4537.0
+          -4417.25
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "60",
-        "collection_key": "Collection_LAr_HEC0_B",
+        "collection_key": "Collection_HEC0_0B",
         "delta_eta": 0.1,
-        "delta_phi": 0.1,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 50.0,
+        "noise": 250.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -1054,6 +1621,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_HEC0_0B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_HEC0_1B",
+          "delta_eta": 0.2,
+          "delta_phi": 0.19634954084936207,
+          "eta_min": 2.5,
+          "eta_max": 3.3,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1069,27 +1660,27 @@
         "gap": "liquidArgon"
       },
       "geometry": {
-        "nof_layers": 8,
+        "nof_layers": 16,
         "absorber_thickness": 25.0,
         "gap_thickness": 8.5,
-        "rmin": 372.0,
+        "rmin": 475.0,
         "rmax": 2030.0,
-        "z_size": 520.0,
+        "z_size": 536.0,
         "center": [
           0.0,
           0.0,
-          -4537.0
+          -4825.5
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "14",
-        "collection_key": "Collection_LAr_HEC1_B",
+        "collection_key": "Collection_HEC1_0B",
         "delta_eta": 0.1,
-        "delta_phi": 0.1,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 45.0,
+        "noise": 250.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -1098,6 +1689,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_HEC1_0B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_HEC1_1B",
+          "delta_eta": 0.2,
+          "delta_phi": 0.19634954084936207,
+          "eta_min": 2.5,
+          "eta_max": 3.3,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1116,24 +1731,24 @@
         "nof_layers": 8,
         "absorber_thickness": 50.0,
         "gap_thickness": 8.5,
-        "rmin": 372.0,
+        "rmin": 475.0,
         "rmax": 2030.0,
-        "z_size": 1298.0,
+        "z_size": 493.0,
         "center": [
           0.0,
           0.0,
-          -5446.0
+          -5380.5
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "15",
-        "collection_key": "Collection_LAr_HEC2_B",
+        "collection_key": "Collection_HEC2_0B",
         "delta_eta": 0.1,
-        "delta_phi": 0.1,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 55.0,
+        "noise": 250.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -1142,6 +1757,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_HEC2_0B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_HEC2_1B",
+          "delta_eta": 0.2,
+          "delta_phi": 0.19634954084936207,
+          "eta_min": 2.5,
+          "eta_max": 3.3,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1160,24 +1799,24 @@
         "nof_layers": 8,
         "absorber_thickness": 50.0,
         "gap_thickness": 8.5,
-        "rmin": 372.0,
+        "rmin": 475.0,
         "rmax": 2030.0,
-        "z_size": 1298.0,
+        "z_size": 468.0,
         "center": [
           0.0,
           0.0,
-          -5446.0
+          -5861.0
         ]
       },
       "readout": {
         "detector": "0",
         "sampling": "16",
-        "collection_key": "Collection_LAr_HEC3_B",
-        "delta_eta": 0.2,
-        "delta_phi": 0.1,
+        "collection_key": "Collection_HEC3_0B",
+        "delta_eta": 0.1,
+        "delta_phi": 0.09817477042468103,
         "phi_shift": 0.0,
         "segment": 0,
-        "noise": 60.0,
+        "noise": 250.0,
         "shaper": "pulseLar.dat",
         "n_samples": 5,
         "bunch_id_start": -21,
@@ -1186,6 +1825,30 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_HEC3_0B",
+          "delta_eta": 0.1,
+          "delta_phi": 0.09817477042468103,
+          "eta_min": null,
+          "eta_max": 2.5,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        },
+        {
+          "segment": 1,
+          "collection_key": "Collection_HEC3_1B",
+          "delta_eta": 0.2,
+          "delta_phi": 0.19634954084936207,
+          "eta_min": 2.5,
+          "eta_max": 3.3,
+          "noise": 250.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1230,6 +1893,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_FCAL1_A",
+          "delta_eta": 0.2,
+          "delta_phi": 0.2,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 80.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1274,6 +1950,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_FCAL2_A",
+          "delta_eta": 0.2,
+          "delta_phi": 0.2,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 90.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1318,6 +2007,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_FCAL3_A",
+          "delta_eta": 0.2,
+          "delta_phi": 0.2,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 100.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1362,6 +2064,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_FCAL1_B",
+          "delta_eta": 0.2,
+          "delta_phi": 0.2,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 80.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1406,6 +2121,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_FCAL2_B",
+          "delta_eta": 0.2,
+          "delta_phi": 0.2,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 90.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1450,6 +2178,19 @@
         "of_weights_energy": [],
         "of_weights_time": []
       },
+      "readouts": [
+        {
+          "segment": 0,
+          "collection_key": "Collection_LAr_FCAL3_B",
+          "delta_eta": 0.2,
+          "delta_phi": 0.2,
+          "eta_min": null,
+          "eta_max": null,
+          "noise": 100.0,
+          "shaper": "pulseLar.dat",
+          "phi_shift": 0.0
+        }
+      ],
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1477,7 +2218,7 @@
           0.0
         ]
       },
-      "in_solenoid_field": true,
+      "in_solenoid_field": false,
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,
@@ -1510,16 +2251,16 @@
         "nof_layers": 1,
         "absorber_thickness": 10.0,
         "gap_thickness": 0.0,
-        "rmin": 1250.0,
-        "rmax": 1260.0,
-        "z_size": 6800.0,
+        "rmin": 1150.0,
+        "rmax": 1160.0,
+        "z_size": 5800.0,
         "center": [
           0.0,
           0.0,
           0.0
         ]
       },
-      "in_solenoid_field": false,
+      "in_solenoid_field": true,
       "cuts": {
         "electron": 1.0,
         "positron": 1.0,

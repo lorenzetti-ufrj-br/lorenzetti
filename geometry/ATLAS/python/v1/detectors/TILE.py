@@ -5,7 +5,7 @@ __all__ = ["getTileBarrelCfg","getTileExtendedCfg","getAtlasTileCells","getAtlas
 from GaugiKernel.constants import m,cm,mm,MeV,pi
 from CaloCell.CaloDefs import Detector, CaloSampling
 
-from GeoBase import Calorimeter, PhysicalVolume, Plates, SensitiveDetector, ProductionCuts, get_data_dir
+from ATLAS.v1.legacy import Calorimeter, PhysicalVolume, Plates, SensitiveDetector, ProductionCuts, get_data_dir
 
 import os
 import math

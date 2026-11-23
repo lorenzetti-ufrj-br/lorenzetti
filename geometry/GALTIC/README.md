@@ -135,7 +135,7 @@ det.compile()  # Injects GeometryFile property; Geant4 constructs volumes in C++
 ### Instantiation via `DetectorConstructionCfg` (Recommended)
 
 ```python
-from geometry import DetectorConstructionCfg
+from GeoKernel import DetectorConstructionCfg
 
 # Factory automatically configures GALTIC:
 det = DetectorConstructionCfg("ATLAS", version="GALTIC")

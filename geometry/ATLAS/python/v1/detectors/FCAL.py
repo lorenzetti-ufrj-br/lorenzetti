@@ -28,7 +28,7 @@ import csv, math, os
 from CaloCell.CaloDefs import Detector, CaloSampling
 from GaugiKernel.constants import MeV
 from .AtlasFCal import ATLAS_FCAL_CELL_MODULES, ATLAS_FCAL_CELL_MATERIALS
-from GeoBase import ProductionCuts
+from ATLAS.v1.legacy import ProductionCuts
 
 # Birks constant of the liquid argon in the ATLAS FCal (LArG4FCALConfig.py)
 FCAL_BIRKS_K = 0.0486

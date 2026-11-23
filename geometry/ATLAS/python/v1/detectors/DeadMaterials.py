@@ -2,7 +2,7 @@
 __all__ = ["getCrackVolumesCfg", "getDMVolumesCfg", "getAtlasEndcapCryostatCfg", "getAtlasBarrelCryostatCfg", "getAtlasFcalCfg"]
 
 from GaugiKernel.constants import m,cm,mm
-from GeoBase import PhysicalVolume, Plates, ProductionCuts
+from ATLAS.v1.legacy import PhysicalVolume, Plates, ProductionCuts
 from .TILE import TILE_ATLAS_BARREL_HALF_Z, TILE_ATLAS_EXTENDED_Z_START
 from .ECAL import PSE_ATLAS_R, PSE_ATLAS_Z, PSB_ATLAS_Z
 from .AtlasBarrelFront import ATLAS_BARREL_FRONT_MIXTURES, ATLAS_BARREL_FRONT_VOLUMES

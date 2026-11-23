@@ -59,7 +59,7 @@ class ComponentAccumulator(Configurable):
     #### Example Usage
     ```python
     from G4Kernel import ComponentAccumulator, EventReader
-    from GeoBase import DetectorConstructionCfg
+    from GeoKernel import DetectorConstructionCfg
     from CaloHitBuilder import CaloHitBuilder
     from RootStreamBuilder import RootStreamHITMaker
 

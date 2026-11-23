@@ -192,9 +192,9 @@ G4VPhysicalVolume* DetectorConstruction_v2::DefineVolumes()
     auto* worldLV = new G4LogicalVolume(worldS, defaultMaterial, "World");
     auto* worldPV = new G4PVPlacement(0, G4ThreeVector(), worldLV, "World", 0, false, 0, m_checkOverlaps);
 
-    // Solenoid volume envelope if UseSolenoidField is active (R < 1.23 m, |z| < 2.9 m)
+    // Solenoid volume envelope if UseSolenoidField is active (R < 1.228 m, |z| < 2.9 m to represent the warm bore field)
     if (m_useSolenoidField) {
-        auto* solS = new G4Tubs("SolenoidEnvelope", 0, 1.23 * m, 2.9 * m, 0 * deg,
+        auto* solS = new G4Tubs("SolenoidEnvelope", 0, 1.228 * m, 2.9 * m, 0 * deg,
                                 (!m_cutOnPhi) ? (360 * deg) : (235 * deg));
         m_solenoidLV = new G4LogicalVolume(solS, defaultMaterial, "SolenoidEnvelope");
         new G4PVPlacement(0, G4ThreeVector(), m_solenoidLV, "SolenoidEnvelope", worldLV, false, 0, m_checkOverlaps);

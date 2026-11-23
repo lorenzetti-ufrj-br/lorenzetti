@@ -15,7 +15,7 @@ from GaugiKernel.constants import *
 from GaugiKernel import Cpp
 from GaugiKernel.macros import *
 
-from GeoBase import Plates, ProductionCuts
+from ATLAS.v1.legacy import Plates, ProductionCuts
 from CaloCell.CaloDefs import CaloSampling
 from ATLAS.v1.detectors.ECAL import getLArBarrelCfg, getAtlasEmbVolumesCfg, getAtlasPseCfg, getAtlasEmbEndCfg
 from ATLAS.v1.detectors.ECAL import getAtlasPsbVolumesCfg, ATLAS_PS_ELECTRODE_MIXTURE
@@ -300,7 +300,7 @@ class AtlasDetectorConstruction( Cpp ):
   # everything else 1 mm (HEC, presamplers, dead material, tile: GeneralCut).
   @staticmethod
   def atlasCut( name ):
-    from GeoBase import ProductionCuts
+    from ATLAS.v1.legacy import ProductionCuts
     if name.startswith(('LAr::EMB1', 'LAr::EMB2', 'LAr::EMB3', 'LAr::EMEC')):
       c = 0.1
     elif name.startswith(('LAr::FCAL', 'DM::FCal')):

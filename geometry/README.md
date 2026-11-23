@@ -54,10 +54,10 @@ geometry/
 
 ### Central Factory (`DetectorConstructionCfg`)
 
-The root `geometry/__init__.py` acts as the single entry point to instantiate either detector model:
+The central `GeoKernel` package acts as the single entry point to instantiate either detector model:
 
 ```python
-from geometry import DetectorConstructionCfg, DetectorFlags
+from GeoKernel import DetectorConstructionCfg, DetectorFlags
 
 # 1. Instantiate fast parametric calorimeter (GALTIC):
 det_galtic = DetectorConstructionCfg("ATLAS", version="GALTIC")

@@ -22,7 +22,7 @@ from RootStreamBuilder import (
     RootStreamESDMaker,
     RootStreamESDFlags,
 )
-from geometry import DetectorConstructionCfg
+from GeoKernel import DetectorConstructionCfg
 
 
 @file_parallel_job(ntuple_name="CollectionTree", output_replace=(".HIT", ".ESD"))

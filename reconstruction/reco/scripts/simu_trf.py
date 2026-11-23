@@ -16,7 +16,7 @@ from GaugiKernel.constants import MINUTES
 from G4Kernel import EventReader, ComponentAccumulator
 from RootStreamBuilder import recordable, clear_recorded_items, RootStreamHITMaker
 from CaloHitBuilder import CaloHitBuilder, CaloHitFlags, FreeRunningFlags
-from geometry import DetectorConstructionCfg
+from GeoKernel import DetectorConstructionCfg
 from ATLAS import AtlasGeometryFlags
 from magfield import MagFieldFlags
 

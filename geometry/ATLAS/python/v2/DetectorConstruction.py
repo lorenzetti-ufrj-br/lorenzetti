@@ -41,7 +41,12 @@ class AtlasDetectorConstruction(Configurable):
         geometry_file: Optional[str] = None,
     ) -> None:
         """Initializes AtlasDetectorConstruction."""
-        self.geometry_file = geometry_file or GeometryFile or _default_atlas_geo_file()
+        if geometry_file is not None:
+            self.geometry_file = geometry_file
+        elif GeometryFile:
+            self.geometry_file = GeometryFile
+        else:
+            self.geometry_file = _default_atlas_geo_file()
 
         super().__init__(
             ROOT.ATLAS.DetectorConstruction_v2,

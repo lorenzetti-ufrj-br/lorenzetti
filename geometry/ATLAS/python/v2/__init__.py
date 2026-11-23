@@ -5,6 +5,7 @@ ATLAS v2 package - modern, file-driven JSON calorimeter geometry.
 from ATLAS.v2.Layer import (
     Plates,
     ProductionCuts,
+    ReadoutSegment,
     CaloSamplingLayer,
     DeadMaterialVolume,
     AtlasEmbBuilder,
@@ -20,6 +21,7 @@ from ATLAS.v2.DetectorConstruction import AtlasDetectorConstruction, DetectorCon
 __all__ = [
     "Plates",
     "ProductionCuts",
+    "ReadoutSegment",
     "CaloSamplingLayer",
     "DeadMaterialVolume",
     "AtlasEmbBuilder",

@@ -4,7 +4,7 @@ __all__ = ["getLArEMECCfg", "getAtlasEmecVolumesCfg", "atlasEmecRings", "atlasEm
 from GaugiKernel.constants import mm,MeV,pi
 from CaloCell.CaloDefs import Detector, CaloSampling
 
-from GeoBase import Calorimeter, PhysicalVolume, Plates, SensitiveDetector, atlasLArPhiShift, get_data_dir
+from ATLAS.v1.legacy import Calorimeter, PhysicalVolume, Plates, SensitiveDetector, atlasLArPhiShift, get_data_dir
 
 
 import os
